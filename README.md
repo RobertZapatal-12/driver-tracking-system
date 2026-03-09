@@ -62,4 +62,6 @@ uvicorn app.main:app --reload
 
 ## Autor
 
-Nombre del equipo o desarrolladores
+Luis jose Gonzalez
+Robert Yarel Zapata
+Yan Franco Caminero
