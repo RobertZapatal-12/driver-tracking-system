@@ -53,6 +53,8 @@ pip install -r requirements.txt
 
 uvicorn app.main:app --reload
 
+O descargar manualmente los archivos.py
+
 ## Funcionalidades
 
 - registro de conductores
