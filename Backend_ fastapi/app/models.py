@@ -40,3 +40,8 @@ class Servicio(Base):
 
     chofer_id = Column(Integer, ForeignKey("choferes.id"), nullable=True)
 
+#REVISION
+
+#En la base de datos (driver-tracking-system) hay 5 tablas: users, drivers, vehicle, locations y driver_last_location.
+#Por ende tendrias que cambiar la parte donde dice __tablename__ = "", y poner el nombre real de las tablas que hay en el schema.sql.
+#Revisa el tipo de dato, y las relaciones.
