@@ -325,4 +325,20 @@ def agenda_hoy(db: Session = Depends(get_db)):
             "chofer": chofer_nombre
         })
 
+
     return agenda
+
+#REVISION
+
+#El principal problema es "Base.metadata.create_all(bind=engine)", hace que SQLAlchemy cree las tablas según los modelos.
+#lo mejor es borrarlo, tambien revisa el nombre de las tablas en modelos(Tambien te deje una revision en models.py)
+#Tambien revisar el nombre de las columnas y tablas en squema.py, asi la conexion entra correctamente.
+#Revisar tambien el tipo de dato.
+#Revisa tambien la conexion a la base de datos. Se llama (driver-tracking-system).
+
+
+
+
+
+
+
