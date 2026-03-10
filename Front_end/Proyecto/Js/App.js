@@ -1,24 +1,24 @@
-// Cargar sidebar automáticamente
+// cargar sidebar
 
-fetch("sidebar.html")
+fetch("components/sidebar.html")
 .then(response => response.text())
 .then(data => {
+
 document.getElementById("sidebar").innerHTML = data;
+
 });
 
 
-// Cambiar contenido sin recargar página
+// cambiar contenido
 
 function cargarPagina(pagina){
 
-fetch("pages/" + pagina + ".html")
-
-.then(response => response.text())
-
+fetch(`pages/${pagina}.html`)
+.then(res => res.text())
 .then(data => {
 
 document.getElementById("contenido").innerHTML = data;
 
 });
 
-}
+};

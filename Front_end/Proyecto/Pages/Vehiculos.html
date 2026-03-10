@@ -1,118 +1,63 @@
-<h2>Gestión de Vehículos</h2>
+<!DOCTYPE html>
+<html lang="es">
+    <head>
+        <meta charset="UTF-8">
+        <title>Gestión de Vehículos</title>
 
-<button class="btn btn-primary mb-3"
-data-bs-toggle="modal"
-data-bs-target="#modalVehiculo">
+        <link rel="stylesheet" href="../css/style.css">
 
-Agregar Vehículo
+    </head>
+    <body>
+            <h1>Módulo de Vehículos</h1>
+            <button id="btnAbrirModal">Agregar Vehículo</button>
+            
+            <script src="../js/script.js"></script>
 
-</button>
+        <table id="tablaVehiculos" border="1">
+            <thead>
+                <tr>
+                    <th>Placa</th>
+                    <th>Marca</th>
+                    <th>Modelo</th>
+                    <th>Capacidad</th>
+                    <th>Estatus</th>
+                    <th>Disponibilidad</th>
+                    <th>Foto</th>
+                </tr>
+            </thead>
+            <tbody>
+                </tbody>
+        </table>
 
-<table class="table table-bordered">
+        <div id="modalVehiculo" class="modal">
+            <div class="modal-contenido">
+                <h3>Registrar Nuevo Vehículo</h3>
+                <form id="formVehiculo">
+                    <input type="text" id="placa" placeholder="Placa" required>
+                    <input type="text" id="marca" placeholder="Marca" required>
+                    <input type="text" id="modelo" placeholder="Modelo" required>
+                    <input type="number" id="capacidad" placeholder="Capacidad (kg/pasajeros)" required>
+                    
+                    <select id="estatus">
+                        <option value="Nuevo">Nuevo</option>
+                        <option value="Usado">Usado</option>
+                        <option value="En Reparación">En Reparación</option>
+                    </select>
 
-<thead>
+                    <select id="disponibilidad">
+                        <option value="Disponible">Disponible</option>
+                        <option value="Ocupado">Ocupado</option>
+                    </select>
 
-<tr>
-<th>ID</th>
-<th>Placa</th>
-<th>Marca</th>
-<th>Modelo</th>
-<th>Año</th>
-<th>Estado</th>
-<th>Acciones</th>
-</tr>
+                    <input type="file" id="foto" accept="image/*">
 
-</thead>
+                    <div class="botones-form">
+                        <button type="button" id="btnCancelar" class="btn-secundario">Cancelar</button>
+                        <button type="submit" class="btn-exito">Agregar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
 
-<tbody>
-
-<tr>
-<td>1</td>
-<td>A123BC</td>
-<td>Toyota</td>
-<td>Hilux</td>
-<td>2022</td>
-<td>Disponible</td>
-
-<td>
-
-<button class="btn btn-warning btn-sm">
-Editar
-</button>
-
-<button class="btn btn-danger btn-sm">
-Eliminar
-</button>
-
-</td>
-
-</tr>
-
-</tbody>
-
-</table>
-
-<!-- MODAL AGREGAR VEHICULO -->
-
-<div class="modal fade" id="modalVehiculo">
-
-<div class="modal-dialog">
-<div class="modal-content">
-
-<div class="modal-header">
-
-<h5 class="modal-title">Agregar Vehículo</h5>
-
-<button class="btn-close" data-bs-dismiss="modal"></button>
-
-</div>
-
-<div class="modal-body">
-
-<form>
-
-<div class="mb-3">
-<label>Placa</label>
-<input type="text" class="form-control">
-</div>
-
-<div class="mb-3">
-<label>Marca</label>
-<input type="text" class="form-control">
-</div>
-
-<div class="mb-3">
-<label>Modelo</label>
-<input type="text" class="form-control">
-</div>
-
-<div class="mb-3">
-<label>Año</label>
-<input type="number" class="form-control">
-</div>
-
-<div class="mb-3">
-<label>Estado</label>
-
-<select class="form-control">
-
-<option>Disponible</option>
-<option>En uso</option>
-<option>Mantenimiento</option>
-
-</select>
-
-</div>
-
-<button class="btn btn-success">
-Guardar
-</button>
-
-</form>
-
-</div>
-
-</div>
-</div>
-
-</div>
+    </body>
+</html>
