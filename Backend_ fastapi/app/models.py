@@ -1,0 +1,42 @@
+from sqlalchemy import Column, Integer, String, Float, Boolean, ForeignKey
+from app.database import Base
+
+
+class Chofer(Base):
+    __tablename__ = "choferes"
+
+    id = Column(Integer, primary_key=True, index=True)
+
+    nombre = Column(String, index=True)
+    licencia = Column(String)
+    telefono = Column(String)
+
+    categoria = Column(String, index=True)
+
+    lat = Column(Float, default=0)
+    lng = Column(Float, default=0)
+
+    disponible = Column(Boolean, default=True)
+
+    servicios_hoy = Column(Integer, default=0)
+
+
+class Servicio(Base):
+    __tablename__ = "servicios"
+
+    id = Column(Integer, primary_key=True, index=True)
+
+    cliente = Column(String, index=True)
+
+    origen = Column(String)
+    destino = Column(String)
+
+    categoria = Column(String, index=True)
+
+    fecha = Column(String, index=True)
+    hora = Column(String, index=True)
+
+    estado = Column(String, default="pendiente", index=True)
+
+    chofer_id = Column(Integer, ForeignKey("choferes.id"), nullable=True)
+
