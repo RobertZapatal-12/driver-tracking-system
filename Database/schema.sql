@@ -23,7 +23,7 @@ CREATE TABLE drivers (
     nombre TEXT NOT NULL,
     telefono TEXT,
     numero_licencia TEXT,
-    estado TEXT,
+    estado BOOLEAN,
     creado_desde TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -60,5 +60,6 @@ CREATE TABLE driver_last_location (
     velocidad DOUBLE PRECISION,
     actualizado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
 
 
