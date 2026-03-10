@@ -1,47 +1,48 @@
-EJEMPLO DE ESTRUCTURA DE BASE DE DATOS (PUEDE CAMBIAR SEGUN LAS DECISIONES DE DESARROLLO)
+# Database Schema – Driver Tracking System
 
-# Database - Driver Tracking System
+Este directorio contiene el **esquema de la base de datos** para el sistema de tracking de conductores.
 
-Base de datos utilizada para almacenar información de usuarios, conductores y ubicaciones.
-
-## Tecnologías
-
-- PostgreSQL
-- PostGIS
-
-## Descripción
-
-La base de datos almacena información geográfica para permitir el seguimiento de conductores y el cálculo de rutas o distancias.
+La base de datos está diseñada para funcionar con **PostgreSQL** y permite almacenar información sobre usuarios, conductores, vehículos y ubicaciones en tiempo real.
 
 ## Tablas principales
 
-drivers  
-Información de los conductores.
+* **users**
+  Guarda los usuarios del sistema (administradores o clientes).
 
-locations  
-Ubicación geográfica de los conductores con coordenadas y timestamp.
+* **drivers**
+  Contiene la información de los conductores registrados en la plataforma.
 
-users  
-Usuarios del sistema.
+* **vehicle**
+  Relaciona los vehículos con los conductores.
 
-## Estructura
+* **locations**
+  Guarda el historial completo de ubicaciones GPS de los conductores.
 
-database/
-│
-schema.sql → definición de tablas  
-seed.sql → datos de prueba  
-migrations/ → cambios en la estructura de la base de datos  
+* **driver_last_location**
+  Guarda la última ubicación conocida de cada conductor para consultas rápidas en el mapa.
 
-## Ejemplo de estructura de tabla
+## Índices
 
-drivers
+Se incluyen índices para mejorar el rendimiento en consultas frecuentes como:
 
-id  
-name  
+* búsqueda de ubicaciones por conductor
+* ordenamiento por tiempo
+* búsqueda de vehículos por conductor
 
-locations
+## Uso
 
-driver_id  
-latitude  
-longitude  
-timestamp
+1. Crear una base de datos en PostgreSQL.
+
+2. Ejecutar el archivo:
+
+schema.sql
+
+Esto creará todas las tablas, relaciones e índices necesarios para el sistema.
+
+## Tecnologías relacionadas
+
+* Backend: FastAPI
+* Base de datos: PostgreSQL
+* Frontend: aplicación web o móvil con mapa en tiempo real
+
+
