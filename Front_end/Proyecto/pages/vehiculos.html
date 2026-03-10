@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="es">
+    <head>
+        <meta charset="UTF-8">
+        <title>Gestión de Vehículos</title>
+
+        <link rel="stylesheet" href="../css/style.css">
+
+    </head>
+    <body>
+            <h1>Módulo de Vehículos</h1>
+            <button id="btnAbrirModal">Agregar Vehículo</button>
+            
+            <script src="../js/script.js"></script>
+
+        <table id="tablaVehiculos" border="1">
+            <thead>
+                <tr>
+                    <th>Placa</th>
+                    <th>Marca</th>
+                    <th>Modelo</th>
+                    <th>Capacidad</th>
+                    <th>Estatus</th>
+                    <th>Disponibilidad</th>
+                    <th>Foto</th>
+                </tr>
+            </thead>
+            <tbody>
+                </tbody>
+        </table>
+
+        <div id="modalVehiculo" class="modal">
+            <div class="modal-contenido">
+                <h3>Registrar Nuevo Vehículo</h3>
+                <form id="formVehiculo">
+                    <input type="text" id="placa" placeholder="Placa" required>
+                    <input type="text" id="marca" placeholder="Marca" required>
+                    <input type="text" id="modelo" placeholder="Modelo" required>
+                    <input type="number" id="capacidad" placeholder="Capacidad (kg/pasajeros)" required>
+                    
+                    <select id="estatus">
+                        <option value="Nuevo">Nuevo</option>
+                        <option value="Usado">Usado</option>
+                        <option value="En Reparación">En Reparación</option>
+                    </select>
+
+                    <select id="disponibilidad">
+                        <option value="Disponible">Disponible</option>
+                        <option value="Ocupado">Ocupado</option>
+                    </select>
+
+                    <input type="file" id="foto" accept="image/*">
+
+                    <div class="botones-form">
+                        <button type="button" id="btnCancelar" class="btn-secundario">Cancelar</button>
+                        <button type="submit" class="btn-exito">Agregar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+    </body>
+</html>
