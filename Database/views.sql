@@ -28,7 +28,7 @@ SELECT
     v.year
 FROM drivers d
 LEFT JOIN vehicle v
-ON d.driver_id = v.conductor_id
+ON d.driver_id = v.conductor_id;
 
 select * from view_driver_vehicle_status;
 
@@ -43,5 +43,6 @@ SELECT
 FROM users;
 
 select * from view_users_info;
+
 
 
