@@ -62,4 +62,3 @@ CREATE TABLE driver_last_location (
 );
 
 
-
