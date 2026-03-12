@@ -61,4 +61,6 @@ CREATE TABLE driver_last_location (
     actualizado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-
+-- REVISION
+-- Agregar la columna "estado" en la tabla "vehicle".
+-- Agregar la tabla de "solicitud" para procesar las solicitudes.
