@@ -61,16 +61,13 @@ CREATE TABLE driver_last_location (
     actualizado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- REVISION
--- Agregar la columna "estado" en la tabla "vehicle".
--- Agregar la tabla de "solicitud" para procesar las solicitudes.
-
-CREATE TABLE solicitud (
-    solicitud_id SERIAL PRIMARY KEY,
-    cliente_id INTEGER REFERENCES users(user_id),
-    conductor_id INTEGER REFERENCES drivers(driver_id),
+CREATE TABLE trip_request (
+    request_id SERIAL PRIMARY KEY,
+    user_id INTEGER REFERENCES users(user_id),
+    driver_id INTEGER REFERENCES drivers(driver_id),
+    vehicle_id INTEGER REFERENCES vehicle(vehicles_id),
     origen TEXT NOT NULL,
     destino TEXT NOT NULL,
     fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    estado TEXT DEFAULT 'pendiente'
+    estado TEXT;
 );
