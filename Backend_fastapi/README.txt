@@ -26,7 +26,7 @@ La API se comunica con el frontend mediante solicitudes HTTP.
 
 1. Entrar en la carpeta del backend
 
-cd backend
+cd Backend_fastapi
 
 2. Instalar dependencias
 
