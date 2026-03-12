@@ -10,8 +10,6 @@
     <body>
             <h1>Módulo de Vehículos</h1>
             <button id="btnAbrirModal">Agregar Vehículo</button>
-            
-            <script src="../js/script.js"></script>
 
         <table id="tablaVehiculos" border="1">
             <thead>
@@ -61,3 +59,30 @@
 
     </body>
 </html>
+<script>
+document.addEventListener("DOMContentLoaded", function(){
+
+const modal = document.getElementById("modalVehiculo");
+const btnAbrir = document.getElementById("btnAbrirModal");
+const btnCancelar = document.getElementById("btnCancelar");
+
+function abrirModal(){
+    modal.style.display = "flex";
+}
+
+function cerrarModal(){
+    modal.style.display = "none";
+}
+
+btnAbrir.addEventListener("click", abrirModal);
+btnCancelar.addEventListener("click", cerrarModal);
+
+// cerrar si clic fuera
+modal.addEventListener("click", function(e){
+    if(e.target === modal){
+        cerrarModal();
+    }
+});
+
+});
+</script>
