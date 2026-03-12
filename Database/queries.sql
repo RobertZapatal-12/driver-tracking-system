@@ -61,6 +61,9 @@ SELECT *
 FROM users
 WHERE user_id = $1;
 
+SELECT column_name
+FROM information_schema.columns
+WHERE table_name = 'trip_request';
 -- =====================================
 -- Este archivo contiene las consultas principales utilizadas
 -- por la API para interactuar con la base de datos del sistema

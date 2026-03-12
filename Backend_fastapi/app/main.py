@@ -1,7 +1,11 @@
 from fastapi import FastAPI
+from app.routers import drivers, users, locations, trips
 
-app = FastAPI()
+app = FastAPI(
+    title="Driver Tracking API"
+)
 
-@app.get("/")
-def root():
-    return {"message": "API funcionando"}
+app.include_router(drivers.router)
+app.include_router(users.router)
+app.include_router(locations.router)
+app.include_router(trips.router)
