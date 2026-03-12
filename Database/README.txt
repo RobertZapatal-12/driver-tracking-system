@@ -1,48 +1,84 @@
-# Database Schema – Driver Tracking System
+# Sistema de Tracking de Conductores
 
-Este directorio contiene el **esquema de la base de datos** para el sistema de tracking de conductores.
+Este proyecto implementa el modelo de base de datos para un sistema de seguimiento de conductores y vehículos.
+Permite registrar conductores, vehículos y ubicaciones GPS para monitoreo en tiempo real.
 
-La base de datos está diseñada para funcionar con **PostgreSQL** y permite almacenar información sobre usuarios, conductores, vehículos y ubicaciones en tiempo real.
+## Estructura del Proyecto
 
-## Tablas principales
+```
+database/
+│
+├── schema.sql      # Creación de tablas y relaciones
+├── indexes.sql     # Índices para optimizar consultas
+├── views.sql       # Vistas para consultas frecuentes
+├── queries.sql     # Consultas principales que usará el backend
+├── seed.sql        # Datos de prueba
+└── README.md       # Documentación del proyecto
+```
 
-* **users**
-  Guarda los usuarios del sistema (administradores o clientes).
+## Modelo de Datos
 
-* **drivers**
-  Contiene la información de los conductores registrados en la plataforma.
+La base de datos contiene las siguientes tablas principales:
 
-* **vehicle**
-  Relaciona los vehículos con los conductores.
+* **users** → usuarios del sistema (administradores u operadores).
+* **drivers** → información de los conductores.
+* **vehicle** → vehículos asignados a conductores.
+* **locations** → historial de ubicaciones GPS de los conductores.
+* **driver_last_location** → última ubicación conocida de cada conductor.
 
-* **locations**
-  Guarda el historial completo de ubicaciones GPS de los conductores.
+## Cómo levantar la base de datos
 
-* **driver_last_location**
-  Guarda la última ubicación conocida de cada conductor para consultas rápidas en el mapa.
+### 1. Crear la base de datos
 
-## Índices
+```sql
+CREATE DATABASE tracking_conductores;
+```
 
-Se incluyen índices para mejorar el rendimiento en consultas frecuentes como:
+Conectarse a la base de datos:
 
-* búsqueda de ubicaciones por conductor
-* ordenamiento por tiempo
-* búsqueda de vehículos por conductor
+```sql
+\c tracking_conductores
+```
+
+### 2. Ejecutar los scripts
+
+Los scripts deben ejecutarse en el siguiente orden:
+
+1. `schema.sql` → crea las tablas y relaciones.
+2. `indexes.sql` → crea los índices para mejorar el rendimiento.
+3. `views.sql` → crea las vistas utilizadas para consultas del sistema.
+4. `queries.sql` → contiene las consultas principales que usará el backend.
+5. `seed.sql` → inserta datos de prueba.
+
+Ejemplo desde la terminal usando **psql**:
+
+```
+psql -U postgres -d tracking_conductores -f schema.sql
+psql -U postgres -d tracking_conductores -f indexes.sql
+psql -U postgres -d tracking_conductores -f views.sql
+psql -U postgres -d tracking_conductores -f queries.sql
+psql -U postgres -d tracking_conductores -f seed.sql
+```
+
+## Verificación
+
+Para comprobar que todo se creó correctamente puedes ejecutar:
+
+```sql
+SELECT * FROM drivers;
+SELECT * FROM vehicle;
+SELECT * FROM locations;
+SELECT * FROM drivers_current_location;
+```
+
+Si las tablas o vistas muestran datos, la base de datos fue creada correctamente.
 
 ## Uso
 
-1. Crear una base de datos en PostgreSQL.
+Esta base de datos está diseñada para conectarse a un backend (por ejemplo con **FastAPI** o cualquier API REST) que permita:
 
-2. Ejecutar el archivo:
-
-schema.sql
-
-Esto creará todas las tablas, relaciones e índices necesarios para el sistema.
-
-## Tecnologías relacionadas
-
-* Backend: FastAPI
-* Base de datos: PostgreSQL
-* Frontend: aplicación web o móvil con mapa en tiempo real
-
-
+* registrar conductores
+* asignar vehículos
+* registrar ubicaciones GPS
+* consultar ubicaciones en tiempo real
+* obtener historial de ubicaciones de los conductores

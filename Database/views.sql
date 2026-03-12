@@ -1,3 +1,4 @@
+-- Ver cada conductor junto con su última ubicación registrada.
 CREATE VIEW drivers_current_location AS
 SELECT 
     d.driver_id,
@@ -11,4 +12,37 @@ SELECT
 FROM drivers d
 JOIN driver_last_location l
 ON d.driver_id = l.driver_id;
+
+select * from drivers_current_location;
+
+-- Conductores con su estado y vehículo
+CREATE VIEW view_driver_vehicle_status AS
+SELECT
+    d.driver_id,
+    d.nombre,
+    d.telefono,
+    d.estado,
+    v.plate_number,
+    v.marca,
+    v.modelo,
+    v.year
+FROM drivers d
+LEFT JOIN vehicle v
+ON d.driver_id = v.conductor_id;
+
+select * from view_driver_vehicle_status;
+
+-- usuarios del sistema con información básica
+CREATE VIEW view_users_info AS
+SELECT
+    user_id,
+    nombre,
+    email,
+    role,
+    creado_desde
+FROM users;
+
+select * from view_users_info;
+
+
 
