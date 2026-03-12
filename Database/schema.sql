@@ -54,7 +54,7 @@ CREATE TABLE locations (
 -- Guarda la ultima ubicación conocida de cada conductor
 -- Se usa para consultas rápidas en el mapa
 CREATE TABLE driver_last_location (
-    driver_id INTEGER PRIMARY KEY REFERENCES drivers(driver_id),
+    driver_id SERIAL PRIMARY KEY REFERENCES drivers(driver_id),
     latitud DOUBLE PRECISION NOT NULL,
     longitud DOUBLE PRECISION NOT NULL,
     velocidad DOUBLE PRECISION,
