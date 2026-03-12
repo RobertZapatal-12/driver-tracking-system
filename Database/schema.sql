@@ -23,7 +23,7 @@ CREATE TABLE drivers (
     nombre TEXT NOT NULL,
     telefono TEXT,
     numero_licencia TEXT,
-    estado BOOLEAN,
+    estado TEXT,
     creado_desde TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
