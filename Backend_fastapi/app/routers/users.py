@@ -34,3 +34,42 @@ def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
 
     # Devuelve el usuario recién creado
     return new_user
+
+@router.get("/{user_id}")
+def get_user(user_id: int, db: Session = Depends(get_db)):
+
+    user = db.query(models.User).filter(models.User.user_id == user_id).first()
+
+    if not user:
+        return {"error": "Usuario no encontrado"}
+
+    return user
+
+@router.put("/{user_id}")
+def update_user(user_id: int, user: schemas.UserCreate, db: Session = Depends(get_db)):
+
+    db_user = db.query(models.User).filter(models.User.user_id == user_id).first()
+
+    if not db_user:
+        return {"error": "Usuario no encontrado"}
+
+    for key, value in user.dict().items():
+        setattr(db_user, key, value)
+
+    db.commit()
+    db.refresh(db_user)
+
+    return db_user
+
+@router.delete("/{user_id}")
+def delete_user(user_id: int, db: Session = Depends(get_db)):
+
+    user = db.query(models.User).filter(models.User.user_id == user_id).first()
+
+    if not user:
+        return {"error": "Usuario no encontrado"}
+
+    db.delete(user)
+    db.commit()
+
+    return {"mensaje": "Usuario eliminado correctamente"}

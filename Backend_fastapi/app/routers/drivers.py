@@ -39,3 +39,32 @@ def create_driver(driver: schemas.DriverCreate, db: Session = Depends(get_db)):
     
     # Devuelve el conductor recién creado
     return new_driver
+
+@router.put("/{driver_id}")
+def update_driver(driver_id: int, driver: schemas.DriverCreate, db: Session = Depends(get_db)):
+
+    db_driver = db.query(models.Driver).filter(models.Driver.driver_id == driver_id).first()
+
+    if not db_driver:
+        return {"error": "Conductor no encontrado"}
+
+    for key, value in driver.dict().items():
+        setattr(db_driver, key, value)
+
+    db.commit()
+    db.refresh(db_driver)
+
+    return db_driver
+
+@router.delete("/{driver_id}")
+def delete_driver(driver_id: int, db: Session = Depends(get_db)):
+
+    driver = db.query(models.Driver).filter(models.Driver.driver_id == driver_id).first()
+
+    if not driver:
+        return {"error": "Conductor no encontrado"}
+
+    db.delete(driver)
+    db.commit()
+
+    return {"mensaje": "Conductor eliminado"}
