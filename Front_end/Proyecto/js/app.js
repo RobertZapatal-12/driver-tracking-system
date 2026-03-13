@@ -1,70 +1,46 @@
-// esperar a que cargue el DOM
 document.addEventListener("DOMContentLoaded", () => {
-    // cargar página inicial
-    cargarPagina("dashboard");
-
-    // cargar sidebar
+    // Cargar Sidebar
     fetch("components/sidebar.html")
-        .then(response => response.text())
+        .then(res => res.text())
         .then(data => {
-
             document.getElementById("sidebar").innerHTML = data;
+            setActiveLink('dashboard');
+        });
 
-            // activar botones del sidebar después de cargarlo
-            activarMenu();
-        })
-        .catch(error => console.error("Error cargando sidebar:", error));
+    cargarPagina('dashboard');
 });
 
+function cargarPagina(pagina) {
+    const contenedor = document.getElementById("contenido");
+    const titulo = document.getElementById("page-title");
 
-// función para activar botones del menú
-function activarMenu(){
-
-  const links = document.querySelectorAll("[data-pagina]");
-
-  links.forEach(link => {
-    link.addEventListener("click", (e) => {
-
-      e.preventDefault();
-
-      const pagina = link.getAttribute("data-pagina");
-
-      cargarPagina(pagina);
-
-    });
-  });
-
+    fetch(`pages/${pagina}.html`)
+        .then(res => res.text())
+        .then(data => {
+            contenedor.innerHTML = data;
+            titulo.innerText = pagina.charAt(0).toUpperCase() + pagina.slice(1);
+            setActiveLink(pagina);
+            initModals(); // Reiniciar listeners de modales
+        });
 }
 
-
-// cambiar contenido
-function cargarPagina(pagina){
-
-  fetch(`pages/${pagina}.html`)
-    .then(res => res.text())
-    .then(data => {
-
-      const contenedor = document.getElementById("contenido");
-
-      contenedor.innerHTML = data;
-
-      // ejecutar scripts dentro del contenido cargado
-      const scripts = contenedor.querySelectorAll("script");
-
-      scripts.forEach(script => {
-        const nuevoScript = document.createElement("script");
-
-        if(script.src){
-          nuevoScript.src = script.src;
-        }else{
-          nuevoScript.textContent = script.textContent;
+function setActiveLink(pagina) {
+    document.querySelectorAll('.nav-link').forEach(link => {
+        link.classList.remove('active');
+        if(link.getAttribute('onclick')?.includes(pagina)) {
+            link.classList.add('active');
         }
+    });
+}
 
-        document.body.appendChild(nuevoScript);
-        script.remove();
-      });
+// Manejador Genérico de Modales
+function initModals() {
+    const openBtn = document.querySelector(".btn-open-modal");
+    const closeBtn = document.querySelector(".btn-close-modal");
+    const modal = document.querySelector(".modal-overlay");
 
-    })
-    .catch(error => console.error("Error cargando página:", error));
-
+    if (openBtn && modal) {
+        openBtn.onclick = () => modal.style.display = "block";
+        closeBtn.onclick = () => modal.style.display = "none";
+    }
 }

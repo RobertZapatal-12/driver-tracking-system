@@ -1,41 +1,30 @@
-<div class="bg-dark text-white min-vh-100 p-4">
-
-<h4 class="text-center">Sistema</h4>
-
-<hr>
-
-<ul class="nav flex-column">
-
-<li class="nav-item">
-<a class="nav-link text-white" href="#" data-pagina="dashboard">
-Dashboard
-</a>
-</li>
-
-<li class="nav-item">
-<a class="nav-link text-white" href="#" data-pagina="vehiculos">
-Vehículos
-</a>
-</li>
-
-<li class="nav-item">
-<a class="nav-link text-white" href="#" data-pagina="conductores">
-Conductores
-</a>
-</li>
-
-<li class="nav-item">
-<a class="nav-link text-white" href="#" data-pagina="rutas">
-Rutas
-</a>
-</li>
-
-<li class="nav-item">
-<a class="nav-link text-white" href="#" data-pagina="solicitudes">
-Solicitudes
-</a>
-</li>
-
-</ul>
-
+<div class="sidebar-header">
+    <h4><i class="bi bi-truck text-primary"></i> TransFleet</h4>
 </div>
+<ul class="nav flex-column mt-3">
+    <li class="nav-item">
+        <a class="nav-link" href="#" onclick="cargarPagina('dashboard')">
+            <i class="bi bi-speedometer2"></i> Dashboard
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="#" onclick="cargarPagina('vehiculos')">
+            <i class="bi bi-car-front"></i> Vehículos
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="#" onclick="cargarPagina('conductores')">
+            <i class="bi bi-people"></i> Conductores
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="#" onclick="cargarPagina('rutas')">
+            <i class="bi bi-geo-alt"></i> Rutas
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="#" onclick="cargarPagina('solicitudes')">
+            <i class="bi bi-clipboard-check"></i> Solicitudes
+        </a>
+    </li>
+</ul>

@@ -1,88 +1,18 @@
-<!DOCTYPE html>
-<html lang="es">
-    <head>
-        <meta charset="UTF-8">
-        <title>Gestión de Vehículos</title>
+<div class="d-flex justify-content-between mb-3">
+    <h3>Listado de Unidades</h3>
+    <button id="btnAbrir" class="btn btn-primary">+ Nuevo Vehículo</button>
+</div>
+<table class="table bg-white shadow-sm rounded">
+    <thead><tr><th>Placa</th><th>Marca</th><th>Estado</th></tr></thead>
+    <tbody><tr><td>ABC-123</td><td>Toyota</td><td><span class="badge bg-success">Libre</span></td></tr></tbody>
+</table>
 
-        <link rel="stylesheet" href="../css/style.css">
-
-    </head>
-    <body>
-            <h1>Módulo de Vehículos</h1>
-            <button id="btnAbrirModal">Agregar Vehículo</button>
-
-        <table id="tablaVehiculos" border="1">
-            <thead>
-                <tr>
-                    <th>Placa</th>
-                    <th>Marca</th>
-                    <th>Modelo</th>
-                    <th>Capacidad</th>
-                    <th>Estatus</th>
-                    <th>Disponibilidad</th>
-                    <th>Foto</th>
-                </tr>
-            </thead>
-            <tbody>
-                </tbody>
-        </table>
-
-        <div id="modalVehiculo" class="modal">
-            <div class="modal-contenido">
-                <h3>Registrar Nuevo Vehículo</h3>
-                <form id="formVehiculo">
-                    <input type="text" id="placa" placeholder="Placa" required>
-                    <input type="text" id="marca" placeholder="Marca" required>
-                    <input type="text" id="modelo" placeholder="Modelo" required>
-                    <input type="number" id="capacidad" placeholder="Capacidad (kg/pasajeros)" required>
-                    
-                    <select id="estatus">
-                        <option value="Nuevo">Nuevo</option>
-                        <option value="Usado">Usado</option>
-                        <option value="En Reparación">En Reparación</option>
-                    </select>
-
-                    <select id="disponibilidad">
-                        <option value="Disponible">Disponible</option>
-                        <option value="Ocupado">Ocupado</option>
-                    </select>
-
-                    <input type="file" id="foto" accept="image/*">
-
-                    <div class="botones-form">
-                        <button type="button" id="btnCancelar" class="btn-secundario">Cancelar</button>
-                        <button type="submit" class="btn-exito">Agregar</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-
-    </body>
-</html>
-<script>
-document.addEventListener("DOMContentLoaded", function(){
-
-const modal = document.getElementById("modalVehiculo");
-const btnAbrir = document.getElementById("btnAbrirModal");
-const btnCancelar = document.getElementById("btnCancelar");
-
-function abrirModal(){
-    modal.style.display = "flex";
-}
-
-function cerrarModal(){
-    modal.style.display = "none";
-}
-
-btnAbrir.addEventListener("click", abrirModal);
-btnCancelar.addEventListener("click", cerrarModal);
-
-// cerrar si clic fuera
-modal.addEventListener("click", function(e){
-    if(e.target === modal){
-        cerrarModal();
-    }
-});
-
-});
-</script>
+<div id="modalGenerico" class="modal-simple">
+    <div class="modal-simple-content">
+        <h5>Agregar Vehículo</h5>
+        <input type="text" class="form-control mb-2" placeholder="Placa">
+        <input type="text" class="form-control mb-3" placeholder="Marca">
+        <button class="btn btn-success w-100">Guardar</button>
+        <button id="btnCerrar" class="btn btn-link w-100 text-muted">Cancelar</button>
+    </div>
+</div>

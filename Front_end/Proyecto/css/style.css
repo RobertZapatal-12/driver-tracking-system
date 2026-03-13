@@ -1,108 +1,68 @@
-/* Estilos del Modal */
-.modal {
-    display: none; 
-    position: fixed;
-    z-index: 9999;
-    left: 0; 
-    top: 0;
-    width: 100%; 
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.7);
-    justify-content: center;
+:root {
+    --sidebar-bg: #1e293b;
+    --sidebar-hover: #334155;
+    --accent-color: #3b82f6;
+}
+
+body {
+    background-color: #f1f5f9;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.wrapper { display: flex; width: 100%; }
+
+/* Sidebar */
+.sidebar-wrapper {
+    width: 260px;
+    background-color: var(--sidebar-bg);
+    min-height: 100vh;
+    color: white;
+    transition: all 0.3s;
+}
+
+.sidebar-header { padding: 20px; text-align: center; border-bottom: 1px solid #334155; }
+
+.nav-link {
+    color: #94a3b8;
+    padding: 12px 20px;
+    display: flex;
     align-items: center;
+    gap: 12px;
+    transition: 0.3s;
 }
 
-.modal-contenido {
-    background-color: #fff;
-    padding: 35px;
-    width: 90%;
-    max-width: 500px;
-    border-radius: 12px;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+.nav-link:hover, .nav-link.active {
+    background-color: var(--sidebar-hover);
+    color: white;
+    border-left: 4px solid var(--accent-color);
+}
+
+/* Main Content */
+.main-container { flex-grow: 1; display: flex; flex-direction: column; }
+
+.top-navbar {
+    background: white;
+    height: 60px;
     display: flex;
-    flex-direction: column;
-    gap: 15px;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 25px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
 }
 
-.modal-contenido h3 {
-    margin: 0 0 20px 0;
-    color: #333;
-    font-size: 24px;
-    border-bottom: 2px solid #007bff;
-    padding-bottom: 10px;
+/* Modales */
+.modal-overlay {
+    display: none;
+    position: fixed;
+    top:0; left:0; width:100%; height:100%;
+    background: rgba(0,0,0,0.5);
+    z-index: 9999;
 }
 
-/* Estilos de los inputs */
-#formVehiculo input, 
-#formVehiculo select {
-    width: 100%;
-    padding: 12px;
-    margin-bottom: 15px;
-    border: 1px solid #ddd;
-    border-radius: 6px;
-    font-size: 14px;
-    box-sizing: border-box;
-}
-
-#formVehiculo input:focus, 
-#formVehiculo select:focus {
-    outline: none;
-    border-color: #007bff;
-    box-shadow: 0 0 8px rgba(0, 123, 255, 0.2);
-}
-
-.botones-form {
-    display: flex;
-    gap: 10px;
-    justify-content: flex-end;
-    margin-top: 20px;
-}
-
-.btn-exito {
-    background-color: #28a745;
-    color: white;
-    border: none;
-    padding: 12px 30px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-weight: 600;
-    transition: all 0.3s ease;
-}
-
-.btn-exito:hover {
-    background-color: #218838;
-    transform: translateY(-2px);
-}
-
-.btn-secundario {
-    background-color: #dc3545;
-    color: white;
-    border: none;
-    padding: 12px 30px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-weight: 600;
-    transition: all 0.3s ease;
-}
-
-.btn-secundario:hover {
-    background-color: #c82333;
-    transform: translateY(-2px);
-}
-
-#btnAbrirModal {
-    background-color: #007bff;
-    color: white;
-    border: none;
-    padding: 12px 25px;
-    border-radius: 6px;
-    font-size: 16px;
-    cursor: pointer;
-    font-weight: 600;
-    transition: all 0.3s ease;
-}
-
-#btnAbrirModal:hover {
-    background-color: #0056b3;
-    transform: translateY(-2px);
+.modal-card {
+    background: white;
+    width: 90%; max-width: 500px;
+    margin: 50px auto;
+    border-radius: 8px;
+    padding: 25px;
 }
