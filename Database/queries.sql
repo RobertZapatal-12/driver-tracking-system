@@ -1,6 +1,6 @@
 -- Obtener todos los conductores
 SELECT *
-FROM drivers;
+FROM users;
 
 
 -- Obtener un conductor específico por ID
@@ -59,7 +59,7 @@ SELECT * FROM users;
 -- Obtener un usuario específico
 SELECT *
 FROM users
-WHERE user_id = $1;
+WHERE user_id = 1;
 
 SELECT column_name
 FROM information_schema.columns
