@@ -1,0 +1,43 @@
+<div class="card shadow-sm border-0">
+    <div class="card-body">
+        <div class="d-flex justify-content-between mb-4">
+            <h4>Planificación de Rutas</h4>
+            <button class="btn btn-primary btn-open-modal">+ Nueva Ruta</button>
+        </div>
+        <table class="table align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>ID</th>
+                    <th>Origen</th>
+                    <th>Destino</th>
+                    <th>Distancia</th>
+                    <th>Estado</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>RT-001</td>
+                    <td>Sede Central</td>
+                    <td>Sucursal Norte</td>
+                    <td>15.4 km</td>
+                    <td><span class="badge bg-success">Activa</span></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="modal-overlay">
+    <div class="modal-card">
+        <h5>Registrar Nueva Ruta</h5>
+        <hr>
+        <form>
+            <input type="text" class="form-control mb-3" placeholder="Punto de Origen">
+            <input type="text" class="form-control mb-3" placeholder="Punto de Destino">
+            <div class="d-flex justify-content-end gap-2">
+                <button type="button" class="btn btn-light btn-close-modal">Cerrar</button>
+                <button class="btn btn-primary">Crear Ruta</button>
+            </div>
+        </form>
+    </div>
+</div>
