@@ -13,28 +13,23 @@ router = APIRouter(
 @router.get("/")
 def get_users(db: Session = Depends(get_db)):
 
-    # Realiza una consulta a la tabla User y devuelve todos los registr
+    
     return db.query(models.User).all()
 
 # Endpoint para crear un nuevo usuario en la base de datos
 @router.post("/")
 def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
 
-    # Convierte los datos recibidos del schema UserCreate en un objeto del modelo User
+    
     new_user = models.User(**user.dict())
     
-    # Agrega el nuevo usuario a la sesión de la base de datos
+   
     db.add(new_user)
-
-    # Guarda los cambios en la base de datos
     db.commit()
-
-    # Actualiza el objeto con los datos generados por la base de datos (por ejemplo el ID)
     db.refresh(new_user)
 
-    # Devuelve el usuario recién creado
     return new_user
-
+#Endpoint para buscar por id
 @router.get("/{user_id}")
 def get_user(user_id: int, db: Session = Depends(get_db)):
 
@@ -44,7 +39,7 @@ def get_user(user_id: int, db: Session = Depends(get_db)):
         return {"error": "Usuario no encontrado"}
 
     return user
-
+#Endpoint para actualizar el user
 @router.put("/{user_id}")
 def update_user(user_id: int, user: schemas.UserCreate, db: Session = Depends(get_db)):
 
@@ -60,7 +55,7 @@ def update_user(user_id: int, user: schemas.UserCreate, db: Session = Depends(ge
     db.refresh(db_user)
 
     return db_user
-
+#Endpoint para borrar el user
 @router.delete("/{user_id}")
 def delete_user(user_id: int, db: Session = Depends(get_db)):
 
