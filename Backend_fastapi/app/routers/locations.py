@@ -31,7 +31,7 @@ def get_driver_locations(driver_id: int, db: Session = Depends(get_db)):
     return db.query(models.Location)\
         .filter(models.Location.driver_id == driver_id)\
         .all()
-
+# Endpoint para actualizar una localizacion
 @router.put("/{location_id}")
 def update_location(location_id: int, location: schemas.LocationCreate, db: Session = Depends(get_db)):
 
@@ -47,7 +47,7 @@ def update_location(location_id: int, location: schemas.LocationCreate, db: Sess
     db.refresh(db_location)
 
     return db_location
-
+# Endpoint para borrar una localizacion
 @router.delete("/{location_id}")
 def delete_location(location_id: int, db: Session = Depends(get_db)):
 

@@ -25,21 +25,17 @@ def get_driver(driver_id: int, db: Session = Depends(get_db)):
 # Endpoint para crear un nuevo conductor en la base de datos
 @router.post("/")
 def create_driver(driver: schemas.DriverCreate, db: Session = Depends(get_db)):
-    # Convierte los datos recibidos del schema en un objeto del modelo Driver
+    
     new_driver = models.Driver(**driver.dict())
 
-    # Agrega el nuevo conductor a la sesión de la base de datos
+    
     db.add(new_driver)
-
-    # Guarda los cambios en la base de datos
     db.commit()
-
-    # Actualiza el objeto con los datos guardados (ejemplo: ID generado)
     db.refresh(new_driver)
     
-    # Devuelve el conductor recién creado
+   
     return new_driver
-
+#Endpoint para actualizar un conductor
 @router.put("/{driver_id}")
 def update_driver(driver_id: int, driver: schemas.DriverCreate, db: Session = Depends(get_db)):
 
@@ -56,6 +52,7 @@ def update_driver(driver_id: int, driver: schemas.DriverCreate, db: Session = De
 
     return db_driver
 
+#Endpoint para borrar un conductor
 @router.delete("/{driver_id}")
 def delete_driver(driver_id: int, db: Session = Depends(get_db)):
 
