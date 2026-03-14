@@ -47,41 +47,25 @@ DO UPDATE SET
 
 SELECT * FROM drivers;
 
-INSERT INTO trip_request (user_id, driver_id, vehicle_id, origen, destino, estado)
+INSERT INTO trip_request (user_id, vehicle_id, origen, destino, estado)
 VALUES
-(3, 1, 1, 'Zona Colonial', 'Aeropuerto Las Americas', 'pendiente'),
-(4, 2, 2, 'Santo Domingo Este', 'Agora Mall', 'aceptado'),
-(3, 3, 3, 'Los Alcarrizos', 'Downtown Center', 'completado'),
-(5, 1, 1, 'Villa Mella', 'Blue Mall', 'pendiente'),
-(4, 2, 2, 'San Isidro', 'Plaza Central', 'cancelado');
--- =====================================
--- Este archivo inserta datos iniciales de prueba en la base de datos
--- para facilitar el desarrollo y las pruebas del sistema.
---
--- Cambios realizados:
---
--- 1. Actualización de nombres de tabla:
---    Se cambió el uso de la tabla:
---        vehicle → vehicles
---    para coincidir con el esquema actualizado.
---
--- 2. Corrección de columnas:
---    Se reemplazó:
---        conductor_id → driver_id
---    para mantener consistencia con la tabla drivers.
---
--- 3. Datos de prueba organizados:
---    Se agregaron registros de ejemplo para:
---        - users
---        - drivers
---        - vehicles
---        - locations
---        - driver_last_location
---
--- 4. Inserción de solicitudes de viaje:
---    Se añadieron registros en trip_request para simular diferentes estados
---    de solicitudes (pendiente, aceptado, completado, cancelado).
---
--- Esto permite probar rápidamente el sistema sin necesidad
--- de insertar datos manualmente desde la API.
--- =====================================
+(3, 1, 'Zona Colonial', 'Aeropuerto Las Americas', 'pendiente'),
+(4, 2, 'Santo Domingo Este', 'Agora Mall', 'aceptado'),
+(3, 3, 'Los Alcarrizos', 'Downtown Center', 'completado'),
+(5, 1, 'Villa Mella', 'Blue Mall', 'pendiente'),
+(4, 2, 'San Isidro', 'Plaza Central', 'cancelado');
+
+--Datos trip request
+INSERT INTO trip_request (user_id, vehicle_id, origen, destino, estado)
+VALUES
+(1, 2, 'Sede Central', 'Sucursal Norte', 'pendiente'),
+(2, 1, 'Villa Luisa', 'Zona Colonial', 'aceptada'),
+(3, 3, 'UASD', 'Agora Mall', 'pendiente'),
+(1, 2, 'Aeropuerto Las Américas', 'Santo Domingo Este', 'aceptada'),
+(4, 1, 'Mega Centro', 'Sambil', 'cancelada');
+
+--Datos trips
+INSERT INTO trips (request_id, inicio, fin, estado)
+VALUES
+(2, '2026-03-14 09:00:00', '2026-03-14 09:30:00', 'completado'),
+(4, '2026-03-14 10:15:00', '2026-03-14 10:50:00', 'completado');
