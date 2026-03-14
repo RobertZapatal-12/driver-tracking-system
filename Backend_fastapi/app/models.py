@@ -28,7 +28,11 @@ class Driver(Base):
     nombre = Column(String)
     telefono = Column(String)
     numero_licencia = Column(String)
+    tipo_licencia = Column(String)
+    cedula = Column(String)
     estado = Column(String)
+    
+    
 
 
 # =========================

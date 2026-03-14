@@ -17,8 +17,10 @@ CREATE TABLE users (
 CREATE TABLE drivers (
     driver_id SERIAL PRIMARY KEY,
     nombre TEXT NOT NULL,
-    telefono TEXT,
-    numero_licencia TEXT,
+    telefono VARCHAR(10),
+    numero_licencia VARCHAR(11),
+    tipo_licencia TEXT,
+    cedula VARCHAR(11),
     estado TEXT,
     creado_desde TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -27,7 +29,7 @@ CREATE TABLE drivers (
 CREATE TABLE vehicles (
     vehicle_id SERIAL PRIMARY KEY,
     driver_id INTEGER REFERENCES drivers(driver_id),
-    plate_number TEXT NOT NULL,
+    plate_number VARCHAR(7),
     modelo TEXT,
     marca TEXT,
     color TEXT,

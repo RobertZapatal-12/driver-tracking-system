@@ -31,6 +31,8 @@ class DriverBase(BaseModel):
     nombre: str
     telefono: str
     numero_licencia: str
+    cedula: str
+    tipo_licencia: str
     estado: str
 
 
