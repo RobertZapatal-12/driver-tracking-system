@@ -66,7 +66,7 @@ class TripRequest(Base):
     origen = Column(String)
     destino = Column(String)
 
-    estado = Column(String)
+    estado = Column(String, default="Pendiente", nullable=False)
 
 # =========================
 # VEHICLES

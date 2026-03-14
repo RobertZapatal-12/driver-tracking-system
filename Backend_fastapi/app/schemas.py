@@ -111,6 +111,7 @@ class TripCreate(TripBase):
 
 class TripResponse(TripBase):
     request_id: int
+    estado: str = 'Pendiente'
 
     class Config:
         from_attributes = True
