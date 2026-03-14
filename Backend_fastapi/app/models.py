@@ -58,10 +58,9 @@ class Location(Base):
 class TripRequest(Base):
     __tablename__ = "trip_request"
 
-    trip_id = Column(Integer, primary_key=True, index=True)
+    request_id = Column(Integer, primary_key=True, index=True)
 
     user_id = Column(Integer, ForeignKey("users.user_id"))
-    driver_id = Column(Integer, ForeignKey("drivers.driver_id"))
     vehicle_id = Column(Integer, ForeignKey("vehicles.vehicle_id"))
 
     origen = Column(String)

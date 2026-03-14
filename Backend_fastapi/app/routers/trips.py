@@ -5,16 +5,14 @@ from app import models, schemas
 
 # Se crea un router para manejar todas las rutas relacionadas con los viajes
 router = APIRouter(
-    prefix="/trips", # Todas las rutas comenzarán con /trips
-    tags=["Trips"]   # Nombre que aparecerá en la documentación automática de FastAPI
+    prefix="/trips_request", # Todas las rutas comenzarán con /trips
+    tags=["Trips Request"]   # Nombre que aparecerá en la documentación automática de FastAPI
 )
 
-# Endpoint para obtener todos los viajes registrados en la base de dato
 @router.get("/", response_model=list[schemas.TripResponse])
-def get_trips(db: Session = Depends(get_db)):
-
-    # Realiza una consulta a la tabla TripRequest y devuelve todos los registros
-    return db.query(models.TripRequest).all()
+def get_trip_requests(db: Session = Depends(get_db)):
+    requests = db.query(models.TripRequest).all()
+    return requests
 
 # Endpoint para crear una nueva solicitud de viaje
 @router.post("/", response_model=schemas.TripResponse)

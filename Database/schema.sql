@@ -66,7 +66,7 @@ CREATE TABLE trip_request (
     origen TEXT NOT NULL,
     destino TEXT NOT NULL,
     fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    estado TEXT
+    estado TEXT DEFAULT 'pendiente'
 );
 
 CREATE TABLE trips (
