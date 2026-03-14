@@ -1,8 +1,49 @@
-<h3>Conductores</h3>
+<div class="d-flex justify-content-between mb-3">
+    <h3>Conductores</h3>
+    <button class="btn btn-primary btn-open-modal">+ Nuevo Conductor</button>
+</div>
+
 <div class="card border-0 shadow-sm p-3">
     <p>Gestiona aquí la información del personal y sus licencias.</p>
-    <table class="table">
-        <thead><tr><th>Nombre</th><th>Cédula</th><th>Licencia</th></tr></thead>
-        <tbody><tr><td>Carlos Ruiz</td><td>102030</td><td>Tipo B</td></tr></tbody>
+    <table class="table" id="tablaConductores">
+        <thead>
+            <tr>
+                <th>Nombre</th>
+                <th>Cédula</th>
+                <th>Licencia</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Carlos Ruiz</td>
+                <td>102030</td>
+                <td>Tipo B</td>
+            </tr>
+        </tbody>
     </table>
+</div>
+
+<div class="modal-overlay">
+    <div class="modal-card">
+        <h5>Agregar Conductor</h5>
+        <hr>
+        <form id="formConductor">
+            <div class="mb-3">
+                <label class="form-label">Nombre</label>
+                <input type="text" id="nombreC" class="form-control" required>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Cédula</label>
+                <input type="text" id="cedulaC" class="form-control" required>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Licencia</label>
+                <input type="text" id="licenciaC" class="form-control" required>
+            </div>
+            <div class="d-flex justify-content-end gap-2">
+                <button type="button" class="btn btn-light btn-close-modal">Cancelar</button>
+                <button type="submit" class="btn btn-success">Guardar</button>
+            </div>
+        </form>
+    </div>
 </div>
