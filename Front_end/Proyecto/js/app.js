@@ -43,4 +43,39 @@ function initModals() {
         openBtn.onclick = () => modal.style.display = "block";
         closeBtn.onclick = () => modal.style.display = "none";
     }
+
+    // Lógica para Guardar Vehículo
+    const formVehiculo = document.getElementById("formVehiculo");
+    if (formVehiculo) {
+        formVehiculo.onsubmit = (e) => {
+            e.preventDefault();
+            const placa = document.getElementById("placa").value;
+            const marca = document.getElementById("marca").value;
+            
+            const tabla = document.getElementById("tablaVehiculos").getElementsByTagName('tbody')[0];
+            const nuevaFila = tabla.insertRow();
+            nuevaFila.innerHTML = `<td>${placa}</td><td>${marca}</td><td><span class="badge bg-success">Libre</span></td>`;
+            
+            modal.style.display = "none";
+            formVehiculo.reset();
+        };
+    }
+
+    // Lógica para Guardar Conductor
+    const formConductor = document.getElementById("formConductor");
+    if (formConductor) {
+        formConductor.onsubmit = (e) => {
+            e.preventDefault();
+            const nombre = document.getElementById("nombreC").value;
+            const cedula = document.getElementById("cedulaC").value;
+            const licencia = document.getElementById("licenciaC").value;
+            
+            const tabla = document.getElementById("tablaConductores").getElementsByTagName('tbody')[0];
+            const nuevaFila = tabla.insertRow();
+            nuevaFila.innerHTML = `<td>${nombre}</td><td>${cedula}</td><td>${licencia}</td>`;
+            
+            modal.style.display = "none";
+            formConductor.reset();
+        };
+    }
 }

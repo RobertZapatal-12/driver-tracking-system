@@ -1,18 +1,42 @@
 <div class="d-flex justify-content-between mb-3">
     <h3>Listado de Unidades</h3>
-    <button id="btnAbrir" class="btn btn-primary">+ Nuevo Vehículo</button>
+    <button class="btn btn-primary btn-open-modal">+ Nuevo Vehículo</button>
 </div>
-<table class="table bg-white shadow-sm rounded">
-    <thead><tr><th>Placa</th><th>Marca</th><th>Estado</th></tr></thead>
-    <tbody><tr><td>ABC-123</td><td>Toyota</td><td><span class="badge bg-success">Libre</span></td></tr></tbody>
+
+<table class="table bg-white shadow-sm rounded" id="tablaVehiculos">
+    <thead>
+        <tr>
+            <th>Placa</th>
+            <th>Marca</th>
+            <th>Estado</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>ABC-123</td>
+            <td>Toyota</td>
+            <td><span class="badge bg-success">Libre</span></td>
+        </tr>
+    </tbody>
 </table>
 
-<div id="modalGenerico" class="modal-simple">
-    <div class="modal-simple-content">
+<div class="modal-overlay">
+    <div class="modal-card">
         <h5>Agregar Vehículo</h5>
-        <input type="text" class="form-control mb-2" placeholder="Placa">
-        <input type="text" class="form-control mb-3" placeholder="Marca">
-        <button class="btn btn-success w-100">Guardar</button>
-        <button id="btnCerrar" class="btn btn-link w-100 text-muted">Cancelar</button>
+        <hr>
+        <form id="formVehiculo">
+            <div class="mb-3">
+                <label class="form-label">Placa</label>
+                <input type="text" id="placa" class="form-control" placeholder="Ej: ABC-123" required>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Marca</label>
+                <input type="text" id="marca" class="form-control" placeholder="Ej: Toyota" required>
+            </div>
+            <div class="d-flex justify-content-end gap-2">
+                <button type="button" class="btn btn-light btn-close-modal">Cancelar</button>
+                <button type="submit" class="btn btn-success">Guardar</button>
+            </div>
+        </form>
     </div>
 </div>
