@@ -56,13 +56,13 @@ VALUES
 (4, 2, 'San Isidro', 'Plaza Central', 'cancelado');
 
 --Datos trip request
-INSERT INTO trip_request (user_id, vehicle_id, origen, destino, estado)
+INSERT INTO trip_request (user_id, vehicle_id, origen, destino)
 VALUES
-(1, 2, 'Sede Central', 'Sucursal Norte', 'pendiente'),
-(2, 1, 'Villa Luisa', 'Zona Colonial', 'aceptada'),
-(3, 3, 'UASD', 'Agora Mall', 'pendiente'),
-(1, 2, 'Aeropuerto Las Américas', 'Santo Domingo Este', 'aceptada'),
-(4, 1, 'Mega Centro', 'Sambil', 'cancelada');
+(1, 2, 'Sede Central', 'Sucursal Norte'),
+(2, 1, 'Villa Luisa', 'Zona Colonial'),
+(3, 3, 'UASD', 'Agora Mall'),
+(1, 2, 'Aeropuerto Las Américas', 'Santo Domingo Este'),
+(4, 1, 'Mega Centro', 'Sambil');
 
 --Datos trips
 INSERT INTO trips (request_id, inicio, fin, estado)

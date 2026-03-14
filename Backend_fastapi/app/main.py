@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from app.routers import drivers, users, locations, trips, vehicles
+from app.routers import drivers, users, locations, vehicles, trips
 
 app = FastAPI(
     title="Driver Tracking API"
