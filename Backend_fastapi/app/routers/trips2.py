@@ -3,12 +3,12 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app import models, schemas
 
-# Se crea un router para manejar todas las rutas relacionadas con los viajes
+# Se crea un router para manejar todas las rutas relacionadas con los request
 router = APIRouter(
-    prefix="/request", # Todas las rutas comenzarán con /trips
-    tags=["Request"]   # Nombre que aparecerá en la documentación automática de FastAPI
+    prefix="/request", 
+    tags=["Request"]   
 )
-#conseguir todas las rutas
+#conseguir todas los requesr
 @router.get("/", response_model=list[schemas.TripResponse])
 def get_all_trips(db: Session = Depends(get_db)):
 
@@ -16,7 +16,7 @@ def get_all_trips(db: Session = Depends(get_db)):
 
     return trips
 
-#Crear ruta
+#Crear request
 @router.post("/", response_model=schemas.TripResponse)
 def create_trip(trip: schemas.TripCreate, db: Session = Depends(get_db)):
     new_trip = models.Trip(**trip.dict())
@@ -27,7 +27,7 @@ def create_trip(trip: schemas.TripCreate, db: Session = Depends(get_db)):
 
     return new_trip
 
-#Conseguir rutas por id
+#Conseguir request
 @router.get("/{trip_id}", response_model=schemas.TripResponse)
 def get_trip_by_id(trip_id: int, db: Session = Depends(get_db)):
 
@@ -38,7 +38,7 @@ def get_trip_by_id(trip_id: int, db: Session = Depends(get_db)):
 
     return trip
 
-#Actualizar trip
+#Actualizar request
 @router.put("/{trip_id}", response_model=schemas.TripResponse)
 def update_trip(trip_id: int, trip: schemas.TripCreate, db: Session = Depends(get_db)):
 
@@ -58,7 +58,7 @@ def update_trip(trip_id: int, trip: schemas.TripCreate, db: Session = Depends(ge
     return trip_db
 
 
-#eliminar trip
+#eliminar request
 @router.delete("/{trip_id}")
 def delete_trip(trip_id: int, db: Session = Depends(get_db)):
 
