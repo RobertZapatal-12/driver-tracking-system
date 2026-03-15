@@ -28,51 +28,87 @@ CREATE TABLE drivers (
 -- TABLA: vehicles
 CREATE TABLE vehicles (
     vehicle_id SERIAL PRIMARY KEY,
-    driver_id INTEGER REFERENCES drivers(driver_id),
+    driver_id INTEGER,
+
     plate_number VARCHAR(7),
     modelo TEXT,
     marca TEXT,
     color TEXT,
-    year INTEGER
+    year INTEGER,
+
+    CONSTRAINT vehicles_driver_id_fkey
+    FOREIGN KEY (driver_id)
+    REFERENCES drivers(driver_id)
+    ON DELETE CASCADE
 );
 
 -- TABLA: locations
 -- Historial completo de ubicaciones
 CREATE TABLE locations (
     location_id SERIAL PRIMARY KEY,
-    driver_id INTEGER REFERENCES drivers(driver_id),
+    driver_id INTEGER,
+
     latitud DOUBLE PRECISION NOT NULL,
     longitud DOUBLE PRECISION NOT NULL,
     velocidad DOUBLE PRECISION,
-    registrado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    registrado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT locations_driver_id_fkey
+    FOREIGN KEY (driver_id)
+    REFERENCES drivers(driver_id)
+    ON DELETE CASCADE
 );
 
 -- TABLA: driver_last_location
 -- Última ubicación de cada conductor
 CREATE TABLE driver_last_location (
-    driver_id INTEGER PRIMARY KEY REFERENCES drivers(driver_id),
+    driver_id INTEGER PRIMARY KEY,
+
     latitud DOUBLE PRECISION NOT NULL,
     longitud DOUBLE PRECISION NOT NULL,
     velocidad DOUBLE PRECISION,
-    actualizado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    actualizado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT driver_last_location_driver_id_fkey
+    FOREIGN KEY (driver_id)
+    REFERENCES drivers(driver_id)
+    ON DELETE CASCADE
 );
+
 
 -- TABLA: trip_request
 -- Solicitud de viajes (citas)
 CREATE TABLE trip_request (
     request_id SERIAL PRIMARY KEY,
-    user_id INTEGER REFERENCES users(user_id),
-    vehicle_id INTEGER REFERENCES vehicles(vehicle_id),
+    user_id INTEGER,
+    vehicle_id INTEGER,
+
     origen TEXT NOT NULL,
     destino TEXT NOT NULL,
     fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    estado TEXT DEFAULT 'Pendiente'
+    estado TEXT DEFAULT 'Pendiente',
+
+    CONSTRAINT trip_request_user_id_fkey
+    FOREIGN KEY (user_id)
+    REFERENCES users(user_id)
+    ON DELETE CASCADE,
+
+    CONSTRAINT trip_request_vehicle_id_fkey
+    FOREIGN KEY (vehicle_id)
+    REFERENCES vehicles(vehicle_id)
+    ON DELETE CASCADE
 );
 
 CREATE TABLE trips (
     trip_id SERIAL PRIMARY KEY,
-    request_id INTEGER REFERENCES trip_request(request_id),
+    request_id INTEGER,
+
     inicio TIMESTAMP,
     fin TIMESTAMP,
-    estado TEXT
+    estado TEXT,
+
+    CONSTRAINT trips_request_id_fkey
+    FOREIGN KEY (request_id)
+    REFERENCES trip_request(request_id)
+    ON DELETE CASCADE
 );
