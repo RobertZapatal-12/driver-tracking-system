@@ -17,20 +17,8 @@ def get_trip_requests(db: Session = Depends(get_db)):
 
     return requests
 
-# Endpoint para crear una nueva ruta
-@router.post("/", response_model=schemas.TripResponse)
-def create_trip(trip: schemas.TripCreate, db: Session = Depends(get_db)):
-
-    new_trip = models.TripRequest(**trip.dict(), estado="Pendiente")
-
-    db.add(new_trip)
-    db.commit()
-    db.refresh(new_trip)
-
-    return new_trip
-
-#Obtener rutas por id
-@router.get("/{request_id}", response_model=schemas.TripResponse)
+# Obtener solicitud por id
+@router.get("/{request_id}", response_model=schemas.TripRequestResponse)
 def get_trip_request(request_id: int, db: Session = Depends(get_db)):
 
     trip = db.query(models.TripRequest).filter(
@@ -42,9 +30,10 @@ def get_trip_request(request_id: int, db: Session = Depends(get_db)):
 
     return trip
 
-#Actualizar una  ruta
-@router.put("/{request_id}", response_model=schemas.TripResponse)
-def update_trip(request_id: int, trip: schemas.TripCreate, db: Session = Depends(get_db)):
+
+# Actualizar solicitud
+@router.put("/{request_id}", response_model=schemas.TripRequestResponse)
+def update_trip_request(request_id: int, trip: schemas.TripRequestCreate, db: Session = Depends(get_db)):
 
     trip_query = db.query(models.TripRequest).filter(
         models.TripRequest.request_id == request_id
@@ -60,9 +49,10 @@ def update_trip(request_id: int, trip: schemas.TripCreate, db: Session = Depends
 
     return trip_query.first()
 
-#Eliminar ruta
+
+# Eliminar solicitud
 @router.delete("/{request_id}")
-def delete_trip(request_id: int, db: Session = Depends(get_db)):
+def delete_trip_request(request_id: int, db: Session = Depends(get_db)):
 
     trip_query = db.query(models.TripRequest).filter(
         models.TripRequest.request_id == request_id
