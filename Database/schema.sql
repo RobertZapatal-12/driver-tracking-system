@@ -78,15 +78,15 @@ CREATE TABLE driver_last_location (
 
 -- TABLA: trip_request
 -- Solicitud de viajes (citas)
-CREATE TABLE trip_request (
-    request_id SERIAL PRIMARY KEY,
+CREATE TABLE routes (
+    route_id SERIAL PRIMARY KEY,
     user_id INTEGER,
     vehicle_id INTEGER,
 
     origen TEXT NOT NULL,
     destino TEXT NOT NULL,
     fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    estado TEXT DEFAULT 'Pendiente',
+    estado TEXT
 
     CONSTRAINT trip_request_user_id_fkey
     FOREIGN KEY (user_id)
@@ -99,9 +99,9 @@ CREATE TABLE trip_request (
     ON DELETE CASCADE
 );
 
-CREATE TABLE trips (
-    trip_id SERIAL PRIMARY KEY,
-    request_id INTEGER,
+CREATE TABLE request (
+    request_id SERIAL PRIMARY KEY,
+    route_id INTEGER,
 
     inicio TIMESTAMP,
     fin TIMESTAMP,

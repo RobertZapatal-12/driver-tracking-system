@@ -47,7 +47,7 @@ DO UPDATE SET
 
 SELECT * FROM drivers;
 
-INSERT INTO trip_request (user_id, vehicle_id, origen, destino, estado)
+INSERT INTO routes (user_id, vehicle_id, origen, destino, estado)
 VALUES
 (3, 1, 'Zona Colonial', 'Aeropuerto Las Americas', 'pendiente'),
 (4, 2, 'Santo Domingo Este', 'Agora Mall', 'aceptado'),
@@ -56,7 +56,7 @@ VALUES
 (4, 2, 'San Isidro', 'Plaza Central', 'cancelado');
 
 --Datos trip request
-INSERT INTO trip_request (user_id, vehicle_id, origen, destino)
+INSERT INTO routes (user_id, vehicle_id, origen, destino)
 VALUES
 (1, 2, 'Sede Central', 'Sucursal Norte'),
 (2, 1, 'Villa Luisa', 'Zona Colonial'),
@@ -65,7 +65,7 @@ VALUES
 (4, 1, 'Mega Centro', 'Sambil');
 
 --Datos trips
-INSERT INTO trips (request_id, inicio, fin, estado)
+INSERT INTO request (route_id, inicio, fin, estado)
 VALUES
-(2, '2026-03-14 09:00:00', '2026-03-14 09:30:00', 'completado'),
-(4, '2026-03-14 10:15:00', '2026-03-14 10:50:00', 'completado');
+(1, '2026-03-14 09:00:00', '2026-03-14 09:30:00', 'completado'),
+(2, '2026-03-14 10:15:00', '2026-03-14 10:50:00', 'completado');

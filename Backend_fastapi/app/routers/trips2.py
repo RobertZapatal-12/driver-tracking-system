@@ -8,66 +8,75 @@ router = APIRouter(
     prefix="/request", 
     tags=["Request"]   
 )
-#conseguir todas los requesr
-@router.get("/", response_model=list[schemas.TripResponse])
-def get_all_trips(db: Session = Depends(get_db)):
+# Crear request
+@router.post("/", response_model=schemas.RequestResponse)
+def create_request(request: schemas.RequestCreate, db: Session = Depends(get_db)):
 
-    trips = db.query(models.Trip).all()
+    new_request = models.Request(**request.dict())
 
-    return trips
-
-#Crear request
-@router.post("/", response_model=schemas.TripResponse)
-def create_trip(trip: schemas.TripCreate, db: Session = Depends(get_db)):
-    new_trip = models.Trip(**trip.dict())
-
-    db.add(new_trip)
+    db.add(new_request)
     db.commit()
-    db.refresh(new_trip)
+    db.refresh(new_request)
 
-    return new_trip
-
-#Conseguir request
-@router.get("/{trip_id}", response_model=schemas.TripResponse)
-def get_trip_by_id(trip_id: int, db: Session = Depends(get_db)):
-
-    trip = db.query(models.Trip).filter(models.Trip.trip_id == trip_id).first()
-
-    if not trip:
-        raise HTTPException(status_code=404, detail="Trip no encontrado")
-
-    return trip
-
-#Actualizar request
-@router.put("/{trip_id}", response_model=schemas.TripResponse)
-def update_trip(trip_id: int, trip: schemas.TripCreate, db: Session = Depends(get_db)):
-
-    trip_db = db.query(models.Trip).filter(models.Trip.trip_id == trip_id).first()
-
-    if not trip_db:
-        raise HTTPException(status_code=404, detail="Trip no encontrado")
-
-    trip_db.request_id = trip.request_id
-    trip_db.inicio = trip.inicio
-    trip_db.fin = trip.fin
-    trip_db.estado = trip.estado
-
-    db.commit()
-    db.refresh(trip_db)
-
-    return trip_db
+    return new_request
 
 
-#eliminar request
-@router.delete("/{trip_id}")
-def delete_trip(trip_id: int, db: Session = Depends(get_db)):
+# Obtener todos
+@router.get("/", response_model=list[schemas.RequestResponse])
+def get_requests(db: Session = Depends(get_db)):
 
-    trip = db.query(models.Trip).filter(models.Trip.trip_id == trip_id).first()
+    requests = db.query(models.Request).all()
 
-    if not trip:
-        raise HTTPException(status_code=404, detail="Trip no encontrado")
+    return requests
 
-    db.delete(trip)
+
+# Obtener por id
+@router.get("/{request_id}", response_model=schemas.RequestResponse)
+def get_request(request_id: int, db: Session = Depends(get_db)):
+
+    request = db.query(models.Request).filter(
+        models.Request.request_id == request_id
+    ).first()
+
+    if not request:
+        raise HTTPException(status_code=404, detail="Request no encontrado")
+
+    return request
+
+
+# Actualizar
+@router.put("/{request_id}", response_model=schemas.RequestResponse)
+def update_request(request_id: int, request: schemas.RequestCreate, db: Session = Depends(get_db)):
+
+    request_query = db.query(models.Request).filter(
+        models.Request.request_id == request_id
+    )
+
+    request_db = request_query.first()
+
+    if not request_db:
+        raise HTTPException(status_code=404, detail="Request no encontrado")
+
+    request_query.update(request.dict(), synchronize_session=False)
     db.commit()
 
-    return {"message": "Trip eliminado correctamente"}
+    return request_query.first()
+
+
+# Eliminar
+@router.delete("/{request_id}")
+def delete_request(request_id: int, db: Session = Depends(get_db)):
+
+    request_query = db.query(models.Request).filter(
+        models.Request.request_id == request_id
+    )
+
+    request = request_query.first()
+
+    if not request:
+        raise HTTPException(status_code=404, detail="Request no encontrado")
+
+    request_query.delete(synchronize_session=False)
+    db.commit()
+
+    return {"message": "Request eliminado"}

@@ -9,61 +9,73 @@ router = APIRouter(
     tags=["Route"]   
 )
 
-#Obtener todos las rutas
-@router.get("/", response_model=list[schemas.TripRequestResponse])
-def get_trip_requests(db: Session = Depends(get_db)):
+# Obtener todas las rutas
+@router.get("/", response_model=list[schemas.RouteResponse])
+def get_routes(db: Session = Depends(get_db)):
 
-    requests = db.query(models.TripRequest).all()
+    routes = db.query(models.Route).all()
+    return routes
 
-    return requests
 
-# Obtener solicitud por id
-@router.get("/{request_id}", response_model=schemas.TripRequestResponse)
-def get_trip_request(request_id: int, db: Session = Depends(get_db)):
+# Obtener ruta por id
+@router.get("/{route_id}", response_model=schemas.RouteResponse)
+def get_route(route_id: int, db: Session = Depends(get_db)):
 
-    trip = db.query(models.TripRequest).filter(
-        models.TripRequest.request_id == request_id
+    route = db.query(models.Route).filter(
+        models.Route.route_id == route_id
     ).first()
 
-    if not trip:
-        raise HTTPException(status_code=404, detail="Solicitud no encontrada")
+    if not route:
+        raise HTTPException(status_code=404, detail="Ruta no encontrada")
 
-    return trip
+    return route
 
 
-# Actualizar solicitud
-@router.put("/{request_id}", response_model=schemas.TripRequestResponse)
-def update_trip_request(request_id: int, trip: schemas.TripRequestCreate, db: Session = Depends(get_db)):
+# Crear ruta
+@router.post("/", response_model=schemas.RouteResponse)
+def create_route(route: schemas.RouteCreate, db: Session = Depends(get_db)):
 
-    trip_query = db.query(models.TripRequest).filter(
-        models.TripRequest.request_id == request_id
-    )
+    new_route = models.Route(**route.model_dump())
 
-    trip_db = trip_query.first()
+    db.add(new_route)
+    db.commit()
+    db.refresh(new_route)
 
-    if not trip_db:
-        raise HTTPException(status_code=404, detail="Solicitud no encontrada")
+    return new_route
 
-    trip_query.update(trip.dict(), synchronize_session=False)
+
+# Actualizar ruta
+@router.put("/{route_id}", response_model=schemas.RouteResponse)
+def update_route(route_id: int, route_data: schemas.RouteCreate, db: Session = Depends(get_db)):
+
+    route = db.query(models.Route).filter(
+        models.Route.route_id == route_id
+    ).first()
+
+    if not route:
+        raise HTTPException(status_code=404, detail="Ruta no encontrada")
+
+    for key, value in route_data.model_dump().items():
+        setattr(route, key, value)
+
+    db.commit()
+    db.refresh(route)
+
+    return route
+
+
+# Eliminar ruta
+@router.delete("/{route_id}")
+def delete_route(route_id: int, db: Session = Depends(get_db)):
+
+    route = db.query(models.Route).filter(
+        models.Route.route_id == route_id
+    ).first()
+
+    if not route:
+        raise HTTPException(status_code=404, detail="Ruta no encontrada")
+
+    db.delete(route)
     db.commit()
 
-    return trip_query.first()
-
-
-# Eliminar solicitud
-@router.delete("/{request_id}")
-def delete_trip_request(request_id: int, db: Session = Depends(get_db)):
-
-    trip_query = db.query(models.TripRequest).filter(
-        models.TripRequest.request_id == request_id
-    )
-
-    trip = trip_query.first()
-
-    if not trip:
-        raise HTTPException(status_code=404, detail="Solicitud no encontrada")
-
-    trip_query.delete(synchronize_session=False)
-    db.commit()
-
-    return {"message": "Solicitud eliminada satisfactoriamente"}
+    return {"message": "Ruta eliminada satisfactoriamente"}

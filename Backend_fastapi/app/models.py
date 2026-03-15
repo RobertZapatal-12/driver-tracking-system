@@ -1,7 +1,7 @@
 from sqlalchemy import Column, Integer, String, Float, ForeignKey, DateTime
 from sqlalchemy.orm import relationship
 from app.database import Base
-
+from sqlalchemy.sql import func
 # =========================
 # USERS
 # =========================
@@ -54,18 +54,19 @@ class Location(Base):
 # route
 # =========================
 
-class TripRequest(Base):
-    __tablename__ = "trip_request"
+class Route(Base):
+    __tablename__ = "routes"
 
-    request_id = Column(Integer, primary_key=True, index=True)
+    route_id = Column(Integer, primary_key=True, index=True)
 
-    user_id = Column(Integer, ForeignKey("users.user_id"))
-    vehicle_id = Column(Integer, ForeignKey("vehicles.vehicle_id"))
+    user_id = Column(Integer, ForeignKey("users.user_id", ondelete="CASCADE"))
+    vehicle_id = Column(Integer, ForeignKey("vehicles.vehicle_id", ondelete="CASCADE"))
 
     origen = Column(String)
     destino = Column(String)
 
-    estado = Column(String, default="Pendiente", nullable=False)
+    fecha = Column(DateTime, server_default=func.now())
+    estado = Column(String)
 
 # =========================
 # VEHICLES
@@ -88,15 +89,14 @@ class Vehicle(Base):
 # request
 # =========================
 
-class Trip(Base):
-    __tablename__ = "trips"
+class Request(Base):
+    __tablename__ = "request"
 
-    trip_id = Column(Integer, primary_key=True, index=True)
+    request_id = Column(Integer, primary_key=True, index=True)
 
-    request_id = Column(
-        Integer,
-        ForeignKey("trip_request.request_id", ondelete="CASCADE")
-    )
+    route_id = Column(Integer, ForeignKey("routes.route_id", ondelete="CASCADE"))
+    user_id = Column(Integer, ForeignKey("users.user_id", ondelete="CASCADE"))
+    vehicle_id = Column(Integer, ForeignKey("vehicles.vehicle_id", ondelete="CASCADE"))
 
     inicio = Column(DateTime)
     fin = Column(DateTime)

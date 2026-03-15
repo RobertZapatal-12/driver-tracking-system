@@ -97,20 +97,21 @@ class LocationResponse(LocationBase):
 # route
 # =========================
 
-class TripRequestBase(BaseModel):
+class RouteBase(BaseModel):
     user_id: int
     vehicle_id: int
     origen: str
     destino: str
 
 
-class TripRequestCreate(TripRequestBase):
+class RouteCreate(RouteBase):
     pass
 
 
-class TripRequestResponse(TripRequestBase):
-    request_id: int
-    estado: str
+class RouteResponse(RouteBase):
+    route_id: int
+    fecha: datetime
+    estado: str | None = None
 
     class Config:
         from_attributes = True
@@ -122,22 +123,24 @@ from datetime import datetime
 
 
 # =========================
-# trip_request
+# REQUEST
 # =========================
 
-class TripBase(BaseModel):
-    request_id: int
-    inicio: datetime | None = None
-    fin: datetime | None = None
-    estado: str | None = None
+class RequestBase(BaseModel):
+    route_id: int
+    user_id: int
+    vehicle_id: int
+    inicio: datetime
+    fin: datetime
+    estado: str
 
 
-class TripCreate(TripBase):
+class RequestCreate(RequestBase):
     pass
 
 
-class TripResponse(TripBase):
-    trip_id: int
+class RequestResponse(RequestBase):
+    request_id: int
 
     class Config:
         from_attributes = True
