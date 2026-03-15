@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app import models, schemas
@@ -56,11 +56,17 @@ def update_driver(driver_id: int, driver: schemas.DriverCreate, db: Session = De
 @router.delete("/{driver_id}")
 def delete_driver(driver_id: int, db: Session = Depends(get_db)):
 
+    # Buscar el conductor
     driver = db.query(models.Driver).filter(models.Driver.driver_id == driver_id).first()
 
     if not driver:
-        return {"error": "Conductor no encontrado"}
+        raise HTTPException(status_code=404, detail="Conductor no encontrado")
 
+    # Borrar datos relacionados primero
+    db.query(models.Location).filter(models.Location.driver_id == driver_id).delete()
+    db.query(models.Vehicle).filter(models.Vehicle.driver_id == driver_id).delete()
+
+    # Luego borrar el conductor
     db.delete(driver)
     db.commit()
 

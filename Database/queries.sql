@@ -96,3 +96,41 @@ WHERE table_name = 'trip_request';
 -- de vehículos, registro de ubicaciones GPS y gestión
 -- de usuarios.
 -- =====================================
+
+ALTER TABLE locations
+DROP CONSTRAINT locations_driver_id_fkey;
+
+ALTER TABLE locations
+ADD CONSTRAINT locations_driver_id_fkey
+FOREIGN KEY (driver_id)
+REFERENCES drivers(driver_id)
+ON DELETE CASCADE;
+
+
+ALTER TABLE driver_last_location
+DROP CONSTRAINT driver_last_location_driver_id_fkey;
+
+ALTER TABLE driver_last_location
+ADD CONSTRAINT driver_last_location_driver_id_fkey
+FOREIGN KEY (driver_id)
+REFERENCES drivers(driver_id)
+ON DELETE CASCADE;
+
+
+ALTER TABLE vehicles
+DROP CONSTRAINT vehicles_driver_id_fkey;
+ALTER TABLE vehicles
+ADD CONSTRAINT vehicles_driver_id_fkey
+FOREIGN KEY (driver_id)
+REFERENCES drivers(driver_id)
+ON DELETE CASCADE;
+
+SELECT
+    conname AS constraint_name,
+    conrelid::regclass AS table_name
+FROM pg_constraint
+WHERE contype = 'f';
+
+SELECT conname
+FROM pg_constraint
+WHERE conrelid = 'driver_last_location'::regclass
