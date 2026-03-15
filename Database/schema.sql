@@ -86,7 +86,7 @@ CREATE TABLE routes (
     origen TEXT NOT NULL,
     destino TEXT NOT NULL,
     fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    estado TEXT
+    estado TEXT,
 
     CONSTRAINT trip_request_user_id_fkey
     FOREIGN KEY (user_id)
@@ -101,14 +101,27 @@ CREATE TABLE routes (
 
 CREATE TABLE request (
     request_id SERIAL PRIMARY KEY,
-    route_id INTEGER,
+
+    route_id INTEGER NOT NULL,
+    user_id INTEGER NOT NULL,
+    vehicle_id INTEGER NOT NULL,
 
     inicio TIMESTAMP,
     fin TIMESTAMP,
     estado TEXT,
 
-    CONSTRAINT trips_request_id_fkey
-    FOREIGN KEY (request_id)
-    REFERENCES trip_request(request_id)
+    CONSTRAINT request_route_id_fkey
+    FOREIGN KEY (route_id)
+    REFERENCES routes(route_id)
+    ON DELETE CASCADE,
+
+    CONSTRAINT request_user_id_fkey
+    FOREIGN KEY (user_id)
+    REFERENCES users(user_id)
+    ON DELETE CASCADE,
+
+    CONSTRAINT request_vehicle_id_fkey
+    FOREIGN KEY (vehicle_id)
+    REFERENCES vehicles(vehicle_id)
     ON DELETE CASCADE
 );

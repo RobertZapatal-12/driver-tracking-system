@@ -65,7 +65,7 @@ VALUES
 (4, 1, 'Mega Centro', 'Sambil');
 
 --Datos trips
-INSERT INTO request (route_id, inicio, fin, estado)
+INSERT INTO request (route_id, user_id, vehicle_id, inicio, fin, estado)
 VALUES
-(1, '2026-03-14 09:00:00', '2026-03-14 09:30:00', 'completado'),
-(2, '2026-03-14 10:15:00', '2026-03-14 10:50:00', 'completado');
+(1, 1, 2, '2026-03-14 09:00:00', '2026-03-14 09:30:00', 'completado'),
+(2, 2, 1, '2026-03-14 10:15:00', '2026-03-14 10:50:00', 'completado');
