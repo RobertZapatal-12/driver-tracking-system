@@ -28,7 +28,11 @@ class Driver(Base):
     nombre = Column(String)
     telefono = Column(String)
     numero_licencia = Column(String)
+    tipo_licencia = Column(String)
+    cedula = Column(String)
     estado = Column(String)
+    
+    
 
 
 # =========================
@@ -54,16 +58,15 @@ class Location(Base):
 class TripRequest(Base):
     __tablename__ = "trip_request"
 
-    trip_id = Column(Integer, primary_key=True, index=True)
+    request_id = Column(Integer, primary_key=True, index=True)
 
     user_id = Column(Integer, ForeignKey("users.user_id"))
-    driver_id = Column(Integer, ForeignKey("drivers.driver_id"))
     vehicle_id = Column(Integer, ForeignKey("vehicles.vehicle_id"))
 
     origen = Column(String)
     destino = Column(String)
 
-    estado = Column(String)
+    estado = Column(String, default="Pendiente", nullable=False)
 
 # =========================
 # VEHICLES

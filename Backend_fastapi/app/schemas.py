@@ -31,6 +31,8 @@ class DriverBase(BaseModel):
     nombre: str
     telefono: str
     numero_licencia: str
+    cedula: str
+    tipo_licencia: str
     estado: str
 
 
@@ -97,11 +99,10 @@ class LocationResponse(LocationBase):
 
 class TripBase(BaseModel):
     user_id: int
-    driver_id: int
     vehicle_id: int
     origen: str
     destino: str
-    estado: str
+    
 
 
 class TripCreate(TripBase):
@@ -109,7 +110,8 @@ class TripCreate(TripBase):
 
 
 class TripResponse(TripBase):
-    trip_id: int
+    request_id: int
+    estado: str = 'Pendiente'
 
     class Config:
         from_attributes = True

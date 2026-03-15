@@ -17,8 +17,10 @@ CREATE TABLE users (
 CREATE TABLE drivers (
     driver_id SERIAL PRIMARY KEY,
     nombre TEXT NOT NULL,
-    telefono TEXT,
-    numero_licencia TEXT,
+    telefono VARCHAR(10),
+    numero_licencia VARCHAR(11),
+    tipo_licencia TEXT,
+    cedula VARCHAR(11),
     estado TEXT,
     creado_desde TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -27,7 +29,7 @@ CREATE TABLE drivers (
 CREATE TABLE vehicles (
     vehicle_id SERIAL PRIMARY KEY,
     driver_id INTEGER REFERENCES drivers(driver_id),
-    plate_number TEXT NOT NULL,
+    plate_number VARCHAR(7),
     modelo TEXT,
     marca TEXT,
     color TEXT,
@@ -60,36 +62,17 @@ CREATE TABLE driver_last_location (
 CREATE TABLE trip_request (
     request_id SERIAL PRIMARY KEY,
     user_id INTEGER REFERENCES users(user_id),
-    driver_id INTEGER REFERENCES drivers(driver_id),
     vehicle_id INTEGER REFERENCES vehicles(vehicle_id),
     origen TEXT NOT NULL,
     destino TEXT NOT NULL,
     fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    estado TEXT
+    estado TEXT DEFAULT 'pendiente'
 );
 
--- =====================================
--- Este archivo define la estructura principal de la base de datos
--- para el sistema de tracking de conductores.
---
--- Cambios realizados:
---
--- 1. Corrección en driver_last_location:
---    El campo driver_id se cambió de SERIAL a INTEGER PRIMARY KEY
---    para que coincida con el driver_id de la tabla drivers.
---    Esto asegura que cada conductor tenga una única última ubicación.
---
--- 2. Estandarización de nombres:
---    Se unificaron nombres de tablas y columnas para mantener
---    consistencia en todo el sistema:
---        vehicle → vehicles
---        conductor_id → driver_id
---        vehicles_id → vehicle_id
---
--- 3. Compatibilidad con queries del backend:
---    Se ajustaron las relaciones y nombres de columnas para que
---    coincidan con las consultas utilizadas en la API.
---
--- Estos cambios mejoran la integridad de datos, evitan duplicados
--- en ubicaciones actuales y mantienen consistencia en el esquema.
--- =====================================
+CREATE TABLE trips (
+    trip_id SERIAL PRIMARY KEY,
+    request_id INTEGER REFERENCES trip_request(request_id),
+    inicio TIMESTAMP,
+    fin TIMESTAMP,
+    estado TEXT
+);
