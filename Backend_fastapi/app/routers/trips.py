@@ -5,8 +5,8 @@ from app import models, schemas
 
 # Se crea un router para manejar todas las rutas relacionadas con los viajes
 router = APIRouter(
-    prefix="/trips_request", # Todas las rutas comenzarán con /trips
-    tags=["Trips Request"]   # Nombre que aparecerá en la documentación automática de FastAPI
+    prefix="/route", # Todas las rutas comenzarán con /trips
+    tags=["Route"]   # Nombre que aparecerá en la documentación automática de FastAPI
 )
 
 #Obtener todos las solicitudes de viaje

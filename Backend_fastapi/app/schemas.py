@@ -94,7 +94,7 @@ class LocationResponse(LocationBase):
 
 
 # =========================
-# TRIPS
+# request_trips
 # =========================
 
 class TripBase(BaseModel):
@@ -112,6 +112,33 @@ class TripCreate(TripBase):
 class TripResponse(TripBase):
     request_id: int
     estado: str = 'Pendiente'
+
+    class Config:
+        from_attributes = True
+
+
+
+from pydantic import BaseModel
+from datetime import datetime
+
+
+# =========================
+# Routes
+# =========================
+
+class TripBase(BaseModel):
+    request_id: int
+    inicio: datetime | None = None
+    fin: datetime | None = None
+    estado: str | None = None
+
+
+class TripCreate(TripBase):
+    pass
+
+
+class TripResponse(TripBase):
+    trip_id: int
 
     class Config:
         from_attributes = True

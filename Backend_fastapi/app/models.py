@@ -1,7 +1,6 @@
-from sqlalchemy import Column, Integer, String, Float, ForeignKey
+from sqlalchemy import Column, Integer, String, Float, ForeignKey, DateTime
 from sqlalchemy.orm import relationship
 from app.database import Base
-
 
 # =========================
 # USERS
@@ -84,3 +83,21 @@ class Vehicle(Base):
     marca = Column(String)
     color = Column(String)
     year = Column(Integer)
+
+# =========================
+# routes
+# =========================
+
+class Trip(Base):
+    __tablename__ = "trips"
+
+    trip_id = Column(Integer, primary_key=True, index=True)
+
+    request_id = Column(
+        Integer,
+        ForeignKey("trip_request.request_id", ondelete="CASCADE")
+    )
+
+    inicio = Column(DateTime)
+    fin = Column(DateTime)
+    estado = Column(String)
