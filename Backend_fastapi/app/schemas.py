@@ -94,24 +94,23 @@ class LocationResponse(LocationBase):
 
 
 # =========================
-# request_trips
+# route
 # =========================
 
-class TripBase(BaseModel):
+class TripRequestBase(BaseModel):
     user_id: int
     vehicle_id: int
     origen: str
     destino: str
-    
 
 
-class TripCreate(TripBase):
+class TripRequestCreate(TripRequestBase):
     pass
 
 
-class TripResponse(TripBase):
+class TripRequestResponse(TripRequestBase):
     request_id: int
-    estado: str = 'Pendiente'
+    estado: str
 
     class Config:
         from_attributes = True
@@ -123,7 +122,7 @@ from datetime import datetime
 
 
 # =========================
-# Routes
+# trip_request
 # =========================
 
 class TripBase(BaseModel):

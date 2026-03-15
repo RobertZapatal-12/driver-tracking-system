@@ -10,9 +10,11 @@ router = APIRouter(
 )
 
 #Obtener todos las rutas
-@router.get("/", response_model=list[schemas.TripResponse])
+@router.get("/", response_model=list[schemas.TripRequestResponse])
 def get_trip_requests(db: Session = Depends(get_db)):
+
     requests = db.query(models.TripRequest).all()
+
     return requests
 
 # Endpoint para crear una nueva ruta

@@ -51,7 +51,7 @@ class Location(Base):
 
 
 # =========================
-# TRIPS
+# route
 # =========================
 
 class TripRequest(Base):
@@ -85,7 +85,7 @@ class Vehicle(Base):
     year = Column(Integer)
 
 # =========================
-# routes
+# request
 # =========================
 
 class Trip(Base):
