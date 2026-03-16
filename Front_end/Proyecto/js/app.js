@@ -48,34 +48,67 @@ function initModals() {
     }
 
     // Lógica para Guardar Vehículo
-    const formVehiculo = document.getElementById("formVehiculo");
-    if (formVehiculo) {
-        formVehiculo.onsubmit = (e) => {
-            e.preventDefault();
-            const placa = document.getElementById("placa").value;
-            const marca = document.getElementById("marca").value;
-            
-            const tabla = document.getElementById("tablaVehiculos").getElementsByTagName('tbody')[0];
-            const nuevaFila = tabla.insertRow();
-            nuevaFila.innerHTML = `<td>${placa}</td><td>${marca}</td><td><span class="badge bg-success">Libre</span></td>`;
-            
-            modal.style.display = "none";
-            formVehiculo.reset();
-        };
-    }
+const formVehiculo = document.getElementById("formVehiculo");
+if (formVehiculo) {
+    formVehiculo.onsubmit = (e) => {
+        e.preventDefault();
+        
+        // 1. Capturar los valores del formulario
+        const placa = document.getElementById("placa").value;
+        const modelo = document.getElementById("modelo").value;
+        const marca = document.getElementById("marca").value;
+        const color = document.getElementById("color").value;
+        const anio = document.getElementById("anio").value;
+        const estado = document.getElementById("estado").value;
+        
+        // 2. Determinar la clase de color de Bootstrap según el estado
+        let badgeClass = "";
+        if (estado === "Libre") {
+            badgeClass = "bg-success"; // Verde
+        } else if (estado === "En Ruta") {
+            badgeClass = "bg-primary"; // Azul
+        } else if (estado === "Mantenimiento") {
+            badgeClass = "bg-danger";  // Rojo
+        } else {
+            badgeClass = "bg-secondary"; // Gris por defecto
+        }
 
+        // 3. Seleccionar la tabla e insertar la fila
+        const tabla = document.getElementById("tablaVehiculos").getElementsByTagName('tbody')[0];
+        const nuevaFila = tabla.insertRow();
+        
+        nuevaFila.innerHTML = `
+            <td>${placa}</td>
+            <td>${modelo}</td>
+            <td>${marca}</td>
+            <td>${color}</td>
+            <td>${anio}</td>
+            <td><span class="badge ${badgeClass}">${estado}</span></td>
+        `;
+        
+        // 4. Cerrar el modal y limpiar el formulario
+        const modal = document.querySelector(".modal-overlay");
+        if (modal) modal.style.display = "none";
+        formVehiculo.reset();
+    };
+}
     // Lógica para Guardar Conductor
     const formConductor = document.getElementById("formConductor");
     if (formConductor) {
         formConductor.onsubmit = (e) => {
             e.preventDefault();
+
+            // 1. Capturar todos los campos
             const nombre = document.getElementById("nombreC").value;
+            const telefono = document.getElementById("telefonoC").value;
+            const numLicencia = document.getElementById("numLicenciaC").value;
+            const tipoLicencia = document.getElementById("tipoLicenciaC").value;
             const cedula = document.getElementById("cedulaC").value;
-            const licencia = document.getElementById("licenciaC").value;
-            
+            const estado = document.getElementById("estadoC").value;
+
             const tabla = document.getElementById("tablaConductores").getElementsByTagName('tbody')[0];
             const nuevaFila = tabla.insertRow();
-            nuevaFila.innerHTML = `<td>${nombre}</td><td>${cedula}</td><td>${licencia}</td>`;
+            nuevaFila.innerHTML = `<td>${nombre}</td><td>${telefono}</td><td>${numLicencia}</td><td>${tipoLicencia}</td><td>${cedula}</td><td>${estado}</td>`;
             
             modal.style.display = "none";
             formConductor.reset();

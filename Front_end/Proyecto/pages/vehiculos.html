@@ -7,14 +7,20 @@
     <thead>
         <tr>
             <th>Placa</th>
+            <th>Modelo</th>
             <th>Marca</th>
+            <th>Color</th>
+            <th>Año</th>
             <th>Estado</th>
         </tr>
     </thead>
     <tbody>
         <tr>
             <td>ABC-123</td>
+            <td>Camry</td>
             <td>Toyota</td>
+            <td>Rojo</td>
+            <td>2020</td>
             <td><span class="badge bg-success">Libre</span></td>
         </tr>
     </tbody>
@@ -30,9 +36,30 @@
                 <input type="text" id="placa" class="form-control" placeholder="Ej: ABC-123" required>
             </div>
             <div class="mb-3">
+                <label class="form-label">Modelo</label>
+                <input type="text" id="modelo" class="form-control" placeholder="Ej Camry" required>
+            </div>
+                <div class="mb-3">
                 <label class="form-label">Marca</label>
                 <input type="text" id="marca" class="form-control" placeholder="Ej: Toyota" required>
             </div>
+            <div class="mb-3">
+                <label class="form-label">Color</label>
+                <input type="text" id="color" class="form-control" placeholder="Ej: Rojo" required>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Año</label>
+                <input type="number" id="anio" class="form-control" placeholder="Ej: 2020" required>
+            </div>
+                <div class="mb-3">
+                    <label class="form-label">Estado</label>
+                    <select id="estado" class="form-select" required>
+                        <option value="">Seleccione...</option>
+                        <option value="Libre">Libre</option>
+                        <option value="En Ruta">En Ruta</option>
+                        <option value="Mantenimiento">Mantenimiento</option>
+                    </select>
+                </div>
             <div class="d-flex justify-content-end gap-2">
                 <button type="button" class="btn btn-light btn-close-modal">Cancelar</button>
                 <button type="submit" class="btn btn-success">Guardar</button>
