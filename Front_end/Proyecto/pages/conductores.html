@@ -9,15 +9,21 @@
         <thead>
             <tr>
                 <th>Nombre</th>
+                <th>Telefono</th>
+                <th>Numero de licencia</th>
+                <th>Tipo de licencia</th>
                 <th>Cédula</th>
-                <th>Licencia</th>
+                <th>Estado</th>
             </tr>
         </thead>
         <tbody>
             <tr>
                 <td>Carlos Ruiz</td>
+                <td>829-555-1234</td>
                 <td>102030</td>
                 <td>Tipo B</td>
+                <td>123456789</td>
+                <td>Activo</td>
             </tr>
         </tbody>
     </table>
@@ -33,12 +39,27 @@
                 <input type="text" id="nombreC" class="form-control" required>
             </div>
             <div class="mb-3">
+                <label class="form-label">Telefono</label>
+                <input type="text" id="telefonoC" class="form-control" required>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Numero de Licencia</label>
+                <input type="text" id="numLicenciaC" class="form-control" required>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Tipo de Licencia</label>
+                <input type="text" id="tipoLicenciaC" class="form-control" required>
+            </div>
+            <div class="mb-3">
                 <label class="form-label">Cédula</label>
                 <input type="text" id="cedulaC" class="form-control" required>
             </div>
             <div class="mb-3">
-                <label class="form-label">Licencia</label>
-                <input type="text" id="licenciaC" class="form-control" required>
+                <label class="form-label">Estado</label>
+                <select id="estadoC" class="form-select" required>
+                    <option value="Activo">Activo</option>
+                    <option value="Inactivo">Inactivo</option>
+                </select>
             </div>
             <div class="d-flex justify-content-end gap-2">
                 <button type="button" class="btn btn-light btn-close-modal">Cancelar</button>
