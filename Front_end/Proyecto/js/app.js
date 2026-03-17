@@ -1,3 +1,5 @@
+window.driverAppData = { foto: "" };
+
 document.addEventListener("DOMContentLoaded", () => {
     // Cargar Sidebar
     fetch("components/sidebar.html")
@@ -38,9 +40,29 @@ function setActiveLink(pagina) {
 
 // Manejador Genérico de Modales
 function initModals() {
+    const modal = document.querySelector(".modal-overlay");
     const openBtn = document.querySelector(".btn-open-modal");
     const closeBtn = document.querySelector(".btn-close-modal");
-    const modal = document.querySelector(".modal-overlay");
+    const form = document.getElementById("formConductor");
+    const inputFoto = document.getElementById("fotoC");
+
+    if (openBtn) openBtn.onclick = () => modal.style.display = "flex";
+    if (closeBtn) closeBtn.onclick = () => { modal.style.display = "none"; resetDriverForm(); };
+
+    // Manejo de Imagen (FileReader)
+    if (inputFoto) {
+        inputFoto.onchange = (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (ev) => {
+                    document.getElementById("imgPreview").src = ev.target.result;
+                    window.driverAppData.foto = ev.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        };
+    }
 
     if (openBtn && modal) {
         openBtn.onclick = () => modal.style.display = "block";
@@ -93,28 +115,96 @@ if (formVehiculo) {
     };
 }
     // Lógica para Guardar Conductor
-    const formConductor = document.getElementById("formConductor");
-    if (formConductor) {
-        formConductor.onsubmit = (e) => {
+    if (form) {
+        form.onsubmit = (e) => {
             e.preventDefault();
-
-            // 1. Capturar todos los campos
             const nombre = document.getElementById("nombreC").value;
-            const telefono = document.getElementById("telefonoC").value;
-            const numLicencia = document.getElementById("numLicenciaC").value;
-            const tipoLicencia = document.getElementById("tipoLicenciaC").value;
-            const cedula = document.getElementById("cedulaC").value;
-            const estado = document.getElementById("estadoC").value;
-
-            const tabla = document.getElementById("tablaConductores").getElementsByTagName('tbody')[0];
-            const nuevaFila = tabla.insertRow();
-            nuevaFila.innerHTML = `<td>${nombre}</td><td>${telefono}</td><td>${numLicencia}</td><td>${tipoLicencia}</td><td>${cedula}</td><td>${estado}</td>`;
             
+            const data = {
+                nombre: nombre,
+                tel: document.getElementById("telefonoC").value,
+                ced: document.getElementById("cedulaC").value,
+                lic: document.getElementById("numLicenciaC").value,
+                tipo: document.getElementById("tipoLicenciaC").value,
+                est: document.getElementById("estadoC").value,
+                bio: document.getElementById("descripcionC").value || "Sin información.",
+                foto: window.driverAppData.foto || `https://ui-avatars.com/api/?name=${encodeURIComponent(nombre)}&background=random&shape=square`
+            };
+
+            renderDriverCard(data);
             modal.style.display = "none";
-            formConductor.reset();
+            resetDriverForm();
         };
     }
 }
+
+// 3. Renderizado de la Ficha
+function renderDriverCard(d) {
+    const contenedor = document.getElementById("listaConductores");
+    if (!contenedor) return;
+
+    const card = document.createElement("div");
+    card.className = "driver-row";
+    card.onclick = function() { this.classList.toggle("expanded"); };
+
+    // Definir color del cuadro de estado
+    const statusCol = d.est === "Activo" ? "bg-status-activo" : "bg-status-inactivo";
+
+    card.innerHTML = `
+        <div class="driver-header">
+            <div class="driver-avatar-square"><img src="${d.foto}"></div>
+            <div class="driver-main-info">
+                <div class="info-item"><span class="label">Nombre</span><span class="value">${d.nombre}</span></div>
+                <div class="info-item"><span class="label">Teléfono</span><span class="value">${d.tel}</span></div>
+                <div class="info-item extra-data"><span class="label">Cédula</span><span class="value">${d.ced}</span></div>
+                <div class="info-item extra-data"><span class="label">Licencia</span><span class="value">${d.lic} (${d.tipo})</span></div>
+            </div>
+        </div>
+        <div class="driver-details">
+            <div class="bio-box">
+                <span class="label">Información del Conductor</span>
+                <p class="mb-0 mt-2 small text-muted">${d.bio}</p>
+            </div>
+            <div class="status-box ${statusCol}">
+                <span class="status-label">Estado</span>
+                <span class="status-value">${d.est}</span>
+            </div>
+        </div>
+    `;
+    contenedor.prepend(card);
+}
+
+function resetDriverForm() {
+    const form = document.getElementById("formConductor");
+    if (form) form.reset();
+    document.getElementById("imgPreview").src = "https://via.placeholder.com/150?text=Subir+Foto";
+    window.driverAppData.foto = "";
+}
+
+// --- CONDUCTOR DE PRUEBA PERMANENTE ---
+// Esta función se ejecuta sola al cargar el script
+(function cargarConductorPrueba() {
+    // Esperamos un momento a que el HTML cargue completamente
+    setTimeout(() => {
+        const dataPrueba = {
+            nombre: "Pedro el de Prueba",
+            tel: "809-555-0000",
+            ced: "402-0000000-1",
+            lic: "9999999",
+            tipo: "Categoría 03",
+            est: "Activo",
+            bio: "Este es un perfil de prueba generado automáticamente para testear el diseño 80/20 y las animaciones de expansión.",
+            foto: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=150&auto=format&fit=crop"
+        };
+
+        // Verificamos si existe el contenedor antes de renderizar
+        if (document.getElementById("listaConductores")) {
+            renderDriverCard(dataPrueba);
+            console.log("✅ Conductor de prueba cargado correctamente");
+        }
+    }, 500); // 500ms de delay para asegurar que el DOM esté listo
+})();
+
 
 let mapaGlobal;
 let marcadorChofer;
