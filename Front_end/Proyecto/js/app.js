@@ -206,8 +206,8 @@ function resetDriverForm() {
 })();
 
 
-let mapaGlobal;
-let marcadorChofer;
+var mapaGlobal;
+var marcadorChofer;
 
 function initMapa() {
     // 1. Centrar el mapa en República Dominicana (Santo Domingo)

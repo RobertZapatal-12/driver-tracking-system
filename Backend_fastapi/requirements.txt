@@ -1,7 +1,5 @@
-Backend Technologies
-
-- Python
-- FastAPI
-- Uvicorn
-- sqlalchemy
-- psycopg2-binary
+fastapi
+uvicorn
+sqlalchemy
+psycopg2-binary
+python-multipart
