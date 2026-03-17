@@ -145,14 +145,19 @@ function renderDriverCard(d) {
 
     const card = document.createElement("div");
     card.className = "driver-row";
-    card.onclick = function() { this.classList.toggle("expanded"); };
+    
+    // LOGICA DE ACORDEÓN: Solo uno abierto a la vez
+    card.onclick = function() {
+        seleccionarSoloUno(this);
+    };
 
-    // Definir color del cuadro de estado
-    const statusCol = d.est === "Activo" ? "bg-status-activo" : "bg-status-inactivo";
+    const statusClass = d.est === "Activo" ? "bg-status-activo" : "bg-status-inactivo";
 
     card.innerHTML = `
         <div class="driver-header">
-            <div class="driver-avatar-square"><img src="${d.foto}"></div>
+            <div class="driver-avatar-square">
+                <img src="${d.foto}" alt="${d.nombre}">
+            </div>
             <div class="driver-main-info">
                 <div class="info-item"><span class="label">Nombre</span><span class="value">${d.nombre}</span></div>
                 <div class="info-item"><span class="label">Teléfono</span><span class="value">${d.tel}</span></div>
@@ -163,15 +168,29 @@ function renderDriverCard(d) {
         <div class="driver-details">
             <div class="bio-box">
                 <span class="label">Información del Conductor</span>
-                <p class="mb-0 mt-2 small text-muted">${d.bio}</p>
+                <p class="mb-0 mt-2">${d.bio}</p>
             </div>
-            <div class="status-box ${statusCol}">
+            <div class="status-box ${statusClass}">
                 <span class="status-label">Estado</span>
                 <span class="status-value">${d.est}</span>
             </div>
         </div>
     `;
+
     contenedor.prepend(card);
+}
+
+// Función auxiliar para manejar el cierre de otros elementos
+function seleccionarSoloUno(elemento) {
+    const todos = document.querySelectorAll('.driver-row');
+    
+    todos.forEach(item => {
+        if (item !== elemento && item.classList.contains('expanded')) {
+            item.classList.remove('expanded');
+        }
+    });
+
+    elemento.classList.toggle('expanded');
 }
 
 function resetDriverForm() {
