@@ -75,212 +75,184 @@ body {
     z-index: 1; /* Para que no tape los menús */
 }
 /* --- Modulo Conductores Premium --- */
+
 .driver-container { 
-    display: flex; /* Mantiene el layout vertical para la lista de conductores */
-    flex-direction: column; /* Coloca cada conductor en una fila verticalmente */
-    gap: 10px; /* Espacio entre filas de conductores */
-    padding: 20px; /* Espacio entre filas y padding general */
+    display: flex; 
+    flex-direction: column; 
+    gap: 12px; 
+    padding: 20px; 
 }
 
+/* 1. La Tarjeta (Acordeón) */
 .driver-row {
-    background: white; /* Tarjeta blanca para cada conductor */
-    border-radius: 12px; /* Esquinas redondeadas para un look moderno */
-    padding: 20px; /* Espacio interno para separar el contenido del borde */
-    box-shadow: 0 4px 6px rgba(0,0,0,0.05); /* Sombra sutil para dar profundidad */
-    cursor: pointer; /* Indica que es interactivo */
-    border: 1px solid transparent; /* Borde transparente para mantener el tamaño al hacer hover */
-    max-height: 250px; /* Altura mínima para mantener la estructura al expandir */
-    transition: max-height 0.4s ease, ease-in-out, box-shadow 0.3s; /* Transición suave para el cambio de altura y color de borde al expandir */
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    cursor: pointer;
+    border: 1px solid transparent;
+    position: relative;
+    
+    /* ALTURA CERRADA: Recorta visualmente la foto de 200px */
+    max-height: 250px; 
+    overflow: hidden; 
+    transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s, border-color 0.3s;
 }
-.driver-row:hover { border-color: #3b82f6; }
 
+.driver-row:hover { 
+    border-color: #3b82f6; 
+}
+
+/* Estado Expandido */
+.driver-row.expanded {
+    max-height: 1000px; 
+    border-color: #3b82f6;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+/* 2. Cabecera y Foto (200x200 siempre) */
 .driver-header { 
-    display: flex; /* Mantiene el layout horizontal */
-    align-items: flex-start; /* Alinea el avatar con el inicio del texto */
-    gap: 30px; /* Espacio entre el avatar y la información principal */
-    width: 100%; /* Asegura que ocupe todo el ancho del contenedor */
-    min-height: 80px; /* Altura mínima para mantener la estructura al expandir */
+    display: flex;
+    align-items: center; 
+    gap: 30px;
+    width: 100%;
+    min-height: 100px;
 }
 
 .driver-row.expanded .driver-header { 
-    gap: 30px; /* Mantiene el espacio entre el avatar y la información principal al expandir */
-    min-height: auto; /* Mantiene la altura mínima para la estructura al expandir */
+    align-items: flex-start;
+    padding-top: 10px;
 }
 
 .driver-avatar-square {
-    flex: 0 0 100px; /* Mantiene el tamaño fijo del avatar */
-    width: 200px; /* Tamaño fijo para el avatar cuadrado */
-    height: 200px; /* Tamaño fijo para el avatar cuadrado */
-
+    flex: 0 0 200px;
+    width: 200px;
+    height: 200px;
+    overflow: hidden; /* Evita que imágenes gigantes se salgan del cuadro */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f1f5f9;
+    border-radius: 10px;
 }
 
 .driver-avatar-square img {
-    width: 200px; /* Tamaño fijo para el avatar cuadrado */
-    height: 200px; /* Tamaño fijo para el avatar cuadrado */
-    border-radius: 10px; /* Esquinas ligeramente redondeadas */
-    object-fit: cover; /* Asegura que la imagen cubra todo el espacio sin distorsionarse */
-    background: #f1f5f9; /* Fondo neutro para imágenes con fondo transparente */
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* Ajusta cualquier imagen al cuadro de 200px */
 }
 
-/* Cuadrícula de información superior */
+/* 3. Información Principal y Datos Extra */
 .driver-main-info { 
-    display: flex; /* Mantiene el layout vertical para el estado inicial */
-    flex-direction: column; /* Coloca los datos uno debajo del otro inicialmente */
-    justify-content: center; /* Centra verticalmente los datos en el estado inicial */
-    flex-grow: 1; /* Permite que la sección de información ocupe el espacio restante */
-    padding-top: 10px; /* Para alinear con el centro del avatar */
-    gap: 5px; /* Espacio entre los datos en el estado inicial */
-    transition: all 0.6s ease; /* Transición suave para el cambio de layout al expandir */
-}
-
-.driver-row.expanded {
-    max-height: 500px; /* Aumenta la altura máxima al expandir */
-    transition: max-height 0.4s ease-out; /* Transición suave para el cambio de altura al expandir */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    flex-grow: 1;
+    gap: 10px;
 }
 
 .driver-row.expanded .driver-main-info {
-    padding-top: 0; /* Mantiene el padding al expandir */
-    flex-direction: row; /* Cambia a layout horizontal al expandir */
-    align-items: center; /* Alinea verticalmente los datos con el avatar */
-    gap: 1px;  /* Espacio entre los 4 datos */
-    height: auto;
-    min-height: 50px; /* Altura mínima para mantener la estructura al expandir */
-    max-height: 200px; /* Altura máxima para permitir que el contenido se expanda completamente */
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 40px;
 }
 
 .extra-data {
-    opacity: 0; /* Para la transición suave al mostrar */
-    visibility: hidden; /* Oculta el contenido para que no sea interactivo en el estado inicial */
-    max-width: 0; /* Para la transición suave al mostrar */
-    display: none; /* Oculta el contenido adicional en el estado inicial */
-    overflow: hidden; /* Oculta el contenido que excede el ancho máximo */
-    white-space: nowrap; /* Evita que el texto se divida en varias líneas */
-    transition: opacity 0.2s ease, max-width 0.2s ease; /* Transición suave para mostrar/ocultar los datos adicionales */
+    opacity: 0;
+    visibility: hidden;
+    max-height: 0;
+    overflow: hidden;
+    transition: opacity 0.1s ease; /* Desaparece rápido al cerrar */
 }
 
 .driver-row.expanded .extra-data {
-    opacity: 1; /* Para la transición suave al mostrar */
-    visibility: visible; /* Hace el contenido interactivo al expandir */
-    flex-direction: column; /* Mantiene el layout vertical para los datos adicionales */
-    opacity: 1; /* Para la transición suave al mostrar */
-    transition: opacity 0.4s ease; /* Transición suave para mostrar/ocultar el contenido */
-}
-
-.info-item .label {
-    margin-bottom: 2px; /* Espacio mínimo entre el título gris y el valor negro */
-    font-weight: 800; /* negro y mayuscula */
-    color:#3b82f6 /* Color azul para el título del estado */
+    opacity: 1;
+    visibility: visible;
+    max-height: 100px;
+    display: flex;
+    flex-direction: column;
+    transition: opacity 0.4s ease 0.2s; /* Aparece con retraso al abrir */
 }
 
 .info-item {
-    display: flex; /* Muestra los datos */
-    flex-direction: column; /* Esto pone el Label arriba y el Value abajo */
-    min-width: 100px; /* Ancho mínimo para los elementos de información */
-    margin: 2px 0; /* Espacio vertical entre los elementos */
-    gap: 15px; /* Espacio entre los elementos */
-    width: 100%; /* Asegura que ocupe todo el ancho del contenedor */
-    box-sizing: border-box; /* Incluye el padding y border en el ancho total */
-    transition: opacity 0.2s ease, visibility 0.2s ease; /* Transición suave para mostrar/ocultar el contenido */
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
 }
 
-/* Layout Expandido 80/20 */
+.info-item .label {
+    font-weight: 800;
+    color: #3b82f6;
+    font-size: 14px;
+    margin-bottom: 4px;
+}
+
+.info-item .value {
+    font-size: 18px;
+    font-weight: 600;
+    color: #1e293b;
+}
+
+/* 4. Detalles Inferiores (Bio y Estado) */
 .driver-details { 
     display: flex;
-    max-height: 0; /* Altura máxima inicial */
-    opacity: 0; /* Opacidad inicial */ 
-    overflow: hidden;/* Oculta el contenido que excede la altura máxima */
-    display: flex; /* Mantiene la proporción 80/20 */
-    gap: 10px; /* Espacio entre los elementos */
-    width: 100%;
-    max-width: 100%; 
-    margin-top: 0; /* Sin espacio superior en el estado inicial */
-    box-sizing: border-box; /* Incluye el padding y border en el ancho total */
-    transition: all 0.6s ease; /* Transición suave para el cambio de layout */
-    visibility: hidden; /* Oculta el contenido para que no sea interactivo en el estado inicial */
-    transition: max-height 0.1s ease, opacity 0.1s ease, visibility 0.1s ease; /* Transición suave para mostrar/ocultar el contenido */
+    gap: 20px;
+    opacity: 0;
+    visibility: hidden;
+    max-height: 0;
+    overflow: hidden;
+    transition: opacity 0.1s ease;
 }
 
 .driver-row.expanded .driver-details { 
-    display: flex; /* Muestra el contenido al expandir */
-    max-height: 500px; /* Aumenta la altura máxima al expandir */
-    opacity: 1; /* Para la transición suave al mostrar */
-    margin-top: 20px; /* Espacio superior al expandir */
-    padding-top: 20px; /* Padding superior al expandir */
-    border-top: 1px solid #edf2f7; 
-    visibility: visible; /* Hace el contenido interactivo al expandir */
-    transition: opacity 0.2s ease 0.1s, visibility 0.2s ease 0.1s; /* Transición suave para mostrar/ocultar el contenido con retraso para que coincida con la transición de altura */
-}
-
-.driver-row .info-item .value{
-    font-size: 18px
+    opacity: 1;
+    visibility: visible;
+    max-height: 500px;
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid #edf2f7;
+    transition: opacity 0.5s ease 0.2s;
 }
 
 .bio-box { 
-    flex: 1; /* Mantiene la proporción 80/20 para la sección de biografía */ 
-    min-width: 0; /* Permite que la sección de biografía se reduzca correctamente en pantallas pequeñas */
-    background: #f8fafc; /* Fondo claro para la sección de biografía */
-    padding: 5px; /* Espacio interno para separar el contenido del borde */
-    border-radius: 8px; /* Esquinas redondeadas para un look moderno */
-    border-left: 4px solid #3b82f6; /* Borde azul para destacar la sección de biografía */
-    word-wrap: break-all; /* Permite que el texto largo se divida en varias líneas */
-    overflow-wrap: anywhere; /* Asegura que el texto largo se divida correctamente en varias líneas */
-    white-space: normal; /* Permite que el texto se ajuste al ancho del contenedor y se divida en varias líneas */
+    flex: 1;
+    background: #f8fafc;
+    padding: 15px;
+    border-radius: 8px;
+    border-left: 4px solid #3b82f6;
 }
 
-.bio-box p {
-    flex: 0 0 150px; /* Mantiene un ancho mínimo para el párrafo de biografía */
-    display: flex; /* Mantiene el layout vertical para el párrafo de biografía */
-    flex-direction: column; /* Coloca el título y el texto de la biografía en una columna */
-    align-items: left; /* Centra el contenido horizontalmente */
-    justify-content: left; /* Centra el contenido verticalmente */
-    border-radius: 12px; /* Esquinas redondeadas para un look moderno */
-    height: auto; /* Permite que el párrafo de biografía se ajuste a su contenido */
-    margin-top: 10px; /* Espacio superior para separar el párrafo del título de la biografía */
-    font-size: 14px; /* Tamaño de fuente ligeramente más pequeño para la biografía */
-    color: #64748b; /* Color de texto gris para la biografía */
-    line-height: 1.5; /* Mejora la lectura de textos largos */
-    width: 100%; /* Asegura que el texto ocupe todo el ancho del contenedor de biografía */
+/* 5. Ajuste Especial para el MODAL (Nuevo Conductor) */
+/* Esto evita que la imagen gigante rompa el formulario */
+.modal-card .driver-avatar-square {
+    margin: 0 auto 20px auto;
+    border: 2px dashed #cbd5e1;
 }
 
 .status-box {
-    flex: 0 0 150px; /* Mantiene el ancho fijo para la sección de estado */
-    display: flex; /* Mantiene el layout vertical para la sección de estado */
-    flex-direction: column; /* Mantiene el layout vertical para el estado */
-    align-items: center; /* Centra el contenido horizontalmente */
-    justify-content: center; /* Centra el contenido verticalmente */
-    border-radius: 12px; /* Esquinas redondeadas para un look moderno */
-    padding: 10px; /* Espacio interno para separar el contenido del borde */
-    color: white; /* Color de texto blanco para el estado */
-    text-align: center; /* Centra el texto dentro de la sección de estado */
-    min-height: 100px; /* Altura mínima para la sección de estado */
-    min-width: 150px; /* Ancho mínimo para la sección de estado */
+    flex: 0 0 160px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    padding: 10px;
+    color: white;
+    min-height: 100px;
 }
 
-.status-label { 
-    font-size: 10px; /* Tamaño pequeño para el título del estado */
-    font-weight: 800; /* Mayúsculas y negrita para el título del estado */
-    letter-spacing: 1px; /* Espaciado entre letras para un look más moderno */
-    text-transform: uppercase; /* Convierte el texto a mayúsculas para el título del estado */
-    margin-bottom: 4px; /* Espacio entre el título del estado y el valor del estado */
-    opacity: 0.9; /* Opacidad para el título del estado para que sea un poco más sutil que el valor del estado */
+/* Ajuste para que el selector de licencia se vea igual a los inputs */
+select.input-field {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    background-color: white;
+    font-family: inherit;
+    cursor: pointer;
 }
 
-.status-value { 
-    font-size: 18px; 
-    font-weight: 800; 
-}
-
+.status-label { font-size: 10px; font-weight: 800; text-transform: uppercase; margin-bottom: 4px; }
+.status-value { font-size: 20px; font-weight: 800; }
 .bg-status-activo { background-color: #22c55e; }
 .bg-status-inactivo { background-color: #facc15; color: #854d0e; }
-
-.preview-box { width: 120px; height: 120px; margin: 0 auto; border-radius: 10px; overflow: hidden; border: 2px dashed #ccc; }
-.preview-box img { width: 100%; height: 100%; object-fit: cover; }
-
-.bio-box .info-item .value {
-    color: #1e293b;
-    font-size: 13px;
-}
-
-.bio-box .info-item .label {
-    margin-bottom: 2px;
-}
