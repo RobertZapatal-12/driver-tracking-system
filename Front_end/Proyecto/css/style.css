@@ -88,22 +88,23 @@ body {
     padding: 20px; /* Espacio interno para separar el contenido del borde */
     box-shadow: 0 4px 6px rgba(0,0,0,0.05); /* Sombra sutil para dar profundidad */
     cursor: pointer; /* Indica que es interactivo */
-    transition: all 0.3s ease; /* Transición suave para hover y expansión */
     border: 1px solid transparent; /* Borde transparente para mantener el tamaño al hacer hover */
+    max-height: 250px; /* Altura mínima para mantener la estructura al expandir */
+    transition: max-height 0.4s ease, ease-in-out, box-shadow 0.3s; /* Transición suave para el cambio de altura y color de borde al expandir */
 }
 .driver-row:hover { border-color: #3b82f6; }
 
 .driver-header { 
     display: flex; /* Mantiene el layout horizontal */
-    align-items: center; /* Alinea el avatar con el inicio del texto */
+    align-items: flex-start; /* Alinea el avatar con el inicio del texto */
     gap: 30px; /* Espacio entre el avatar y la información principal */
     width: 100%; /* Asegura que ocupe todo el ancho del contenedor */
-    min-height: 200px; /* Altura mínima para mantener la estructura al expandir */
+    min-height: 80px; /* Altura mínima para mantener la estructura al expandir */
 }
 
 .driver-row.expanded .driver-header { 
     gap: 30px; /* Mantiene el espacio entre el avatar y la información principal al expandir */
-    min-height: 200px; /* Mantiene la altura mínima para la estructura al expandir */
+    min-height: auto; /* Mantiene la altura mínima para la estructura al expandir */
 }
 
 .driver-avatar-square {
@@ -129,28 +130,40 @@ body {
     flex-grow: 1; /* Permite que la sección de información ocupe el espacio restante */
     padding-top: 10px; /* Para alinear con el centro del avatar */
     gap: 15px; /* Espacio entre los datos en el estado inicial */
-    transition: all 0.4s ease; /* Transición suave para el cambio de layout al expandir */
+    transition: all 0.6s ease; /* Transición suave para el cambio de layout al expandir */
+}
+
+.driver-row.expanded {
+    max-height: 500px; /* Aumenta la altura máxima al expandir */
+    transition: max-height 0.4s ease-out; /* Transición suave para el cambio de altura al expandir */
 }
 
 .driver-row.expanded .driver-main-info {
     padding-top: 0; /* Mantiene el padding al expandir */
     flex-direction: row; /* Cambia a layout horizontal al expandir */
     align-items: center; /* Alinea verticalmente los datos con el avatar */
-    gap: 45px;  /* Espacio entre los 4 datos */
+    gap: 35px;  /* Espacio entre los 4 datos */
     height: auto;
     min-height: 50px; /* Altura mínima para mantener la estructura al expandir */
+    max-height: 200px; /* Altura máxima para permitir que el contenido se expanda completamente */
 }
 
 .extra-data {
-    display: none; /* Oculta Cédula y Licencia inicialmente */
     opacity: 0; /* Para la transición suave al mostrar */
-    transition: opacity 0.4s ease; /* Transición suave para mostrar/ocultar los datos adicionales */
+    visibility: hidden; /* Oculta el contenido para que no sea interactivo en el estado inicial */
+    max-width: 0; /* Para la transición suave al mostrar */
+    display: none; /* Oculta el contenido adicional en el estado inicial */
+    overflow: hidden; /* Oculta el contenido que excede el ancho máximo */
+    white-space: nowrap; /* Evita que el texto se divida en varias líneas */
+    transition: opacity 0.2s ease, max-width 0.2s ease; /* Transición suave para mostrar/ocultar los datos adicionales */
 }
 
 .driver-row.expanded .extra-data {
-    display: flex; /* Aparecen Cédula y Licencia */
+    opacity: 1; /* Para la transición suave al mostrar */
+    visibility: visible; /* Hace el contenido interactivo al expandir */
     flex-direction: column; /* Mantiene el layout vertical para los datos adicionales */
     opacity: 1; /* Para la transición suave al mostrar */
+    transition: opacity 0.4s ease; /* Transición suave para mostrar/ocultar el contenido */
 }
 
 .info-item .label {
@@ -160,37 +173,43 @@ body {
 }
 
 .info-item {
-    display: none; /* Mantiene el layout vertical */
+    display: flex; /* Muestra los datos */
     flex-direction: column; /* Esto pone el Label arriba y el Value abajo */
     min-width: 100px; /* Ancho mínimo para los elementos de información */
     margin: 2px 0; /* Espacio vertical entre los elementos */
     gap: 15px; /* Espacio entre los elementos */
     width: 100%; /* Asegura que ocupe todo el ancho del contenedor */
     box-sizing: border-box; /* Incluye el padding y border en el ancho total */
+    transition: opacity 0.2s ease, visibility 0.2s ease; /* Transición suave para mostrar/ocultar el contenido */
 }
 
 /* Layout Expandido 80/20 */
 .driver-details { 
-    display: none;
+    display: flex;
     max-height: 0; /* Altura máxima inicial */
-    opacity: 0; /* Opacidad inicial */
-    overflow: hidden; /* Oculta el contenido que excede la altura máxima */
+    opacity: 0; /* Opacidad inicial */ 
+    overflow: hidden;/* Oculta el contenido que excede la altura máxima */
     display: flex; /* Mantiene la proporción 80/20 */
-    gap: 15px; /* Espacio entre los elementos */
+    gap: 10px; /* Espacio entre los elementos */
     width: 100%;
     max-width: 100%; 
     margin-top: 0; /* Sin espacio superior en el estado inicial */
     box-sizing: border-box; /* Incluye el padding y border en el ancho total */
-    transition: all 0.4s ease; /* Transición suave para el cambio de layout */
+    transition: all 0.6s ease; /* Transición suave para el cambio de layout */
+    visibility: hidden; /* Oculta el contenido para que no sea interactivo en el estado inicial */
+    transition: max-height 0.1s ease, opacity 0.1s ease, visibility 0.1s ease; /* Transición suave para mostrar/ocultar el contenido */
 }
 
 .driver-row.expanded .driver-details { 
     display: flex; /* Muestra el contenido al expandir */
+    gap; 10px; /* Espacio entre los elementos al expandir */
     max-height: 500px; /* Aumenta la altura máxima al expandir */
     opacity: 1; /* Para la transición suave al mostrar */
     margin-top: 20px; /* Espacio superior al expandir */
     padding-top: 20px; /* Padding superior al expandir */
     border-top: 1px solid #edf2f7; 
+    visibility: visible; /* Hace el contenido interactivo al expandir */
+    transition: opacity 0.2s ease 0.1s, visibility 0.2s ease 0.1s; /* Transición suave para mostrar/ocultar el contenido con retraso para que coincida con la transición de altura */
 }
 
 .driver-row .info-item .value{
