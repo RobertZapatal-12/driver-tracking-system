@@ -30,7 +30,8 @@ class Driver(Base):
     tipo_licencia = Column(String)
     cedula = Column(String)
     estado = Column(String)
-    
+    imagen = Column(String)          
+    descripcion = Column(String)     
     
 
 

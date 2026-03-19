@@ -1,5 +1,6 @@
 from pydantic import BaseModel
 from datetime import datetime
+from typing import Optional
 
 # =========================
 # USERS
@@ -34,6 +35,8 @@ class DriverBase(BaseModel):
     cedula: str
     tipo_licencia: str
     estado: str
+    imagen: Optional[str] = None
+    descripcion: Optional[str] = None
 
 
 class DriverCreate(DriverBase):
