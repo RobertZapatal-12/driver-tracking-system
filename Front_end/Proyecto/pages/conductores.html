@@ -43,29 +43,33 @@
                 </div>
                 <div class="col-md-8">
                     <div class="mb-2">
-                        <label class="form-label small fw-bold">Nombre</label>
-                        <input type="text" id="nombreC" class="form-control" required>
+                        <label class="form-label small fw-bold">Nombre Completo</label>
+                        <input type="text" id="nombreC" class="form-control" placeholder="Ej: Juan Pérez" required>
                     </div>
                     <div class="mb-2">
                         <label class="form-label small fw-bold">Teléfono</label>
-                        <input type="text" id="telefonoC" class="form-control" required>
+                        <input type="text" id="telefonoC" class="form-control" placeholder="Ej: 809-555-0011" required>
                     </div>
                 </div>
             </div>
             <div class="row">
                 <div class="col-md-6 mb-2">
                     <label class="form-label small fw-bold">Cédula</label>
-                    <input type="text" id="cedulaC" class="form-control" required>
+                    <input type="text" id="cedulaC" class="form-control" placeholder="Ej: 402-1234567-8" required>
                 </div>
                 <div class="col-md-6 mb-2">
                     <label class="form-label small fw-bold">N° Licencia</label>
-                    <input type="text" id="numLicenciaC" class="form-control" required>
+                    <input type="text" id="numLicenciaC" class="form-control" placeholder="Ej: 980XXXX" required>
                 </div>
             </div>
             <div class="row">
                 <div class="col-md-6 mb-3">
                     <label class="form-label small fw-bold">Tipo de Licencia</label>
-                    <input type="text" id="tipoLicenciaC" class="form-control" placeholder="Ej: Cat. 03" required>
+                    <select id="tipoLicenciaC" class="form-select">
+                        <option value="Cat. 03">Cat. 03</option>
+                        <option value="Cat. 04">Cat. 04</option>
+                        <option value="Cat. 05">Cat. 05</option>
+                    </select>
                 </div>
                 <div class="col-md-6 mb-3">
                     <label class="form-label small fw-bold">Estado</label>
