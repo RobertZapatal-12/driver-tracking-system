@@ -153,18 +153,21 @@ function renderDriverCard(d) {
 
     const card = document.createElement("div");
     card.className = "driver-row";
-    
-    // LOGICA DE ACORDEÓN: Solo uno abierto a la vez
-    card.onclick = function() {
-        seleccionarSoloUno(this);
+    card.onclick = function(e) {
+        // Evita expandir si se hace clic en los botones de acción
+        if (!e.target.closest('.driver-actions')) seleccionarSoloUno(this);
     };
 
-    const statusClass = d.est === "Activo" ? "bg-status-activo" : "bg-status-inactivo";
+    const statusClass = d.estado === "Activo" ? "bg-status-activo" : "bg-status-inactivo";
 
     card.innerHTML = `
+        <div class="driver-actions">
+            <button class="btn-edit" onclick="prepararEdicion(${d.driver_id})">⚙️</button>
+            <button class="btn-delete" onclick="confirmarEliminacion(${d.driver_id})">🗑️</button>
+        </div>
         <div class="driver-header">
             <div class="driver-avatar-square">
-                <img src="${d.foto}" alt="${d.nombre}">
+                <img src="${d.imagen || 'https://via.placeholder.com/150'}" alt="${d.nombre}">
             </div>
             <div class="driver-main-info">
                 <div class="info-item"><span class="label">Nombre</span><span class="value">${d.nombre}</span></div>
@@ -176,7 +179,7 @@ function renderDriverCard(d) {
         <div class="driver-details">
             <div class="bio-box">
                 <span class="label">Información del Conductor</span>
-                <p class="mb-0 mt-2">${d.descripcion}</p>
+                <p class="mb-0 mt-2">${d.descripcion || 'Sin información.'}</p>
             </div>
             <div class="status-box ${statusClass}">
                 <span class="status-label">Estado</span>
@@ -184,7 +187,6 @@ function renderDriverCard(d) {
             </div>
         </div>
     `;
-
     contenedor.prepend(card);
 }
 

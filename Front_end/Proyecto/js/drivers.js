@@ -49,3 +49,14 @@ async function eliminarDriver(id) {
 
 // Inicial
 cargarConductores();
+
+async function confirmarEliminacion(id) {
+    if (confirm("¿Estás seguro de que deseas eliminar a este conductor?")) {
+        try {
+            await eliminarDriver(id);
+            alert("✅ Conductor eliminado correctamente");
+        } catch (error) {
+            alert("❌ Error al eliminar");
+        }
+    }
+}
