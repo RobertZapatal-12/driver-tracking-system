@@ -279,3 +279,24 @@ select.input-field {
 .status-value { font-size: 20px; font-weight: 800; }
 .bg-status-activo { background-color: #22c55e; }
 .bg-status-inactivo { background-color: #facc15; color: #854d0e; }
+
+/* Contenedor de la previsualización */
+.preview-box {
+    width: 150px;
+    height: 150px;
+    margin: 0 auto;
+    border: 2px dashed #ddd;
+    border-radius: 8px;
+    overflow: hidden; /* Corta lo que sobresalga */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #f8f9fa;
+}
+
+/* La imagen dentro del contenedor */
+#imgPreview {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* Ajusta la imagen sin deformarla */
+}
