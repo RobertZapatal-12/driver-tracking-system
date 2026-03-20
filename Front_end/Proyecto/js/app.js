@@ -173,19 +173,19 @@ function renderDriverCard(d) {
             </div>
             <div class="driver-main-info">
                 <div class="info-item"><span class="label">Nombre</span><span class="value">${d.nombre}</span></div>
-                <div class="info-item"><span class="label">Teléfono</span><span class="value">${d.tel}</span></div>
-                <div class="info-item extra-data"><span class="label">Cédula</span><span class="value">${d.ced}</span></div>
-                <div class="info-item extra-data"><span class="label">Licencia</span><span class="value">${d.lic} (${d.tipo})</span></div>
+                <div class="info-item"><span class="label">Teléfono</span><span class="value">${d.telefono}</span></div>
+                <div class="info-item extra-data"><span class="label">Cédula</span><span class="value">${d.cedula}</span></div>
+                <div class="info-item extra-data"><span class="label">Licencia</span><span class="value">${d.numero_licencia} (${d.tipo_licencia})</span></div>
             </div>
         </div>
         <div class="driver-details">
             <div class="bio-box">
                 <span class="label">Información del Conductor</span>
-                <p class="mb-0 mt-2">${d.bio}</p>
+                <p class="mb-0 mt-2">${d.descripcion}</p>
             </div>
             <div class="status-box ${statusClass}">
                 <span class="status-label">Estado</span>
-                <span class="status-value">${d.est}</span>
+                <span class="status-value">${d.estado}</span>
             </div>
         </div>
     `;
