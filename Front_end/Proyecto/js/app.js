@@ -64,6 +64,7 @@ function initModals() {
         };
     }
 
+
     if (openBtn && modal) {
         openBtn.onclick = () => modal.style.display = "block";
         closeBtn.onclick = () => modal.style.display = "none";
@@ -116,7 +117,7 @@ if (formVehiculo) {
 }
     // Lógica para Guardar Conductor
     if (form) {
-        form.onsubmit = (e) => {
+        form.onsubmit = async (e) => { // 1. Agregamos async aquí
             e.preventDefault();
             const nombre = document.getElementById("nombreC").value;
             
@@ -131,13 +132,25 @@ if (formVehiculo) {
                 foto: window.driverAppData.foto || `https://ui-avatars.com/api/?name=${encodeURIComponent(nombre)}&background=random&shape=square`
             };
 
-            renderDriverCard(data);
-            modal.style.display = "none";
-            resetDriverForm();
+            try {
+                // 2. Primero intentamos guardar en la API
+                await crearDriver(data); 
+
+                // 3. AQUÍ VAN LAS LÍNEAS (Solo se ejecutan si la API responde bien)
+                renderDriverCard(data); 
+                modal.style.display = "none";
+                resetDriverForm();
+                
+                alert("✅ Guardado en el servidor con éxito");
+
+            } catch (error) {
+                // 4. Si la API falla, el código salta aquí y NO ejecuta las líneas de arriba
+                console.error("Error al conectar con la API:", error);
+                alert("❌ No se pudo guardar. Revisa que el servidor esté encendido.");
+            }
         };
     }
 }
-
 // 3. Renderizado de la Ficha
 function renderDriverCard(d) {
     const contenedor = document.getElementById("listaConductores");
