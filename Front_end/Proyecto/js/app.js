@@ -133,17 +133,12 @@ if (formVehiculo) {
             };
 
             try {
-                // 2. Primero intentamos guardar en la API
-                await crearDriver(data); 
-
-                // 3. AQUÍ VAN LAS LÍNEAS (Solo se ejecutan si la API responde bien)
-                renderDriverCard(data); 
-                modal.style.display = "none";
-                resetDriverForm();
-                
-                alert("✅ Guardado en el servidor con éxito");
-
-            } catch (error) {
+               await crearDriver(data); 
+            // Quitamos renderDriverCard(data) de aquí porque crearDriver ya recarga la lista
+            modal.style.display = "none";
+            resetDriverForm();
+            alert("✅ Guardado y actualizado");
+        } catch (error) {
                 // 4. Si la API falla, el código salta aquí y NO ejecuta las líneas de arriba
                 console.error("Error al conectar con la API:", error);
                 alert("❌ No se pudo guardar. Revisa que el servidor esté encendido.");

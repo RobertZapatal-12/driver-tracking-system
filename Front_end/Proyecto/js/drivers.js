@@ -1,22 +1,28 @@
-const API_URL = "http://127.0.0.1:8000/drivers";
+const API_URL = "http://127.0.0.1:8000/drivers/";
 
 // Cargar conductores
 async function cargarConductores() {
-    const res = await fetch(API_URL);
-    const data = await res.json();
+    try {
+        const res = await fetch(API_URL);
+        const data = await res.json();
 
-    const lista = document.getElementById("listaConductores");
-    lista.innerHTML = "";
+        const lista = document.getElementById("listaConductores");
+        if (!lista) return;
+        
+        lista.innerHTML = ""; // Borra la lista para actualizar
 
-    data.forEach(driver => {
-        lista.innerHTML += `
-        <div>
-            <h4>${driver.nombre}</h4>
-            <p>${driver.telefono}</p>
-            <button onclick="eliminarDriver(${driver.driver_id})">Eliminar</button>
-        </div>
-        `;
-    });
+        if (data.length === 0) {
+            lista.innerHTML = "<p class='text-center'>No hay conductores en la base de datos.</p>";
+            return;
+        }
+
+        // Usamos la función de app.js para que las tarjetas se vean bien
+        data.forEach(driver => {
+            renderDriverCard(driver); 
+        });
+    } catch (error) {
+        console.error("Error al cargar desde la API:", error);
+    }
 }
 
 // Crear conductor
