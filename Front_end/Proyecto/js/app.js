@@ -123,13 +123,13 @@ if (formVehiculo) {
             
             const data = {
                 nombre: nombre,
-                tel: document.getElementById("telefonoC").value,
-                ced: document.getElementById("cedulaC").value,
-                lic: document.getElementById("numLicenciaC").value,
-                tipo: document.getElementById("tipoLicenciaC").value,
-                est: document.getElementById("estadoC").value,
-                bio: document.getElementById("descripcionC").value || "Sin información.",
-                foto: window.driverAppData.foto || `https://ui-avatars.com/api/?name=${encodeURIComponent(nombre)}&background=random&shape=square`
+                telefono: document.getElementById("telefonoC").value,
+                cedula: document.getElementById("cedulaC").value,
+                numero_licencia: document.getElementById("numLicenciaC").value,
+                tipo_licencia: document.getElementById("tipoLicenciaC").value,
+                estado: document.getElementById("estadoC").value,
+                descripcion: document.getElementById("descripcionC").value || "Sin información.",
+                imagen: window.driverAppData.foto || `https://ui-avatars.com/api/?name=${encodeURIComponent(nombre)}&background=random&shape=square`
             };
 
             try {
