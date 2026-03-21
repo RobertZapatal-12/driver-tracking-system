@@ -26,13 +26,13 @@ function cargarPagina(pagina) {
 
     // Solo disparamos la carga si estamos en la página correcta
     if (pagina === 'conductores') {
-        console.log("Intentando cargar conductores desde app.js..."); // Esto debe salir en la consola
-        setTimeout(() => {
-            if (typeof cargarConductores === 'function') {
-                cargarConductores(); 
-            }
-        }, 150); // Un margen mayor para asegurar que el HTML esté listo
-            }
+    console.log("Solicitando datos desde el jefe (app.js)"); 
+    setTimeout(() => {
+        if (typeof cargarConductores === 'function') {
+            cargarConductores(); // <--- Aquí es donde realmente debe nacer la petición
+        }
+    }, 150); 
+}
 
             if (pagina === 'mapa') {
                 setTimeout(initMapa, 100);
@@ -224,31 +224,6 @@ function resetDriverForm() {
     window.driverAppData.foto = "";
 }
 
-// --- CONDUCTOR DE PRUEBA PERMANENTE ---
-// Esta función se ejecuta sola al cargar el script
-(function cargarConductorPrueba() {
-    // Esperamos un momento a que el HTML cargue completamente
-    setTimeout(() => {
-        const dataPrueba = {
-            nombre: "Pedro el de Prueba",
-            tel: "809-555-0000",
-            ced: "402-0000000-1",
-            lic: "9999999",
-            tipo: "Categoría 03",
-            est: "Activo",
-            bio: "Este es un perfil de prueba generado automáticamente para testear el diseño 80/20 y las animaciones de expansión.",
-            foto: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=150&auto=format&fit=crop"
-        };
-
-        // Verificamos si existe el contenedor antes de renderizar
-        if (document.getElementById("listaConductores")) {
-            renderDriverCard(dataPrueba);
-            console.log("✅ Conductor de prueba cargado correctamente");
-        }
-    }, 500); // 500ms de delay para asegurar que el DOM esté listo
-})();
-
-
 var mapaGlobal;
 var marcadorChofer;
 
@@ -307,3 +282,5 @@ function toggleMenu(boton) {
         }
     });
 }
+
+cargarConductores(); // Llamada inicial para cargar conductores al abrir la página (si es que estamos en esa sección)
