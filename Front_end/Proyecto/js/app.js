@@ -29,7 +29,7 @@ function cargarPagina(pagina) {
     console.log("Solicitando datos desde el jefe (app.js)"); 
     setTimeout(() => {
         if (typeof cargarConductores === 'function') {
-            cargarConductores(); // <--- Aquí es donde realmente debe nacer la petición
+            cargarConductores();
         }
     }, 1000); 
 }
