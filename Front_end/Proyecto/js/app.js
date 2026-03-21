@@ -282,5 +282,3 @@ function toggleMenu(boton) {
         }
     });
 }
-
-cargarConductores(); // Llamada inicial para cargar conductores al abrir la página (si es que estamos en esa sección)
