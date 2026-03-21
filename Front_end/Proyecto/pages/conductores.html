@@ -2,31 +2,8 @@
     <h3 class="fw-bold">Gestión de Conductores</h3>
     <button class="btn btn-primary btn-open-modal">+ Nuevo Conductor</button>
 </div>
-
-<div id="listaConductores" class="driver-container">
-    <div class="driver-row" onclick="seleccionarSoloUno(this)">
-        <div class="driver-header">
-            <div class="driver-avatar-square">
-                <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=150&auto=format&fit=crop" alt="Pedro">
-            </div>
-            <div class="driver-main-info">
-                <div class="info-item"><span class="label">Nombre</span><span class="value">Pedro de Prueba</span></div>
-                <div class="info-item"><span class="label">Teléfono</span><span class="value">809-555-0011</span></div>
-                <div class="info-item extra-data"><span class="label">Cédula</span><span class="value">402-1234567-8</span></div>
-                <div class="info-item extra-data"><span class="label">Licencia</span><span class="value">99887766 (Cat. 03)</span></div>
-            </div>
-        </div>
-        <div class="driver-details">
-            <div class="bio-box">
-                <span class="label">Información del Conductor</span>
-                <p class="mb-0 mt-2 small text-muted">Este es el conductor de prueba estático para testear el diseño 80/20.</p>
-            </div>
-            <div class="status-box bg-status-activo">
-                <span class="status-label">Estado</span>
-                <span class="status-value">Activo</span>
-            </div>
-        </div>
-    </div>
+<div id="driversContainer" class="row g-4">
+    <!-- Las tarjetas de conductores se cargarán aquí dinámicamente -->
 </div>
 
 <div class="modal-overlay">

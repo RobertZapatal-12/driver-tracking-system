@@ -275,6 +275,66 @@ select.input-field {
     cursor: pointer;
 }
 
+/* Posicionamiento de los botones de acción */
+/* Contenedor relativo para la tuerca */
+.driver-actions-container {
+    position: absolute;
+    opacity: 0.8;
+    top: 15px;
+    right: 15px;
+    z-index: 100; /* Para que esté por encima de la tarjeta */
+}
+
+/* Botón de la tuerca */
+.btn-tuerca {
+    background: white;
+    border: 1px solid #cbd5e1;
+    border-radius: 50%;
+    width: 35px;
+    height: 35px;
+    cursor: pointer;
+    font-size: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.3s;
+}
+
+.btn-tuerca:hover { transform: rotate(45deg); border-color: #3b82f6; }
+
+/* El menú que se despliega */
+.dropdown-menu-custom {
+    display: none; /* Oculto por defecto */
+    position: absolute;
+    right: 0;
+    top: 40px;
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    min-width: 120px;
+    overflow: hidden;
+}
+
+.dropdown-menu-custom.show {
+    display: block; /* Se muestra con la clase 'show' */
+}
+
+.dropdown-menu-custom button {
+    width: 100%;
+    padding: 10px 15px;
+    border: none;
+    background: none;
+    text-align: left;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.dropdown-menu-custom button:hover { background: #f1f5f9; }
+.text-danger { color: #ef4444; }
+
+.btn-edit:hover { background: #f1f5f9; border-color: #3b82f6; }
+.btn-delete:hover { background: #fee2e2; border-color: #ef4444; }
 .status-label { font-size: 10px; font-weight: 800; text-transform: uppercase; margin-bottom: 4px; }
 .status-value { font-size: 20px; font-weight: 800; }
 .bg-status-activo { background-color: #22c55e; }

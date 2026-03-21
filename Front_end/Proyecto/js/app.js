@@ -19,13 +19,24 @@ function cargarPagina(pagina) {
     fetch(`pages/${pagina}.html`)
         .then(res => res.text())
         .then(data => {
-            contenedor.innerHTML = data;
-            titulo.innerText = pagina.charAt(0).toUpperCase() + pagina.slice(1);
-            setActiveLink(pagina);
-            initModals(); // Reiniciar listeners de modales
+    contenedor.innerHTML = data;
+    titulo.innerText = pagina.charAt(0).toUpperCase() + pagina.slice(1);
+    setActiveLink(pagina);
+    initModals(); 
+
+    // Solo disparamos la carga si estamos en la página correcta
+    if (pagina === 'conductores') {
+        console.log("Intentando cargar conductores desde app.js..."); // Esto debe salir en la consola
+        setTimeout(() => {
+            if (typeof cargarConductores === 'function') {
+                cargarConductores(); 
+            }
+        }, 150); // Un margen mayor para asegurar que el HTML esté listo
+            }
+
             if (pagina === 'mapa') {
-    setTimeout(initMapa, 100); // Pequeño retraso para asegurar que el DOM esté listo
-}
+                setTimeout(initMapa, 100);
+            }
         });
 }
 
@@ -161,11 +172,14 @@ function renderDriverCard(d) {
     const statusClass = d.estado === "Activo" ? "bg-status-activo" : "bg-status-inactivo";
 
     card.innerHTML = `
-        <div class="driver-actions">
-            <button class="btn-edit" onclick="prepararEdicion(${d.driver_id})">⚙️</button>
-            <button class="btn-delete" onclick="confirmarEliminacion(${d.driver_id})">🗑️</button>
+        <div class="driver-actions-container">
+        <button class="btn-tuerca" onclick="event.stopPropagation(); toggleMenu(this)">⚙️</button>
+        <div class="dropdown-menu-custom">
+            <button onclick="prepararEdicion(${d.driver_id})">✏️ Editar</button>
+            <button class="text-danger" onclick="confirmarEliminacion(${d.driver_id})">🗑️ Eliminar</button>
         </div>
-        <div class="driver-header">
+    </div>
+    <div class="driver-header">
             <div class="driver-avatar-square">
                 <img src="${d.imagen || 'https://via.placeholder.com/150'}" alt="${d.nombre}">
             </div>
@@ -275,4 +289,21 @@ function buscarUbicacion() {
     } else {
         alert("Código de viaje no encontrado. Prueba con TR-809");
     }
+}
+
+function toggleMenu(boton) {
+    // Cerramos cualquier otro menú abierto primero
+    document.querySelectorAll('.dropdown-menu-custom').forEach(m => m.classList.remove('show'));
+    
+    // Abrimos el menú que pertenece a este botón
+    const menu = boton.nextElementSibling;
+    menu.classList.toggle('show');
+
+    // Cerrar el menú si haces clic afuera
+    document.addEventListener('click', function closeMenu(e) {
+        if (!boton.contains(e.target)) {
+            menu.classList.remove('show');
+            document.removeEventListener('click', closeMenu);
+        }
+    });
 }
