@@ -1,18 +1,20 @@
 const API_URL = "http://127.0.0.1:8000/drivers/";
 
-// Cargar conductores
 async function cargarConductores() {
     try {
         const res = await fetch(API_URL);
         const data = await res.json();
         const lista = document.getElementById("listaConductores");
-        
-        if (!lista) return;
-        
-        lista.innerHTML = ""; 
+
+        if (!lista) {
+            console.error("No existe #listaConductores");
+            return;
+        }
+
+        lista.innerHTML = "";
 
         data.forEach(driver => {
-            renderDriverCard(driver); 
+            renderDriverCard(driver);
         });
     } catch (error) {
         console.error("Error al cargar desde la API:", error);
