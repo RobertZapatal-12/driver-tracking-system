@@ -31,7 +31,7 @@ function cargarPagina(pagina) {
         if (typeof cargarConductores === 'function') {
             cargarConductores(); // <--- Aquí es donde realmente debe nacer la petición
         }
-    }, 150); 
+    }, 1000); 
 }
 
             if (pagina === 'mapa') {
