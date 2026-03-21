@@ -18,8 +18,6 @@ async function cargarConductores() {
         console.error("Error al cargar desde la API:", error);
     }
 
-    await cargarConductores(); // Recarga cada 5 segundos para mantener la lista actualizada
-
 }
 
 // Crear conductor
@@ -31,9 +29,7 @@ async function crearDriver(driver) {
         },
         body: JSON.stringify(driver)
     });
-    
-    await cargarConductores(); // Recarga la lista después de crear
-    
+
 }
 
 // Eliminar
@@ -41,8 +37,6 @@ async function eliminarDriver(id) {
     await fetch(`${API_URL}/${id}`, {
         method: "DELETE"
     });
-
-    await cargarConductores(); // Recarga la lista después de eliminar
 
 }
 
