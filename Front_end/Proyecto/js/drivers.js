@@ -9,7 +9,7 @@ async function cargarConductores() {
         
         if (!lista) return;
         
-        lista.innerHTML = ""; // Limpia la lista actual
+        lista.innerHTML = ""; 
 
         data.forEach(driver => {
             renderDriverCard(driver); 
@@ -17,7 +17,6 @@ async function cargarConductores() {
     } catch (error) {
         console.error("Error al cargar desde la API:", error);
     }
-
 }
 
 // Crear conductor
