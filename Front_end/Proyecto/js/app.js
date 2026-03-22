@@ -19,20 +19,14 @@ function cargarPagina(pagina) {
     fetch(`pages/${pagina}.html`)
         .then(res => res.text())
         .then(data => {
-    contenedor.innerHTML = data;
-    titulo.innerText = pagina.charAt(0).toUpperCase() + pagina.slice(1);
-    setActiveLink(pagina);
-    initModals(); 
+            contenedor.innerHTML = data;
+            titulo.innerText = pagina.charAt(0).toUpperCase() + pagina.slice(1);
+            setActiveLink(pagina);
+            initModals();
 
-    // Solo disparamos la carga si estamos en la página correcta
-    if (pagina === 'conductores') {
-    console.log("Solicitando datos desde el jefe (app.js)"); 
-    setTimeout(() => {
-        if (typeof cargarConductores === 'function') {
-            cargarConductores();
-        }
-    }, 1000); 
-}
+            if (pagina === 'conductores' && typeof cargarConductores === 'function') {
+                cargarConductores();
+            }
 
             if (pagina === 'mapa') {
                 setTimeout(initMapa, 100);

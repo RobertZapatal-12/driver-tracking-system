@@ -98,7 +98,7 @@ body {
     overflow: hidden; 
     transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s, border-color 0.3s;
 }
-
+/* Efecto Hover para indicar que es interactivo */
 .driver-row:hover { 
     border-color: #3b82f6; 
 }
@@ -118,12 +118,12 @@ body {
     width: 100%;
     min-height: 100px;
 }
-
+/* En estado expandido, la cabecera se alinea al inicio para dar espacio a la foto y los datos extra */
 .driver-row.expanded .driver-header { 
     align-items: flex-start;
     padding-top: 10px;
 }
-
+/* El cuadro de la foto siempre es de 200x200, pero la imagen se ajusta dentro sin romper el diseño */
 .driver-avatar-square {
     flex: 0 0 200px;
     width: 200px;
@@ -135,7 +135,7 @@ body {
     background: #f1f5f9;
     border-radius: 10px;
 }
-
+/* La imagen dentro del cuadro se ajusta para llenar el espacio sin deformarse */
 .driver-avatar-square img {
     width: 100%;
     height: 100%;
@@ -150,11 +150,12 @@ body {
     flex-grow: 1;
     gap: 10px;
 }
-
+/* En estado expandido, la información principal se alinea a la izquierda y se da espacio para los datos extra */
 .driver-row.expanded .driver-main-info {
     flex-direction: row;
     align-items: flex-start;
-    gap: 40px;
+    gap: 200px;
+    margin-top: 50px;
 }
 
 .extra-data {
