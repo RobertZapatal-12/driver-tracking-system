@@ -52,7 +52,14 @@ function initModals() {
     const inputFoto = document.getElementById("fotoC");
 
     if (openBtn) openBtn.onclick = () => modal.style.display = "flex";
-    if (closeBtn) closeBtn.onclick = () => { modal.style.display = "none"; resetDriverForm(); };
+    if (closeBtn) closeBtn.onclick = () => {
+    modal.style.display = "none";
+    resetDriverForm();
+    if (typeof limpiarModoEdicion === "function") {
+        limpiarModoEdicion();
+        }
+    };
+}
 
     // Manejo de Imagen (FileReader)
     if (inputFoto) {
@@ -122,34 +129,42 @@ if (formVehiculo) {
 }
     // Lógica para Guardar Conductor
     if (form) {
-        form.onsubmit = async (e) => { // 1. Agregamos async aquí
-            e.preventDefault();
-            const nombre = document.getElementById("nombreC").value;
-            
-            const data = {
-                nombre: nombre,
-                telefono: document.getElementById("telefonoC").value,
-                cedula: document.getElementById("cedulaC").value,
-                numero_licencia: document.getElementById("numLicenciaC").value,
-                tipo_licencia: document.getElementById("tipoLicenciaC").value,
-                estado: document.getElementById("estadoC").value,
-                descripcion: document.getElementById("descripcionC").value || "Sin información.",
-                imagen: window.driverAppData.foto || `https://ui-avatars.com/api/?name=${encodeURIComponent(nombre)}&background=random&shape=square`
-            };
+    form.onsubmit = async (e) => {
+        e.preventDefault();
 
-            try {
-               await crearDriver(data); 
-            // Quitamos renderDriverCard(data) de aquí porque crearDriver ya recarga la lista
+        const nombre = document.getElementById("nombreC").value;
+
+        const data = {
+            nombre: nombre,
+            telefono: document.getElementById("telefonoC").value,
+            cedula: document.getElementById("cedulaC").value,
+            numero_licencia: document.getElementById("numLicenciaC").value,
+            tipo_licencia: document.getElementById("tipoLicenciaC").value,
+            estado: document.getElementById("estadoC").value,
+            descripcion: document.getElementById("descripcionC").value || "Sin información.",
+            imagen: window.driverAppData.foto || `https://ui-avatars.com/api/?name=${encodeURIComponent(nombre)}&background=random&shape=square`
+        };
+
+        try {
+            if (typeof editandoDriverId !== "undefined" && editandoDriverId !== null) {
+                await actualizarDriver(editandoDriverId, data);
+                alert("✅ Conductor actualizado");
+            } else {
+                await crearDriver(data);
+                alert("✅ Conductor creado");
+            }
+
+            await cargarConductores();
             modal.style.display = "none";
             resetDriverForm();
-            alert("✅ Guardado y actualizado");
-        } catch (error) {
-                // 4. Si la API falla, el código salta aquí y NO ejecuta las líneas de arriba
-                console.error("Error al conectar con la API:", error);
-                alert("❌ No se pudo guardar. Revisa que el servidor esté encendido.");
+            if (typeof limpiarModoEdicion === "function") {
+                limpiarModoEdicion();
             }
-        };
-    }
+        } catch (error) {
+            console.error("Error al conectar con la API:", error);
+            alert("❌ No se pudo guardar. Revisa que el servidor esté encendido.");
+        }
+    };
 }
 // 3. Renderizado de la Ficha
 function renderDriverCard(d) {
