@@ -30,6 +30,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<bool> _handlePermission() async {
     bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+
     if (!serviceEnabled) {
       setState(() {
         status = 'GPS desactivado';
@@ -41,6 +42,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
+
       if (permission == LocationPermission.denied) {
         setState(() {
           status = 'Permiso denegado';
@@ -63,6 +65,9 @@ class _HomeScreenState extends State<HomeScreen> {
     final url = Uri.parse('$baseUrl/locations/');
 
     try {
+      debugPrint('Enviando driver_id: ${widget.driverId}');
+      debugPrint('Lat: ${position.latitude}, Lng: ${position.longitude}');
+
       final response = await http.post(
         url,
         headers: {'Content-Type': 'application/json'},
@@ -70,7 +75,7 @@ class _HomeScreenState extends State<HomeScreen> {
           'driver_id': widget.driverId,
           'latitud': position.latitude,
           'longitud': position.longitude,
-          'velocidad': position.speed,
+          'velocidad': position.speed < 0 ? 0.0 : position.speed,
         }),
       );
 
