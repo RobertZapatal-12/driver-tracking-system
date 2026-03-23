@@ -203,8 +203,8 @@ body {
 .driver-row.expanded .driver-main-info {
     flex-direction: row;
     align-items: flex-start;
-    gap: 40px; /* antes 200px */
-    margin-top: 20px; /* baja contenido */
+    gap: 200px; /* antes 200px */
+    margin-top: 60px; /* baja contenido */
 }
 
 .info-item {
