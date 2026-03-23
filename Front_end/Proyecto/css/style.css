@@ -1,17 +1,30 @@
+/* =========================================================
+   VARIABLES GLOBALES
+   ========================================================= */
 :root {
     --sidebar-bg: #1e293b;
     --sidebar-hover: #334155;
     --accent-color: #3b82f6;
 }
 
+
+/* =========================================================
+   BASE
+   ========================================================= */
 body {
     background-color: #f1f5f9;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
-.wrapper { display: flex; width: 100%; }
+.wrapper {
+    display: flex;
+    width: 100%;
+}
 
-/* Sidebar */
+
+/* =========================================================
+   SIDEBAR
+   ========================================================= */
 .sidebar-wrapper {
     width: 260px;
     background-color: var(--sidebar-bg);
@@ -20,7 +33,11 @@ body {
     transition: all 0.3s;
 }
 
-.sidebar-header { padding: 20px; text-align: center; border-bottom: 1px solid #334155; }
+.sidebar-header {
+    padding: 20px;
+    text-align: center;
+    border-bottom: 1px solid #334155;
+}
 
 .nav-link {
     color: #94a3b8;
@@ -31,14 +48,22 @@ body {
     transition: 0.3s;
 }
 
-.nav-link:hover, .nav-link.active {
+.nav-link:hover,
+.nav-link.active {
     background-color: var(--sidebar-hover);
     color: white;
     border-left: 4px solid var(--accent-color);
 }
 
-/* Main Content */
-.main-container { flex-grow: 1; display: flex; flex-direction: column; }
+
+/* =========================================================
+   CONTENIDO PRINCIPAL
+   ========================================================= */
+.main-container {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}
 
 .top-navbar {
     background: white;
@@ -50,40 +75,59 @@ body {
     box-shadow: 0 2px 4px rgba(0,0,0,0.05);
 }
 
-/* Modales */
+
+/* =========================================================
+   MODALES
+   ========================================================= */
 .modal-overlay {
     display: none;
     position: fixed;
-    top:0; left:0; width:100%; height:100%;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
     background: rgba(0,0,0,0.5);
     z-index: 9999;
 }
 
 .modal-card {
     background: white;
-    width: 90%; max-width: 500px;
+    width: 90%;
+    max-width: 500px;
     margin: 50px auto;
     border-radius: 8px;
     padding: 25px;
 }
-/* Mapa */
+
+
+/* =========================================================
+   MAPA
+   ========================================================= */
 #map {
     height: 500px !important;
     width: 100%;
     border-radius: 12px;
     margin-top: 20px;
-    z-index: 1; /* Para que no tape los menús */
-}
-/* --- Modulo Conductores Premium --- */
-
-.driver-container { 
-    display: flex; 
-    flex-direction: column; 
-    gap: 12px; 
-    padding: 20px; 
+    z-index: 1;
 }
 
-/* 1. La Tarjeta (Acordeón) */
+
+/* =========================================================
+   MÓDULO CONDUCTORES
+   ========================================================= */
+
+/* CONTENEDOR */
+.driver-container {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 20px;
+}
+
+
+/* ---------------------------------------------------------
+   TARJETA PRINCIPAL (ACORDEÓN)
+   --------------------------------------------------------- */
 .driver-row {
     background: white;
     border-radius: 12px;
@@ -92,87 +136,75 @@ body {
     cursor: pointer;
     border: 1px solid transparent;
     position: relative;
-    
-    /* ALTURA CERRADA: Recorta visualmente la foto de 200px */
-    max-height: 250px; 
-    overflow: hidden; 
-    transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s, border-color 0.3s;
-}
-/* Efecto Hover para indicar que es interactivo */
-.driver-row:hover { 
-    border-color: #3b82f6; 
+
+    max-height: 250px;
+    overflow: hidden;
+
+    transition: all 0.3s ease;
 }
 
-/* Estado Expandido */
+.driver-row:hover {
+    border-color: var(--accent-color);
+}
+
 .driver-row.expanded {
-    max-height: 1000px; 
-    border-color: #3b82f6;
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    max-height: 1000px;
+    border-color: var(--accent-color);
+    box-shadow: 0 10px 15px rgba(0,0,0,0.1);
+    padding-top: 20px; /* baja contenido */
 }
 
-/* 2. Cabecera y Foto (200x200 siempre) */
-.driver-header { 
+
+/* ---------------------------------------------------------
+   CABECERA Y FOTO
+   --------------------------------------------------------- */
+.driver-header {
     display: flex;
-    align-items: center; 
+    align-items: center;
     gap: 30px;
-    width: 100%;
-    min-height: 100px;
 }
-/* En estado expandido, la cabecera se alinea al inicio para dar espacio a la foto y los datos extra */
-.driver-row.expanded .driver-header { 
+
+.driver-row.expanded .driver-header {
     align-items: flex-start;
-    padding-top: 10px;
 }
-/* El cuadro de la foto siempre es de 200x200, pero la imagen se ajusta dentro sin romper el diseño */
+
+/* FOTO */
 .driver-avatar-square {
-    flex: 0 0 200px;
     width: 200px;
     height: 200px;
-    overflow: hidden; /* Evita que imágenes gigantes se salgan del cuadro */
+    overflow: hidden;
+    border-radius: 10px;
+    background: #f1f5f9;
+
     display: flex;
     align-items: center;
     justify-content: center;
-    background: #f1f5f9;
-    border-radius: 10px;
 }
-/* La imagen dentro del cuadro se ajusta para llenar el espacio sin deformarse */
+
 .driver-avatar-square img {
     width: 100%;
     height: 100%;
-    object-fit: cover; /* Ajusta cualquier imagen al cuadro de 200px */
+    object-fit: cover;
 }
 
-/* 3. Información Principal y Datos Extra */
-.driver-main-info { 
+
+/* ---------------------------------------------------------
+   INFORMACIÓN
+   --------------------------------------------------------- */
+.driver-main-info {
     display: flex;
     flex-direction: column;
     justify-content: center;
     flex-grow: 1;
     gap: 10px;
 }
-/* En estado expandido, la información principal se alinea a la izquierda y se da espacio para los datos extra */
+
+/* AJUSTE EXPANDIDO */
 .driver-row.expanded .driver-main-info {
     flex-direction: row;
     align-items: flex-start;
-    gap: 200px;
-    margin-top: 50px;
-}
-
-.extra-data {
-    opacity: 0;
-    visibility: hidden;
-    max-height: 0;
-    overflow: hidden;
-    transition: opacity 0.1s ease; /* Desaparece rápido al cerrar */
-}
-
-.driver-row.expanded .extra-data {
-    opacity: 1;
-    visibility: visible;
-    max-height: 100px;
-    display: flex;
-    flex-direction: column;
-    transition: opacity 0.4s ease 0.2s; /* Aparece con retraso al abrir */
+    gap: 200px; /* antes 200px */
+    margin-top: 60px; /* baja contenido */
 }
 
 .info-item {
@@ -183,9 +215,8 @@ body {
 
 .info-item .label {
     font-weight: 800;
-    color: #3b82f6;
+    color: var(--accent-color);
     font-size: 14px;
-    margin-bottom: 4px;
 }
 
 .info-item .value {
@@ -194,131 +225,104 @@ body {
     color: #1e293b;
 }
 
-/* 4. Detalles Inferiores (Bio y Estado) */
-.driver-details { 
+/* DATOS EXTRA */
+.extra-data {
+    opacity: 0;
+    visibility: hidden;
+    max-height: 0;
+}
+
+.driver-row.expanded .extra-data {
+    opacity: 1;
+    visibility: visible;
+    max-height: 100px;
+}
+
+
+/* ---------------------------------------------------------
+   DETALLES INFERIORES
+   --------------------------------------------------------- */
+.driver-details {
     display: flex;
     gap: 20px;
     opacity: 0;
     visibility: hidden;
     max-height: 0;
-    overflow: hidden;
-    transition: opacity 0.1s ease;
 }
 
-.driver-row.expanded .driver-details { 
+.driver-row.expanded .driver-details {
     opacity: 1;
     visibility: visible;
     max-height: 500px;
     margin-top: 20px;
     padding-top: 20px;
     border-top: 1px solid #edf2f7;
-    transition: opacity 0.5s ease 0.2s;
 }
 
-.bio-box { 
+.bio-box {
     flex: 1;
     background: #f8fafc;
     padding: 15px;
     border-radius: 8px;
-    border-left: 4px solid #3b82f6;
-}
-
-/* 5. Ajuste Especial para el MODAL (Nuevo Conductor) */
-/* Esto evita que la imagen gigante rompa el formulario */
-.modal-card .driver-avatar-square {
-    margin: 0 auto 20px auto;
-    border: 2px dashed #cbd5e1;
-    max-width: 10px; /* Limita el ancho para que no rompa el diseño del modal */
-    max-height: 10px; /* Solo muestra la parte superior de la imagen para que no rompa el diseño */
-}
-
-.avatar-preview-container {
-    width: 120px;         /* Tamaño fijo del marco */
-    height: 120px;
-    margin: 10px auto;    /* Centrado */
-    border-radius: 12px;
-    overflow: hidden;     /* ¡CRÍTICO! Corta lo que se salga del marco */
-    border: 2px dashed #cbd5e1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background-color: #f8fafc;
-}
-
-/* La imagen dentro del modal */
-.avatar-preview-container img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;    /* Mantiene la proporción sin estirarse */
-    display: block;
+    border-left: 4px solid var(--accent-color);
 }
 
 .status-box {
     flex: 0 0 160px;
     display: flex;
     flex-direction: column;
-    align-items: center;
     justify-content: center;
-    border-radius: 12px;
-    padding: 10px;
-    color: white;
-    min-height: 100px;
+    align-items: center;
 }
 
-/* Ajuste para que el selector de licencia se vea igual a los inputs */
-select.input-field {
-    width: 100%;
-    padding: 10px;
-    border: 1px solid #cbd5e1;
-    border-radius: 8px;
-    background-color: white;
-    font-family: inherit;
-    cursor: pointer;
-}
 
-/* Posicionamiento de los botones de acción */
-/* Contenedor relativo para la tuerca */
+/* =========================================================
+   BOTÓN TUERCA Y MENÚ DE ACCIONES
+   ========================================================= */
 .driver-actions-container {
     position: absolute;
-    opacity: 0.8;
+    opacity: 0.95;
     top: 15px;
     right: 15px;
-    z-index: 100; /* Para que esté por encima de la tarjeta */
+    z-index: 100;
 }
 
-/* Botón de la tuerca */
 .btn-tuerca {
     background: white;
     border: 1px solid #cbd5e1;
     border-radius: 50%;
-    width: 35px;
-    height: 35px;
+    width: 38px;
+    height: 38px;
     cursor: pointer;
-    font-size: 20px;
+    font-size: 18px;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: transform 0.3s;
+    transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
 }
 
-.btn-tuerca:hover { transform: rotate(45deg); border-color: #3b82f6; }
+.btn-tuerca:hover {
+    transform: rotate(45deg);
+    border-color: #3b82f6;
+    box-shadow: 0 4px 10px rgba(59, 130, 246, 0.2);
+}
 
-/* El menú que se despliega */
 .dropdown-menu-custom {
-    display: none; /* Oculto por defecto */
+    display: none;
     position: absolute;
     right: 0;
-    top: 40px;
+    top: 45px;
     background: white;
     border: 1px solid #e2e8f0;
     border-radius: 8px;
     box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    min-width: 120px;
+    min-width: 130px;
     overflow: hidden;
 }
 
 .dropdown-menu-custom.show {
-    display: block; /* Se muestra con la clase 'show' */
+    display: block;
 }
 
 .dropdown-menu-custom button {
@@ -329,35 +333,59 @@ select.input-field {
     text-align: left;
     cursor: pointer;
     font-size: 14px;
+    transition: background 0.2s ease;
 }
 
-.dropdown-menu-custom button:hover { background: #f1f5f9; }
-.text-danger { color: #ef4444; }
+.dropdown-menu-custom button:hover {
+    background: #f1f5f9;
+}
 
-.btn-edit:hover { background: #f1f5f9; border-color: #3b82f6; }
-.btn-delete:hover { background: #fee2e2; border-color: #ef4444; }
-.status-label { font-size: 10px; font-weight: 800; text-transform: uppercase; margin-bottom: 4px; }
-.status-value { font-size: 20px; font-weight: 800; }
-.bg-status-activo { background-color: #22c55e; }
-.bg-status-inactivo { background-color: #facc15; color: #854d0e; }
+.text-danger {
+    color: #ef4444;
+}
 
-/* Contenedor de la previsualización */
+
+/* =========================================================
+   PREVIEW IMAGEN
+   ========================================================= */
 .preview-box {
     width: 150px;
     height: 150px;
     margin: 0 auto;
-    border: 2px dashed #ddd;
-    border-radius: 8px;
-    overflow: hidden; /* Corta lo que sobresalga */
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background-color: #f8f9fa;
+    overflow: hidden;
 }
 
-/* La imagen dentro del contenedor */
 #imgPreview {
     width: 100%;
     height: 100%;
-    object-fit: cover; /* Ajusta la imagen sin deformarla */
+    object-fit: cover;
+}
+
+
+/* =========================================================
+   BUSCADOR
+   ========================================================= */
+#buscadorConductores {
+    max-width: 400px;
+    border-radius: 10px;
+    padding: 10px;
+    border: 1px solid #cbd5e1;
+}
+
+
+/* =========================================================
+   PAGINACIÓN
+   ========================================================= */
+#paginacionConductores {
+    margin-top: 20px;
+}
+
+#paginacionConductores button {
+    min-width: 40px;
+    border-radius: 8px;
+}
+
+#paginacionConductores button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
 }

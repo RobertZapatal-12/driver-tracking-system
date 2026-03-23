@@ -15,7 +15,7 @@ let editandoDriverId = null;
 let todosLosConductores = [];
 let conductoresFiltrados = [];
 let paginaActual = 1;
-const conductoresPorPagina = 5;
+const conductoresPorPagina = 3;
 
 
 /* =========================================================
@@ -63,9 +63,19 @@ function aplicarFiltroConductores() {
     const input = document.getElementById("buscadorConductores");
     const texto = input ? input.value.trim().toLowerCase() : "";
 
-    conductoresFiltrados = todosLosConductores.filter(driver =>
-        (driver.nombre || "").toLowerCase().includes(texto)
+    conductoresFiltrados = todosLosConductores.filter(driver => {
+    const nombre = (String(driver.nombre) || "").toLowerCase();
+    const cedula = (String(driver.cedula) || "").toLowerCase();
+    const telefono = (String(driver.telefono) || "").toLowerCase();
+    const licencia = (String(driver.numero_licencia) || "").toLowerCase();
+
+    return (
+        nombre.includes(texto) ||
+        cedula.includes(texto) ||
+        telefono.includes(texto) ||
+        licencia.includes(texto)
     );
+});
 
     renderPaginaConductores();
     renderPaginacionConductores();
@@ -120,6 +130,23 @@ function renderPaginacionConductores() {
 
     if (totalPaginas <= 1) return;
 
+    // Botón Anterior
+    const btnAnterior = document.createElement("button");
+    btnAnterior.textContent = "Anterior";
+    btnAnterior.className = "btn btn-outline-primary";
+    btnAnterior.disabled = paginaActual === 1;
+
+    btnAnterior.onclick = () => {
+        if (paginaActual > 1) {
+            paginaActual--;
+            renderPaginaConductores();
+            renderPaginacionConductores();
+        }
+    };
+
+    contenedor.appendChild(btnAnterior);
+
+    // Botones numéricos
     for (let i = 1; i <= totalPaginas; i++) {
         const btn = document.createElement("button");
         btn.textContent = i;
@@ -133,6 +160,22 @@ function renderPaginacionConductores() {
 
         contenedor.appendChild(btn);
     }
+
+    // Botón Siguiente
+    const btnSiguiente = document.createElement("button");
+    btnSiguiente.textContent = "Siguiente";
+    btnSiguiente.className = "btn btn-outline-primary";
+    btnSiguiente.disabled = paginaActual === totalPaginas;
+
+    btnSiguiente.onclick = () => {
+        if (paginaActual < totalPaginas) {
+            paginaActual++;
+            renderPaginaConductores();
+            renderPaginacionConductores();
+        }
+    };
+
+    contenedor.appendChild(btnSiguiente);
 }
 
 
@@ -243,6 +286,16 @@ async function editarDriver(id) {
         const preview = document.getElementById("imgPreview");
         if (preview) {
             preview.src = d.imagen || "https://via.placeholder.com/150?text=Subir+Foto";
+        }
+
+        const tituloModal = document.getElementById("tituloModalConductor");
+        if (tituloModal) {
+            tituloModal.textContent = "Editar Conductor";
+        }
+
+        const btnGuardar = document.getElementById("btnGuardarConductor");
+        if (btnGuardar) {
+            btnGuardar.textContent = "Actualizar";
         }
 
         window.driverAppData.foto = d.imagen || "";
