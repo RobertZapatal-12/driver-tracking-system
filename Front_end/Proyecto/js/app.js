@@ -345,6 +345,24 @@ function resetDriverForm() {
         preview.src = "https://via.placeholder.com/150?text=Subir+Foto";
     }
 
+    const modalCard = document.querySelector(".modal-card");
+    if (modalCard) {
+        modalCard.classList.remove("modo-edicion");
+        modalCard.classList.add("modo-crear");
+    }
+
+    const tituloModal = document.getElementById("tituloModalConductor");
+    if (tituloModal) {
+        tituloModal.textContent = "Nuevo Perfil de Conductor";
+    }
+
+    const btnGuardar = document.getElementById("btnGuardarConductor");
+    if (btnGuardar) {
+        btnGuardar.textContent = "Guardar";
+        btnGuardar.classList.remove("btn-warning");
+        btnGuardar.classList.add("btn-primary");
+    }
+
     window.driverAppData.foto = "";
 }
 

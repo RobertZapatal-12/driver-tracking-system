@@ -275,7 +275,27 @@ body {
     align-items: center;
 }
 
+.status-label {
+    font-size: 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+}
 
+.status-value {
+    font-size: 20px;
+    font-weight: 800;
+}
+
+.bg-status-activo {
+    background-color: #22c55e;
+    color: white;
+}
+
+.bg-status-inactivo {
+    background-color: #facc15;
+    color: #854d0e;
+}
 /* =========================================================
    BOTÓN TUERCA Y MENÚ DE ACCIONES
    ========================================================= */

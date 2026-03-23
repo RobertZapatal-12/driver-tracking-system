@@ -26,6 +26,16 @@ const conductoresPorPagina = 3;
    ========================================================= */
 async function cargarConductores() {
     try {
+
+        const lista = document.getElementById("listaConductores");
+        if (lista) {
+            lista.innerHTML = `
+                <div class="col-12 text-center text-muted py-4">
+                Cargando conductores...
+                </div>
+            `;
+        }
+
         const res = await fetch(`${API_URL}/`);
         if (!res.ok) {
             throw new Error("No se pudieron cargar los conductores");
@@ -101,13 +111,16 @@ function renderPaginaConductores() {
     const conductoresPagina = conductoresFiltrados.slice(inicio, fin);
 
     if (conductoresPagina.length === 0) {
-        lista.innerHTML = `
-            <div class="col-12 text-center text-muted py-4">
-                No se encontraron conductores.
+    lista.innerHTML = `
+        <div class="col-12">
+            <div class="alert alert-light border text-center py-4">
+                <strong>No se encontraron conductores.</strong><br>
+                Intenta con otro nombre, cédula, teléfono o licencia.
             </div>
-        `;
-        return;
-    }
+        </div>
+    `;
+    return;
+}
 
     conductoresPagina.forEach(driver => {
         renderDriverCard(driver);
