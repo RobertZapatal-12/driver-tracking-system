@@ -3,12 +3,13 @@
    ========================================================= */
 window.driverAppData = { foto: "" };
 
+/* =========================================================
+   API BASE
+   ========================================================= */
+const API_BASE = "http://127.0.0.1:8000";
 
 /* =========================================================
    INICIO DE LA APLICACIÓN
-   - Carga el sidebar
-   - Marca dashboard como activo
-   - Carga la página inicial
    ========================================================= */
 document.addEventListener("DOMContentLoaded", () => {
     fetch("components/sidebar.html")
@@ -16,19 +17,16 @@ document.addEventListener("DOMContentLoaded", () => {
         .then(data => {
             document.getElementById("sidebar").innerHTML = data;
             setActiveLink("dashboard");
+        })
+        .catch(error => {
+            console.error("Error cargando sidebar:", error);
         });
 
     cargarPagina("dashboard");
 });
 
-
 /* =========================================================
    NAVEGACIÓN DINÁMICA ENTRE PÁGINAS
-   - Inserta el HTML dentro de #contenido
-   - Actualiza el título
-   - Inicializa modales
-   - Si entra a conductores, carga los datos desde la API
-   - Si entra a mapa, inicializa Leaflet
    ========================================================= */
 function cargarPagina(pagina) {
     const contenedor = document.getElementById("contenido");
@@ -48,11 +46,20 @@ function cargarPagina(pagina) {
             }
 
             if (pagina === "mapa") {
-                setTimeout(initMapa, 100);
+                setTimeout(() => {
+                    initMapa();
+                }, 100);
             }
+        })
+        .catch(error => {
+            console.error("Error cargando la página:", error);
+            contenedor.innerHTML = `
+                <div class="alert alert-danger">
+                    Error cargando la página.
+                </div>
+            `;
         });
 }
-
 
 /* =========================================================
    SIDEBAR - LINK ACTIVO
@@ -67,13 +74,8 @@ function setActiveLink(pagina) {
     });
 }
 
-
 /* =========================================================
    INICIALIZACIÓN DE MODALES
-   - Modal de conductores
-   - Imagen del conductor
-   - Formulario de conductor (crear / editar)
-   - Formulario de vehículo
    ========================================================= */
 function initModals() {
     const modal = document.querySelector(".modal-overlay");
@@ -82,20 +84,12 @@ function initModals() {
     const form = document.getElementById("formConductor");
     const inputFoto = document.getElementById("fotoC");
 
-    /* -----------------------------------------------------
-       ABRIR MODAL
-       ----------------------------------------------------- */
     if (openBtn && modal) {
         openBtn.onclick = () => {
             modal.style.display = "flex";
         };
     }
 
-    /* -----------------------------------------------------
-       CERRAR MODAL
-       - Limpia formulario
-       - Limpia estado de edición
-       ----------------------------------------------------- */
     if (closeBtn && modal) {
         closeBtn.onclick = () => {
             modal.style.display = "none";
@@ -107,10 +101,6 @@ function initModals() {
         };
     }
 
-    /* -----------------------------------------------------
-       CARGA DE IMAGEN DEL CONDUCTOR
-       - Lee la foto seleccionada y la previsualiza
-       ----------------------------------------------------- */
     if (inputFoto) {
         inputFoto.onchange = (e) => {
             const file = e.target.files[0];
@@ -132,10 +122,6 @@ function initModals() {
         };
     }
 
-    /* -----------------------------------------------------
-       FORMULARIO DE VEHÍCULO
-       - Inserta una fila en la tabla localmente
-       ----------------------------------------------------- */
     const formVehiculo = document.getElementById("formVehiculo");
 
     if (formVehiculo) {
@@ -182,12 +168,6 @@ function initModals() {
         };
     }
 
-    /* -----------------------------------------------------
-       FORMULARIO DE CONDUCTOR
-       - Si hay editandoDriverId: actualiza
-       - Si no hay editandoDriverId: crea
-       - Luego recarga la lista desde la API
-       ----------------------------------------------------- */
     if (form) {
         form.onsubmit = async (e) => {
             e.preventDefault();
@@ -202,7 +182,8 @@ function initModals() {
                 tipo_licencia: document.getElementById("tipoLicenciaC").value,
                 estado: document.getElementById("estadoC").value,
                 descripcion: document.getElementById("descripcionC").value || "Sin información.",
-                imagen: window.driverAppData.foto ||
+                imagen:
+                    window.driverAppData.foto ||
                     `https://ui-avatars.com/api/?name=${encodeURIComponent(nombre)}&background=random&shape=square`
             };
 
@@ -228,7 +209,6 @@ function initModals() {
                 if (typeof limpiarModoEdicion === "function") {
                     limpiarModoEdicion();
                 }
-
             } catch (error) {
                 console.error("Error al conectar con la API:", error);
                 alert("❌ No se pudo guardar. Revisa que el servidor esté encendido.");
@@ -237,12 +217,8 @@ function initModals() {
     }
 }
 
-
 /* =========================================================
    RENDER DE TARJETAS DE CONDUCTORES
-   - Crea la card
-   - Muestra menú de acciones
-   - Permite expandir detalles
    ========================================================= */
 function renderDriverCard(d) {
     const contenedor = document.getElementById("listaConductores");
@@ -312,10 +288,8 @@ function renderDriverCard(d) {
     contenedor.prepend(card);
 }
 
-
 /* =========================================================
    EXPANSIÓN DE TARJETAS
-   - Solo una tarjeta expandida a la vez
    ========================================================= */
 function seleccionarSoloUno(elemento) {
     const todos = document.querySelectorAll(".driver-row");
@@ -329,12 +303,8 @@ function seleccionarSoloUno(elemento) {
     elemento.classList.toggle("expanded");
 }
 
-
 /* =========================================================
    RESETEAR FORMULARIO DE CONDUCTOR
-   - Limpia campos
-   - Limpia preview
-   - Limpia foto guardada en memoria
    ========================================================= */
 function resetDriverForm() {
     const form = document.getElementById("formConductor");
@@ -366,62 +336,199 @@ function resetDriverForm() {
     window.driverAppData.foto = "";
 }
 
-
 /* =========================================================
    MAPA - VARIABLES GLOBALES
    ========================================================= */
-var mapaGlobal;
-var marcadorChofer;
+let mapaGlobal = null;
+let marcadorChofer = null;
+let marcadoresConductores = {};
 
+/* =========================================================
+   ICONO PERSONALIZADO DE CARRO
+   ========================================================= */
+const carIcon = L.icon({
+    iconUrl: "https://cdn-icons-png.flaticon.com/512/743/743922.png",
+    iconSize: [40, 40],
+    iconAnchor: [20, 40],
+    popupAnchor: [0, -35]
+});
 
 /* =========================================================
    INICIALIZAR MAPA
-   - Centrado en Santo Domingo
+   - Opción 2: cargar todos los conductores
    ========================================================= */
 function initMapa() {
-    if (document.getElementById("map")) {
-        mapaGlobal = L.map("map").setView([18.4861, -69.9312], 13);
+    const mapElement = document.getElementById("map");
+    if (!mapElement) return;
 
-        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-            attribution: "© OpenStreetMap"
-        }).addTo(mapaGlobal);
+    if (typeof L === "undefined") {
+        console.error("Leaflet no está cargado.");
+        return;
     }
-}
 
+    if (mapaGlobal) {
+        mapaGlobal.remove();
+        mapaGlobal = null;
+        marcadoresConductores = {};
+        marcadorChofer = null;
+    }
+
+    mapaGlobal = L.map("map").setView([18.4861, -69.9312], 13);
+
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        attribution: "© OpenStreetMap"
+    }).addTo(mapaGlobal);
+
+    cargarTodosLosConductores();
+}
 
 /* =========================================================
-   BUSCAR UBICACIÓN SIMULADA DE UN VIAJE
+   Opción 2: CARGAR TODOS LOS CONDUCTORES EN EL MAPA
    ========================================================= */
-function buscarUbicacion() {
-    const codigo = document.getElementById("codigoViaje").value.toUpperCase();
+async function cargarTodosLosConductores() {
+    try {
+        const response = await fetch(`${API_BASE}/locations/latest`);
 
-    const rutasSimuladas = {
-        "TR-809": { lat: 18.4735, lng: -69.9389, nombre: "Juan Pérez", info: "Cerca de la Av. Churchill" },
-        "SD-001": { lat: 18.5001, lng: -69.8555, nombre: "Pedro Alcántara", info: "Cruzando el Puente Flotante" },
-        "ST-777": { lat: 19.4517, lng: -70.6970, nombre: "Marcos Díaz", info: "Santiago, cerca del Monumento" }
-    };
-
-    if (rutasSimuladas[codigo]) {
-        const data = rutasSimuladas[codigo];
-
-        if (marcadorChofer) {
-            mapaGlobal.removeLayer(marcadorChofer);
+        if (!response.ok) {
+            throw new Error(`Error HTTP ${response.status}`);
         }
 
-        mapaGlobal.flyTo([data.lat, data.lng], 16);
+        const data = await response.json();
 
-        marcadorChofer = L.marker([data.lat, data.lng]).addTo(mapaGlobal)
-            .bindPopup(`<b>Chofer:</b> ${data.nombre}<br><b>Estado:</b> ${data.info}`)
-            .openPopup();
-    } else {
-        alert("Código de viaje no encontrado. Prueba con TR-809");
+        if (!Array.isArray(data) || data.length === 0) {
+            return;
+        }
+
+        data.forEach(d => {
+            const lat = d.latitud;
+            const lng = d.longitud;
+
+            if (marcadoresConductores[d.driver_id]) {
+                marcadoresConductores[d.driver_id].setLatLng([lat, lng]);
+                marcadoresConductores[d.driver_id].setPopupContent(`
+                    <b>${d.nombre}</b><br>
+                    Driver ID: ${d.driver_id}<br>
+                    Latitud: ${lat}<br>
+                    Longitud: ${lng}<br>
+                    Velocidad: ${d.velocidad}
+                `);
+            } else {
+                const marker = L.marker([lat, lng], { icon: carIcon }).addTo(mapaGlobal)
+                    .bindPopup(`
+                        <b>${d.nombre}</b><br>
+                        Driver ID: ${d.driver_id}<br>
+                        Latitud: ${lat}<br>
+                        Longitud: ${lng}<br>
+                        Velocidad: ${d.velocidad}
+                    `);
+
+                marcadoresConductores[d.driver_id] = marker;
+            }
+        });
+    } catch (error) {
+        console.error("Error cargando todos los conductores:", error);
     }
 }
 
+/* =========================================================
+   BUSCAR UBICACIÓN REAL DESDE EL BACKEND
+   ========================================================= */
+let driverIdSeleccionado = null;
+
+async function buscarUbicacion() {
+    try {
+        const codigo = document.getElementById("codigoViaje").value.trim();
+
+        if (codigo === "" || isNaN(codigo)) {
+            alert("Introduce un driver_id válido. Ej: 6");
+            return;
+        }
+
+        driverIdSeleccionado = codigo;
+        await actualizarChoferSeleccionado();
+    } catch (error) {
+        console.error("Error cargando ubicación:", error);
+        alert("Error cargando la ubicación del conductor.");
+    }
+}
+
+async function actualizarChoferSeleccionado() {
+    if (!driverIdSeleccionado) return;
+
+    try {
+        const response = await fetch(`${API_BASE}/locations/latest`);
+
+        if (!response.ok) {
+            throw new Error(`Error HTTP ${response.status}`);
+        }
+
+        const data = await response.json();
+
+        if (!Array.isArray(data) || data.length === 0) {
+            return;
+        }
+
+        const chofer = data.find(d => String(d.driver_id) === String(driverIdSeleccionado));
+
+        if (!chofer) {
+            alert("No se encontró ese conductor en las ubicaciones activas.");
+            return;
+        }
+
+        mostrarChofer(chofer);
+    } catch (error) {
+        console.error("Error actualizando chofer seleccionado:", error);
+    }
+}
+
+/* =========================================================
+   MOSTRAR CHOFER EN EL MAPA
+   - Opción 3: icono personalizado
+   ========================================================= */
+function mostrarChofer(data) {
+    if (!mapaGlobal) {
+        console.error("Mapa no inicializado.");
+        return;
+    }
+
+    const lat = data.latitud;
+    const lng = data.longitud;
+
+    if (marcadorChofer) {
+        mapaGlobal.removeLayer(marcadorChofer);
+    }
+
+    mapaGlobal.flyTo([lat, lng], 16);
+
+    marcadorChofer = L.marker([lat, lng], { icon: carIcon }).addTo(mapaGlobal)
+        .bindPopup(`
+            <b>Chofer:</b> ${data.nombre}<br>
+            <b>Latitud:</b> ${lat}<br>
+            <b>Longitud:</b> ${lng}<br>
+            <b>Velocidad:</b> ${data.velocidad}
+        `)
+        .openPopup();
+}
+
+/* =========================================================
+   Opción 1: ACTUALIZACIÓN AUTOMÁTICA CADA 3 SEGUNDOS
+   ========================================================= */
+setInterval(() => {
+    const input = document.getElementById("codigoViaje");
+
+    if (!input || !mapaGlobal) return;
+
+    const valor = input.value.trim();
+
+    if (valor !== "" && !isNaN(valor)) {
+        actualizarChoferSeleccionado();
+    } else {
+        cargarTodosLosConductores();
+    }
+}, 3000);
 
 /* =========================================================
    MENÚ DE ACCIONES DE CADA CARD
-   - Abre/cierra el dropdown de la tuerca
    ========================================================= */
 function toggleMenu(boton) {
     const menu = boton.nextElementSibling;

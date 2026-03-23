@@ -7,31 +7,22 @@ let editandoDriverId = null;
 
 /* =========================================================
    ESTADO GLOBAL DE LA LISTA DE CONDUCTORES
-   - todosLosConductores: lista completa traída desde la API
-   - conductoresFiltrados: lista luego de aplicar búsqueda
-   - paginaActual: página actualmente visible
-   - conductoresPorPagina: cantidad por página
    ========================================================= */
 let todosLosConductores = [];
 let conductoresFiltrados = [];
 let paginaActual = 1;
 const conductoresPorPagina = 3;
 
-
 /* =========================================================
    CARGAR CONDUCTORES DESDE LA API
-   - Trae todos los conductores
-   - Guarda la lista completa
-   - Inicializa búsqueda y paginación
    ========================================================= */
 async function cargarConductores() {
     try {
-
         const lista = document.getElementById("listaConductores");
         if (lista) {
             lista.innerHTML = `
                 <div class="col-12 text-center text-muted py-4">
-                Cargando conductores...
+                    Cargando conductores...
                 </div>
             `;
         }
@@ -54,10 +45,8 @@ async function cargarConductores() {
     }
 }
 
-
 /* =========================================================
    BUSCADOR DE CONDUCTORES
-   - Filtra por nombre en tiempo real
    ========================================================= */
 function inicializarBuscadorConductores() {
     const input = document.getElementById("buscadorConductores");
@@ -74,27 +63,25 @@ function aplicarFiltroConductores() {
     const texto = input ? input.value.trim().toLowerCase() : "";
 
     conductoresFiltrados = todosLosConductores.filter(driver => {
-    const nombre = (String(driver.nombre) || "").toLowerCase();
-    const cedula = (String(driver.cedula) || "").toLowerCase();
-    const telefono = (String(driver.telefono) || "").toLowerCase();
-    const licencia = (String(driver.numero_licencia) || "").toLowerCase();
+        const nombre = (String(driver.nombre) || "").toLowerCase();
+        const cedula = (String(driver.cedula) || "").toLowerCase();
+        const telefono = (String(driver.telefono) || "").toLowerCase();
+        const licencia = (String(driver.numero_licencia) || "").toLowerCase();
 
-    return (
-        nombre.includes(texto) ||
-        cedula.includes(texto) ||
-        telefono.includes(texto) ||
-        licencia.includes(texto)
-    );
-});
+        return (
+            nombre.includes(texto) ||
+            cedula.includes(texto) ||
+            telefono.includes(texto) ||
+            licencia.includes(texto)
+        );
+    });
 
     renderPaginaConductores();
     renderPaginacionConductores();
 }
 
-
 /* =========================================================
    RENDER DE CONDUCTORES SEGÚN LA PÁGINA ACTUAL
-   - Muestra solo los conductores de la página activa
    ========================================================= */
 function renderPaginaConductores() {
     const lista = document.getElementById("listaConductores");
@@ -111,27 +98,24 @@ function renderPaginaConductores() {
     const conductoresPagina = conductoresFiltrados.slice(inicio, fin);
 
     if (conductoresPagina.length === 0) {
-    lista.innerHTML = `
-        <div class="col-12">
-            <div class="alert alert-light border text-center py-4">
-                <strong>No se encontraron conductores.</strong><br>
-                Intenta con otro nombre, cédula, teléfono o licencia.
+        lista.innerHTML = `
+            <div class="col-12">
+                <div class="alert alert-light border text-center py-4">
+                    <strong>No se encontraron conductores.</strong><br>
+                    Intenta con otro nombre, cédula, teléfono o licencia.
+                </div>
             </div>
-        </div>
-    `;
-    return;
-}
+        `;
+        return;
+    }
 
     conductoresPagina.forEach(driver => {
         renderDriverCard(driver);
     });
 }
 
-
 /* =========================================================
    PAGINACIÓN
-   - Genera botones: 1, 2, 3...
-   - Cada botón cambia la página visible
    ========================================================= */
 function renderPaginacionConductores() {
     const contenedor = document.getElementById("paginacionConductores");
@@ -143,7 +127,6 @@ function renderPaginacionConductores() {
 
     if (totalPaginas <= 1) return;
 
-    // Botón Anterior
     const btnAnterior = document.createElement("button");
     btnAnterior.textContent = "Anterior";
     btnAnterior.className = "btn btn-outline-primary";
@@ -159,7 +142,6 @@ function renderPaginacionConductores() {
 
     contenedor.appendChild(btnAnterior);
 
-    // Botones numéricos
     for (let i = 1; i <= totalPaginas; i++) {
         const btn = document.createElement("button");
         btn.textContent = i;
@@ -174,7 +156,6 @@ function renderPaginacionConductores() {
         contenedor.appendChild(btn);
     }
 
-    // Botón Siguiente
     const btnSiguiente = document.createElement("button");
     btnSiguiente.textContent = "Siguiente";
     btnSiguiente.className = "btn btn-outline-primary";
@@ -191,10 +172,8 @@ function renderPaginacionConductores() {
     contenedor.appendChild(btnSiguiente);
 }
 
-
 /* =========================================================
    CREAR CONDUCTOR
-   - Hace POST a la API
    ========================================================= */
 async function crearDriver(driver) {
     const res = await fetch(`${API_URL}/`, {
@@ -212,10 +191,8 @@ async function crearDriver(driver) {
     return await res.json();
 }
 
-
 /* =========================================================
    ACTUALIZAR CONDUCTOR
-   - Hace PUT a la API usando el ID
    ========================================================= */
 async function actualizarDriver(id, driver) {
     const res = await fetch(`${API_URL}/${id}`, {
@@ -233,10 +210,8 @@ async function actualizarDriver(id, driver) {
     return await res.json();
 }
 
-
 /* =========================================================
    ELIMINAR CONDUCTOR
-   - Hace DELETE a la API
    ========================================================= */
 async function eliminarDriver(id) {
     const res = await fetch(`${API_URL}/${id}`, {
@@ -250,12 +225,8 @@ async function eliminarDriver(id) {
     return await res.json();
 }
 
-
 /* =========================================================
    CONFIRMAR ELIMINACIÓN
-   - Pide confirmación al usuario
-   - Elimina
-   - Recarga lista y paginación
    ========================================================= */
 async function confirmarEliminacion(id) {
     if (!confirm("¿Estás seguro de que deseas eliminar a este conductor?")) return;
@@ -270,12 +241,8 @@ async function confirmarEliminacion(id) {
     }
 }
 
-
 /* =========================================================
    EDITAR CONDUCTOR
-   - Trae los datos del conductor
-   - Llena el formulario del modal
-   - Cambia a modo edición
    ========================================================= */
 async function editarDriver(id) {
     try {
@@ -322,10 +289,8 @@ async function editarDriver(id) {
     }
 }
 
-
 /* =========================================================
    LIMPIAR MODO EDICIÓN
-   - Vuelve a modo crear
    ========================================================= */
 function limpiarModoEdicion() {
     editandoDriverId = null;
