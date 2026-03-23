@@ -263,7 +263,7 @@ function renderDriverCard(d) {
         <div class="driver-actions-container">
             <button class="btn-tuerca" onclick="event.stopPropagation(); toggleMenu(this)">⚙️</button>
             <div class="dropdown-menu-custom">
-                <button onclick="prepararEdicion(${d.driver_id})">✏️ Editar</button>
+                <button onclick="editarDriver(${d.driver_id})">✏️ Editar</button>
                 <button class="text-danger" onclick="confirmarEliminacion(${d.driver_id})">🗑️ Eliminar</button>
             </div>
         </div>
