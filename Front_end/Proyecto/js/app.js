@@ -406,15 +406,22 @@ function buscarUbicacion() {
    - Abre/cierra el dropdown de la tuerca
    ========================================================= */
 function toggleMenu(boton) {
-    document.querySelectorAll(".dropdown-menu-custom").forEach(m => m.classList.remove("show"));
-
     const menu = boton.nextElementSibling;
-    menu.classList.toggle("show");
+    const yaEstaAbierto = menu.classList.contains("show");
 
-    document.addEventListener("click", function closeMenu(e) {
-        if (!boton.contains(e.target)) {
-            menu.classList.remove("show");
-            document.removeEventListener("click", closeMenu);
-        }
+    document.querySelectorAll(".dropdown-menu-custom").forEach(m => {
+        m.classList.remove("show");
     });
+
+    if (!yaEstaAbierto) {
+        menu.classList.add("show");
+    }
 }
+
+document.addEventListener("click", function (e) {
+    if (!e.target.closest(".driver-actions-container")) {
+        document.querySelectorAll(".dropdown-menu-custom").forEach(m => {
+            m.classList.remove("show");
+        });
+    }
+});
