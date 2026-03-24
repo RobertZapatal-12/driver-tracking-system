@@ -9,9 +9,53 @@ window.driverAppData = { foto: "" };
 const API_BASE = "http://127.0.0.1:8000";
 
 /* =========================================================
+   VERIFICACIÓN DE AUTENTICACIÓN
+   ========================================================= */
+function checkAuthentication() {
+    const token = localStorage.getItem("authToken");
+    if (!token) {
+        // No hay token, redirigir a login
+        window.location.href = "login.html";
+        return false;
+    }
+    return true;
+}
+
+/* =========================================================
+   CARGAR DATOS DEL USUARIO
+   ========================================================= */
+function loadUserData() {
+    const userStr = localStorage.getItem("user");
+    if (userStr) {
+        const user = JSON.parse(userStr);
+        const userSpan = document.querySelector(".user-profile span");
+        if (userSpan) {
+            userSpan.textContent = user.name || "Usuario";
+        }
+    }
+}
+
+/* =========================================================
+   CERRAR SESIÓN
+   ========================================================= */
+function logoutUser() {
+    localStorage.removeItem("authToken");
+    localStorage.removeItem("user");
+    window.location.href = "login.html";
+}
+
+/* =========================================================
    INICIO DE LA APLICACIÓN
    ========================================================= */
 document.addEventListener("DOMContentLoaded", () => {
+    // Verificar autenticación antes de cargar nada
+    if (!checkAuthentication()) {
+        return;
+    }
+
+    // Cargar datos del usuario
+    loadUserData();
+    
     fetch("components/sidebar.html")
         .then(res => res.text())
         .then(data => {

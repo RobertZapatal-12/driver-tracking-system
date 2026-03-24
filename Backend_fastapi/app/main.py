@@ -1,9 +1,15 @@
 from pathlib import Path
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from app.routers import drivers, users, locations, vehicles, trips, trips2
+from app import schemas, models
+from sqlalchemy.orm import Session
+from app.database import get_db
+from datetime import datetime, timedelta
+import jwt
+import os
 
 app = FastAPI(
     title="Driver Tracking API"
@@ -23,6 +29,63 @@ app.include_router(vehicles.router)
 app.include_router(locations.router)
 app.include_router(trips.router)
 app.include_router(trips2.router)
+
+# Configuración JWT
+SECRET_KEY = os.getenv("SECRET_KEY", "your-secret-key-change-this-in-production")
+ALGORITHM = "HS256"
+ACCESS_TOKEN_EXPIRE_MINUTES = 30
+
+
+def create_access_token(data: dict, expires_delta: timedelta = None):
+    """Crea un token JWT"""
+    to_encode = data.copy()
+    if expires_delta:
+        expire = datetime.utcnow() + expires_delta
+    else:
+        expire = datetime.utcnow() + timedelta(minutes=15)
+    to_encode.update({"exp": expire})
+    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    return encoded_jwt
+
+
+# Endpoint de login en la raíz /api/login (para conexión con frontend)
+@app.post("/api/login", response_model=schemas.LoginResponse)
+def api_login(login_data: schemas.UserLogin, db: Session = Depends(get_db)):
+    """Endpoint de login que autentica usuarios"""
+    
+    # Buscar el usuario por email
+    user = db.query(models.User).filter(models.User.email == login_data.email).first()
+    
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Email o contraseña incorrectos"
+        )
+    
+    # Verificar contraseña
+    if user.contrasena != login_data.password:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Email o contraseña incorrectos"
+        )
+    
+    # Crear token JWT
+    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    token = create_access_token(
+        data={"sub": user.email},
+        expires_delta=access_token_expires
+    )
+    
+    # Retornar token y datos del usuario
+    return {
+        "token": token,
+        "user": {
+            "id": user.user_id,
+            "email": user.email,
+            "name": user.nombre,
+            "role": user.role
+        }
+    }
 
 FRONTEND_DIR = Path(__file__).parent.parent.parent / "Front_end" / "Proyecto"
 

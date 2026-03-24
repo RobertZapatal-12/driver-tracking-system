@@ -24,6 +24,19 @@ class UserResponse(UserBase):
         from_attributes = True
 
 
+class UserLogin(BaseModel):
+    email: str
+    password: str
+
+
+class LoginResponse(BaseModel):
+    token: str
+    user: dict
+
+    class Config:
+        from_attributes = True
+
+
 # =========================
 # DRIVERS
 # =========================
