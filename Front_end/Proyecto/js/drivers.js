@@ -246,7 +246,7 @@ async function confirmarEliminacion(id) {
    ========================================================= */
 async function editarDriver(id) {
     try {
-        const res = await fetch(`${API_URL}/${id}`);
+        const res = await fetch(`${API_URL_DRIVERS}/${id}`);
         if (!res.ok) {
             throw new Error("No se pudo obtener el conductor");
         }
@@ -255,17 +255,20 @@ async function editarDriver(id) {
 
         editandoDriverId = id;
 
-        document.getElementById("nombreC").value = d.nombre || "";
-        document.getElementById("telefonoC").value = d.telefono || "";
-        document.getElementById("cedulaC").value = d.cedula || "";
-        document.getElementById("numLicenciaC").value = d.numero_licencia || "";
-        document.getElementById("tipoLicenciaC").value = d.tipo_licencia || "";
-        document.getElementById("estadoC").value = d.estado || "";
-        document.getElementById("descripcionC").value = d.descripcion || "";
+        document.getElementById("nombreConductor").value = d.nombre || "";
+        document.getElementById("telefonoConductor").value = d.telefono || "";
+        document.getElementById("cedulaConductor").value = d.cedula || "";
+        document.getElementById("licenciaConductor").value = d.numero_licencia || "";
+        document.getElementById("tipoLicenciaConductor").value = d.tipo_licencia || "";
+        document.getElementById("estadoConductor").value = d.estado || "";
+        document.getElementById("descripcionConductor").value = d.descripcion || "";
 
-        const preview = document.getElementById("imgPreview");
+        window.driverAppData = window.driverAppData || {};
+        window.driverAppData.foto = d.imagen || "";
+
+        const preview = document.getElementById("previewConductor");
         if (preview) {
-            preview.src = d.imagen || "https://via.placeholder.com/150?text=Subir+Foto";
+            preview.src = d.imagen || "https://via.placeholder.com/80x80?text=Foto";
         }
 
         const tituloModal = document.getElementById("tituloModalConductor");
@@ -278,10 +281,16 @@ async function editarDriver(id) {
             btnGuardar.textContent = "Actualizar";
         }
 
-        window.driverAppData.foto = d.imagen || "";
+        const modalCard = document.querySelector(".modal-card");
+        if (modalCard) {
+            modalCard.classList.remove("modo-crear");
+            modalCard.classList.add("modo-edicion");
+        }
 
         const modal = document.querySelector(".modal-overlay");
-        if (modal) modal.style.display = "block";
+        if (modal) {
+            modal.style.display = "flex";
+        }
 
     } catch (error) {
         console.error(error);
