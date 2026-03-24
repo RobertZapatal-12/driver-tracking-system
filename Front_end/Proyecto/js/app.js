@@ -144,21 +144,52 @@ function initModals() {
     const inputFoto = document.getElementById("fotoC");
 
     if (openBtn && modal) {
-        openBtn.onclick = () => {
-            modal.style.display = "flex";
-        };
-    }
+    openBtn.onclick = () => {
+        modal.style.display = "flex";
+        resetDriverForm();
+        limpiarModoEdicionDriver();
+
+        const tituloModal = document.getElementById("tituloModalConductor");
+        if (tituloModal) {
+            tituloModal.textContent = "Nuevo Perfil de Conductor";
+        }
+
+        const btnGuardar = document.getElementById("btnGuardarConductor");
+        if (btnGuardar) {
+            btnGuardar.textContent = "Guardar";
+        }
+
+        const modalCard = document.querySelector(".modal-card");
+        if (modalCard) {
+            modalCard.classList.remove("modo-edicion");
+            modalCard.classList.add("modo-crear");
+        }
+    };
+}
 
     if (closeBtn && modal) {
-        closeBtn.onclick = () => {
-            modal.style.display = "none";
-            resetDriverForm();
+    closeBtn.onclick = () => {
+        modal.style.display = "none";
+        resetDriverForm();
+        limpiarModoEdicionDriver();
 
-            if (typeof limpiarModoEdicion === "function") {
-                limpiarModoEdicion();
-            }
-        };
-    }
+        const tituloModal = document.getElementById("tituloModalConductor");
+        if (tituloModal) {
+            tituloModal.textContent = "Nuevo Perfil de Conductor";
+        }
+
+        const btnGuardar = document.getElementById("btnGuardarConductor");
+        if (btnGuardar) {
+            btnGuardar.textContent = "Guardar";
+        }
+
+        const modalCard = document.querySelector(".modal-card");
+        if (modalCard) {
+            modalCard.classList.remove("modo-edicion");
+            modalCard.classList.add("modo-crear");
+        }
+    };
+}
 
     if (inputFoto) {
         inputFoto.onchange = (e) => {
