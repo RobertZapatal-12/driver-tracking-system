@@ -138,10 +138,10 @@ class LocationResponse(LocationBase):
 # =========================
 
 class RouteBase(BaseModel):
-    user_id: int
     vehicle_id: int
     origen: str
     destino: str
+    
 
 
 class RouteCreate(RouteBase):
@@ -152,6 +152,8 @@ class RouteResponse(RouteBase):
     route_id: int
     fecha: datetime
     estado: str | None = None
+    driver_id: int
+    driver_nombre: str | None = None 
 
     class Config:
         from_attributes = True

@@ -4,26 +4,26 @@
             <h4>Planificación de Rutas</h4>
             <button class="btn btn-primary btn-open-modal">+ Nueva Ruta</button>
         </div>
-        <table class="table align-middle">
-            <thead class="table-light">
-                <tr>
-                    <th>ID</th>
-                    <th>Origen</th>
-                    <th>Destino</th>
-                    <th>Distancia</th>
-                    <th>Estado</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>RT-001</td>
-                    <td>Sede Central</td>
-                    <td>Sucursal Norte</td>
-                    <td>15.4 km</td>
-                    <td><span class="badge bg-success">Activa</span></td>
-                </tr>
-            </tbody>
-        </table>
+
+        <div class="table-responsive">
+            <table class="table align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Route ID</th>
+                        <th>User ID</th>
+                        <th>Vehicle ID</th>
+                        <th>Driver ID</th>
+                        <th>Conductor</th>
+                        <th>Origen</th>
+                        <th>Destino</th>
+                        <th>Fecha</th>
+                        <th>Estado</th>
+                    </tr>
+                </thead>
+                <tbody id="routes-table-body">
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
 
@@ -31,12 +31,17 @@
     <div class="modal-card">
         <h5>Registrar Nueva Ruta</h5>
         <hr>
-        <form>
-            <input type="text" class="form-control mb-3" placeholder="Punto de Origen">
-            <input type="text" class="form-control mb-3" placeholder="Punto de Destino">
+
+        <form id="routeForm">
+            <input type="number" id="vehicle_id" class="form-control mb-3" placeholder="ID del Vehículo" required>
+
+            <input type="text" id="origen" class="form-control mb-3" placeholder="Punto de Origen" required>
+
+            <input type="text" id="destino" class="form-control mb-3" placeholder="Punto de Destino" required>
+
             <div class="d-flex justify-content-end gap-2">
                 <button type="button" class="btn btn-light btn-close-modal">Cerrar</button>
-                <button class="btn btn-primary">Crear Ruta</button>
+                <button type="button" class="btn btn-primary" onclick="crearRuta()">Crear Ruta</button>
             </div>
         </form>
     </div>

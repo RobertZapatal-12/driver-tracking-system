@@ -78,12 +78,14 @@ class Route(Base):
 
     user_id = Column(Integer, ForeignKey("users.user_id", ondelete="CASCADE"))
     vehicle_id = Column(Integer, ForeignKey("vehicles.vehicle_id", ondelete="CASCADE"))
+    driver_id = Column(Integer, ForeignKey("drivers.driver_id"))
 
     origen = Column(String)
     destino = Column(String)
 
     fecha = Column(DateTime, server_default=func.now())
-    estado = Column(String)
+    estado = Column(String, default="Pendiente")
+    driver = relationship("Driver")
 
 # =========================
 # VEHICLES
