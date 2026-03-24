@@ -1,0 +1,1545 @@
+This file is a merged representation of the entire codebase, combined into a single document by Repomix.
+
+<file_summary>
+This section contains a summary of this file.
+
+<purpose>
+This file contains a packed representation of the entire repository's contents.
+It is designed to be easily consumable by AI systems for analysis, code review,
+or other automated processes.
+</purpose>
+
+<file_format>
+The content is organized as follows:
+1. This summary section
+2. Repository information
+3. Directory structure
+4. Repository files (if enabled)
+5. Multiple file entries, each consisting of:
+  - File path as an attribute
+  - Full contents of the file
+</file_format>
+
+<usage_guidelines>
+- This file should be treated as read-only. Any changes should be made to the
+  original repository files, not this packed version.
+- When processing this file, use the file path to distinguish
+  between different files in the repository.
+- Be aware that this file may contain sensitive information. Handle it with
+  the same level of security as you would the original repository.
+</usage_guidelines>
+
+<notes>
+- Some files may have been excluded based on .gitignore rules and Repomix's configuration
+- Binary files are not included in this packed representation. Please refer to the Repository Structure section for a complete list of file paths, including binary files
+- Files matching patterns in .gitignore are excluded
+- Files matching default ignore patterns are excluded
+- Files are sorted by Git change count (files with more changes are at the bottom)
+</notes>
+
+</file_summary>
+
+<directory_structure>
+app/__init__.py
+app/database.py
+app/main.py
+app/models.py
+app/routers/clients.py
+app/routers/drivers.py
+app/routers/locations.py
+app/routers/trips.py
+app/routers/trips2.py
+app/routers/users.py
+app/routers/vehicles.py
+app/schemas.py
+create_test_clients.py
+create_test_users.py
+create_users_direct.py
+init_database.py
+README.txt
+requirements.txt
+</directory_structure>
+
+<files>
+This section contains the contents of the repository's files.
+
+<file path="app/__init__.py">
+
+</file>
+
+<file path="app/database.py">
+import os
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker, declarative_base
+
+DATABASE_URL = "mssql+pyodbc://wascar23_SQLLogin_1:jcsinnz5sy@transfleet.mssql.somee.com/transfleet?driver=ODBC+Driver+17+for+SQL+Server&TrustServerCertificate=yes"
+
+engine = create_engine(DATABASE_URL)
+
+SessionLocal = sessionmaker(
+    autocommit=False,
+    autoflush=False,
+    bind=engine
+)
+
+Base = declarative_base()
+
+
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+</file>
+
+<file path="app/main.py">
+from pathlib import Path
+from fastapi import FastAPI, Depends, HTTPException, status
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
+from app.routers import drivers, users, locations, vehicles, trips, trips2, clients
+from app import schemas, models
+from sqlalchemy.orm import Session
+from app.database import get_db
+from datetime import datetime, timedelta
+import jwt
+import os
+
+app = FastAPI(
+    title="Driver Tracking API"
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+app.include_router(drivers.router)
+app.include_router(users.router)
+app.include_router(vehicles.router)
+app.include_router(locations.router)
+app.include_router(trips.router)
+app.include_router(trips2.router)
+app.include_router(clients.router)
+
+# Configuración JWT
+SECRET_KEY = os.getenv("SECRET_KEY", "your-secret-key-change-this-in-production")
+ALGORITHM = "HS256"
+ACCESS_TOKEN_EXPIRE_MINUTES = 30
+
+
+def create_access_token(data: dict, expires_delta: timedelta = None):
+    """Crea un token JWT"""
+    to_encode = data.copy()
+    if expires_delta:
+        expire = datetime.utcnow() + expires_delta
+    else:
+        expire = datetime.utcnow() + timedelta(minutes=15)
+    to_encode.update({"exp": expire})
+    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    return encoded_jwt
+
+
+# Endpoint de login en la raíz /api/login (para conexión con frontend)
+@app.post("/api/login", response_model=schemas.LoginResponse)
+def api_login(login_data: schemas.UserLogin, db: Session = Depends(get_db)):
+    """Endpoint de login que autentica usuarios"""
+    
+    # Buscar el usuario por email
+    user = db.query(models.User).filter(models.User.email == login_data.email).first()
+    
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Email o contraseña incorrectos"
+        )
+    
+    # Verificar contraseña
+    if user.contrasena != login_data.password:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Email o contraseña incorrectos"
+        )
+    
+    # Crear token JWT
+    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    token = create_access_token(
+        data={"sub": user.email},
+        expires_delta=access_token_expires
+    )
+    
+    # Retornar token y datos del usuario
+    return {
+        "token": token,
+        "user": {
+            "id": user.user_id,
+            "email": user.email,
+            "name": user.nombre,
+            "role": user.role
+        }
+    }
+
+FRONTEND_DIR = Path(__file__).parent.parent.parent / "Front_end" / "Proyecto"
+
+app.mount("/", StaticFiles(directory=str(FRONTEND_DIR), html=True), name="static")
+</file>
+
+<file path="app/models.py">
+from sqlalchemy import Column, Integer, String, Float, ForeignKey, DateTime
+from sqlalchemy.orm import relationship
+from app.database import Base
+from sqlalchemy.sql import func
+# =========================
+# USERS
+# =========================
+
+class User(Base):
+    __tablename__ = "users"
+
+    user_id = Column(Integer, primary_key=True, index=True)
+    nombre = Column(String)
+    email = Column(String, unique=True)
+    contrasena = Column(String)
+    role = Column(String)
+
+
+# =========================
+# CLIENTS
+# =========================
+
+class Client(Base):
+    __tablename__ = "clients"
+
+    client_id = Column(Integer, primary_key=True, index=True)
+    nombre = Column(String)
+    email = Column(String, unique=True)
+    telefono = Column(String)
+    cedula = Column(String)
+    direccion = Column(String)
+    estado = Column(String)
+
+
+# =========================
+# DRIVERS
+# =========================
+
+class Driver(Base):
+    __tablename__ = "drivers"
+
+    driver_id = Column(Integer, primary_key=True, index=True)
+    nombre = Column(String)
+    telefono = Column(String)
+    numero_licencia = Column(String)
+    tipo_licencia = Column(String)
+    cedula = Column(String)
+    estado = Column(String)
+    imagen = Column(String)          
+    descripcion = Column(String)     
+    
+
+
+# =========================
+# LOCATIONS
+# =========================
+
+class Location(Base):
+    __tablename__ = "locations"
+
+    location_id = Column(Integer, primary_key=True, index=True)
+
+    driver_id = Column(Integer, ForeignKey("drivers.driver_id"))
+
+    latitud = Column(Float)
+    longitud = Column(Float)
+    velocidad = Column(Float)
+
+
+# =========================
+# route
+# =========================
+
+class Route(Base):
+    __tablename__ = "routes"
+
+    route_id = Column(Integer, primary_key=True, index=True)
+
+    user_id = Column(Integer, ForeignKey("users.user_id", ondelete="CASCADE"))
+    vehicle_id = Column(Integer, ForeignKey("vehicles.vehicle_id", ondelete="CASCADE"))
+
+    origen = Column(String)
+    destino = Column(String)
+
+    fecha = Column(DateTime, server_default=func.now())
+    estado = Column(String)
+
+# =========================
+# VEHICLES
+# =========================
+
+class Vehicle(Base):
+    __tablename__ = "vehicles"
+
+    vehicle_id = Column(Integer, primary_key=True, index=True)
+
+    driver_id = Column(Integer, ForeignKey("drivers.driver_id"))
+
+    plate_number = Column(String)
+    modelo = Column(String)
+    marca = Column(String)
+    color = Column(String)
+    year = Column(Integer)
+
+# =========================
+# request
+# =========================
+
+class Request(Base):
+    __tablename__ = "request"
+
+    request_id = Column(Integer, primary_key=True, index=True)
+
+    route_id = Column(Integer, ForeignKey("routes.route_id", ondelete="CASCADE"))
+    user_id = Column(Integer, ForeignKey("users.user_id", ondelete="CASCADE"))
+    vehicle_id = Column(Integer, ForeignKey("vehicles.vehicle_id", ondelete="CASCADE"))
+
+    inicio = Column(DateTime)
+    fin = Column(DateTime)
+    estado = Column(String)
+</file>
+
+<file path="app/routers/clients.py">
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.orm import Session
+from app.database import get_db
+from app import models, schemas
+
+# Se crea un router para agrupar todas las rutas relacionadas con clients
+router = APIRouter(
+    prefix="/clients", # Todas las rutas comenzarán con /clients
+    tags=["Clients"] # Nombre que aparecerá en la documentación automática
+)
+
+# Endpoint para obtener todos los clientes de la base de datos
+@router.get("/")
+def get_clients(db: Session = Depends(get_db)):
+    # Consulta todos los registros de la tabla clients
+    return db.query(models.Client).all()
+
+# Endpoint para obtener un cliente específico usando su ID
+@router.get("/{client_id}")
+def get_client(client_id: int, db: Session = Depends(get_db)):
+    # Filtra la tabla clients buscando el cliente con el ID indicado
+    # first() devuelve el primer resultado encontrado
+    return db.query(models.Client).filter(models.Client.client_id == client_id).first()
+
+# Endpoint para crear un nuevo cliente en la base de datos
+@router.post("/")
+def create_client(client: schemas.ClientCreate, db: Session = Depends(get_db)):
+    
+    new_client = models.Client(**client.dict())
+
+    
+    db.add(new_client)
+    db.commit()
+    db.refresh(new_client)
+    
+   
+    return new_client
+
+#Endpoint para actualizar un cliente
+@router.put("/{client_id}")
+def update_client(client_id: int, client: schemas.ClientCreate, db: Session = Depends(get_db)):
+
+    db_client = db.query(models.Client).filter(models.Client.client_id == client_id).first()
+
+    if not db_client:
+        return {"error": "Cliente no encontrado"}
+
+    for key, value in client.dict().items():
+        setattr(db_client, key, value)
+
+    db.commit()
+    db.refresh(db_client)
+
+    return db_client
+
+#Endpoint para borrar un cliente
+@router.delete("/{client_id}")
+def delete_client(client_id: int, db: Session = Depends(get_db)):
+
+    # Buscar el cliente
+    client = db.query(models.Client).filter(models.Client.client_id == client_id).first()
+
+    if not client:
+        raise HTTPException(status_code=404, detail="Cliente no encontrado")
+
+    # Borrar el cliente
+    db.delete(client)
+    db.commit()
+
+    return {"mensaje": "Cliente eliminado"}
+</file>
+
+<file path="app/routers/drivers.py">
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.orm import Session
+from app.database import get_db
+from app import models, schemas
+
+# Se crea un router para agrupar todas las rutas relacionadas con drivers
+router = APIRouter(
+    prefix="/drivers", # Todas las rutas comenzarán con /drivers
+    tags=["Drivers"] # Nombre que aparecerá en la documentación automática
+)
+
+# Endpoint para obtener todos los conductores de la base de datos
+@router.get("/")
+def get_drivers(db: Session = Depends(get_db)):
+    # Consulta todos los registros de la tabla drivers
+    return db.query(models.Driver).all()
+
+# Endpoint para obtener un conductor específico usando su ID
+@router.get("/{driver_id}")
+def get_driver(driver_id: int, db: Session = Depends(get_db)):
+    # Filtra la tabla drivers buscando el conductor con el ID indicado
+    # first() devuelve el primer resultado encontrado
+    return db.query(models.Driver).filter(models.Driver.driver_id == driver_id).first()
+
+# Endpoint para crear un nuevo conductor en la base de datos
+@router.post("/")
+def create_driver(driver: schemas.DriverCreate, db: Session = Depends(get_db)):
+    
+    new_driver = models.Driver(**driver.dict())
+
+    
+    db.add(new_driver)
+    db.commit()
+    db.refresh(new_driver)
+    
+   
+    return new_driver
+#Endpoint para actualizar un conductor
+@router.put("/{driver_id}")
+def update_driver(driver_id: int, driver: schemas.DriverCreate, db: Session = Depends(get_db)):
+
+    db_driver = db.query(models.Driver).filter(models.Driver.driver_id == driver_id).first()
+
+    if not db_driver:
+        return {"error": "Conductor no encontrado"}
+
+    for key, value in driver.dict().items():
+        setattr(db_driver, key, value)
+
+    db.commit()
+    db.refresh(db_driver)
+
+    return db_driver
+
+#Endpoint para borrar un conductor
+@router.delete("/{driver_id}")
+def delete_driver(driver_id: int, db: Session = Depends(get_db)):
+
+    # Buscar el conductor
+    driver = db.query(models.Driver).filter(models.Driver.driver_id == driver_id).first()
+
+    if not driver:
+        raise HTTPException(status_code=404, detail="Conductor no encontrado")
+
+    # Borrar datos relacionados primero
+    db.query(models.Location).filter(models.Location.driver_id == driver_id).delete()
+    db.query(models.Vehicle).filter(models.Vehicle.driver_id == driver_id).delete()
+
+    # Luego borrar el conductor
+    db.delete(driver)
+    db.commit()
+
+    return {"mensaje": "Conductor eliminado"}
+</file>
+
+<file path="app/routers/locations.py">
+from fastapi import APIRouter, Depends
+from sqlalchemy.orm import Session
+from sqlalchemy import func
+from app.database import get_db
+from app import models, schemas
+
+router = APIRouter(
+    prefix="/locations",
+    tags=["Locations"]
+)
+
+@router.post("/")
+def create_location(location: schemas.LocationCreate, db: Session = Depends(get_db)):
+    new_location = models.Location(**location.dict())
+    db.add(new_location)
+    db.commit()
+    db.refresh(new_location)
+    return new_location
+
+@router.get("/driver/{driver_id}")
+def get_driver_locations(driver_id: int, db: Session = Depends(get_db)):
+    return db.query(models.Location)\
+        .filter(models.Location.driver_id == driver_id)\
+        .all()
+
+@router.get("/latest")
+def get_latest_locations(db: Session = Depends(get_db)):
+    subquery = (
+        db.query(
+            models.Location.driver_id,
+            func.max(models.Location.location_id).label("max_location_id")
+        )
+        .group_by(models.Location.driver_id)
+        .subquery()
+    )
+
+    results = (
+        db.query(models.Location, models.Driver)
+        .join(subquery, models.Location.location_id == subquery.c.max_location_id)
+        .join(models.Driver, models.Driver.driver_id == models.Location.driver_id)
+        .all()
+    )
+
+    data = []
+    for location, driver in results:
+        data.append({
+            "driver_id": driver.driver_id,
+            "nombre": driver.nombre,
+            "latitud": location.latitud,
+            "longitud": location.longitud,
+            "velocidad": location.velocidad,
+            "registrado_en": getattr(location, "registrado_en", None),
+        })
+
+    return data
+
+@router.put("/{location_id}")
+def update_location(location_id: int, location: schemas.LocationCreate, db: Session = Depends(get_db)):
+    db_location = db.query(models.Location).filter(models.Location.location_id == location_id).first()
+
+    if not db_location:
+        return {"error": "Ubicación no encontrada"}
+
+    for key, value in location.dict().items():
+        setattr(db_location, key, value)
+
+    db.commit()
+    db.refresh(db_location)
+
+    return db_location
+
+@router.delete("/{location_id}")
+def delete_location(location_id: int, db: Session = Depends(get_db)):
+    location = db.query(models.Location).filter(models.Location.location_id == location_id).first()
+
+    if not location:
+        return {"error": "Ubicación no encontrada"}
+
+    db.delete(location)
+    db.commit()
+
+    return {"mensaje": "Ubicación eliminada correctamente"}
+</file>
+
+<file path="app/routers/trips.py">
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.orm import Session
+from app.database import get_db
+from app import models, schemas
+
+# Se crea un router para manejar todas las rutas relacionadas con las rutas
+router = APIRouter(
+    prefix="/route", 
+    tags=["Route"]   
+)
+
+# Obtener todas las rutas
+@router.get("/", response_model=list[schemas.RouteResponse])
+def get_routes(db: Session = Depends(get_db)):
+
+    routes = db.query(models.Route).all()
+    return routes
+
+
+# Obtener ruta por id
+@router.get("/{route_id}", response_model=schemas.RouteResponse)
+def get_route(route_id: int, db: Session = Depends(get_db)):
+
+    route = db.query(models.Route).filter(
+        models.Route.route_id == route_id
+    ).first()
+
+    if not route:
+        raise HTTPException(status_code=404, detail="Ruta no encontrada")
+
+    return route
+
+
+# Crear ruta
+@router.post("/", response_model=schemas.RouteResponse)
+def create_route(route: schemas.RouteCreate, db: Session = Depends(get_db)):
+
+    new_route = models.Route(**route.model_dump())
+
+    db.add(new_route)
+    db.commit()
+    db.refresh(new_route)
+
+    return new_route
+
+
+# Actualizar ruta
+@router.put("/{route_id}", response_model=schemas.RouteResponse)
+def update_route(route_id: int, route_data: schemas.RouteCreate, db: Session = Depends(get_db)):
+
+    route = db.query(models.Route).filter(
+        models.Route.route_id == route_id
+    ).first()
+
+    if not route:
+        raise HTTPException(status_code=404, detail="Ruta no encontrada")
+
+    for key, value in route_data.model_dump().items():
+        setattr(route, key, value)
+
+    db.commit()
+    db.refresh(route)
+
+    return route
+
+
+# Eliminar ruta
+@router.delete("/{route_id}")
+def delete_route(route_id: int, db: Session = Depends(get_db)):
+
+    route = db.query(models.Route).filter(
+        models.Route.route_id == route_id
+    ).first()
+
+    if not route:
+        raise HTTPException(status_code=404, detail="Ruta no encontrada")
+
+    db.delete(route)
+    db.commit()
+
+    return {"message": "Ruta eliminada satisfactoriamente"}
+</file>
+
+<file path="app/routers/trips2.py">
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.orm import Session
+from app.database import get_db
+from app import models, schemas
+
+# Se crea un router para manejar todas las rutas relacionadas con los request
+router = APIRouter(
+    prefix="/request", 
+    tags=["Request"]   
+)
+# Crear request
+@router.post("/", response_model=schemas.RequestResponse)
+def create_request(request: schemas.RequestCreate, db: Session = Depends(get_db)):
+
+    new_request = models.Request(**request.dict())
+
+    db.add(new_request)
+    db.commit()
+    db.refresh(new_request)
+
+    return new_request
+
+
+# Obtener todos
+@router.get("/", response_model=list[schemas.RequestResponse])
+def get_requests(db: Session = Depends(get_db)):
+
+    requests = db.query(models.Request).all()
+
+    return requests
+
+
+# Obtener por id
+@router.get("/{request_id}", response_model=schemas.RequestResponse)
+def get_request(request_id: int, db: Session = Depends(get_db)):
+
+    request = db.query(models.Request).filter(
+        models.Request.request_id == request_id
+    ).first()
+
+    if not request:
+        raise HTTPException(status_code=404, detail="Request no encontrado")
+
+    return request
+
+
+# Actualizar
+@router.put("/{request_id}", response_model=schemas.RequestResponse)
+def update_request(request_id: int, request: schemas.RequestCreate, db: Session = Depends(get_db)):
+
+    request_query = db.query(models.Request).filter(
+        models.Request.request_id == request_id
+    )
+
+    request_db = request_query.first()
+
+    if not request_db:
+        raise HTTPException(status_code=404, detail="Request no encontrado")
+
+    request_query.update(request.dict(), synchronize_session=False)
+    db.commit()
+
+    return request_query.first()
+
+
+# Eliminar
+@router.delete("/{request_id}")
+def delete_request(request_id: int, db: Session = Depends(get_db)):
+
+    request_query = db.query(models.Request).filter(
+        models.Request.request_id == request_id
+    )
+
+    request = request_query.first()
+
+    if not request:
+        raise HTTPException(status_code=404, detail="Request no encontrado")
+
+    request_query.delete(synchronize_session=False)
+    db.commit()
+
+    return {"message": "Request eliminado"}
+</file>
+
+<file path="app/routers/users.py">
+from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy.orm import Session
+from app.database import get_db
+from app import models, schemas
+from datetime import datetime, timedelta
+import jwt
+import os
+
+# Se crea un router para manejar todas las rutas relacionadas con los usuarios
+router = APIRouter(
+    prefix="/users", # Todas las rutas comenzarán con /users
+    tags=["Users"]   # Nombre que aparecerá en la documentación automática de FastAPI
+)
+
+# Configuración JWT
+SECRET_KEY = os.getenv("SECRET_KEY", "your-secret-key-change-this-in-production")
+ALGORITHM = "HS256"
+ACCESS_TOKEN_EXPIRE_MINUTES = 30
+
+
+def create_access_token(data: dict, expires_delta: timedelta = None):
+    """Crea un token JWT"""
+    to_encode = data.copy()
+    if expires_delta:
+        expire = datetime.utcnow() + expires_delta
+    else:
+        expire = datetime.utcnow() + timedelta(minutes=15)
+    to_encode.update({"exp": expire})
+    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    return encoded_jwt
+
+
+# Endpoint para obtener todos los usuarios registrados en la base de datos
+@router.get("/")
+def get_users(db: Session = Depends(get_db)):
+
+    
+    return db.query(models.User).all()
+
+# Endpoint para crear un nuevo usuario en la base de datos
+@router.post("/")
+def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
+
+    
+    new_user = models.User(**user.dict())
+    
+   
+    db.add(new_user)
+    db.commit()
+    db.refresh(new_user)
+
+    return new_user
+
+# Endpoint para login
+@router.post("/login", response_model=schemas.LoginResponse)
+def login(login_data: schemas.UserLogin, db: Session = Depends(get_db)):
+    """Autentica un usuario y retorna un token JWT"""
+    
+    # Buscar el usuario por email
+    user = db.query(models.User).filter(models.User.email == login_data.email).first()
+    
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Email o contraseña incorrectos"
+        )
+    
+    # Verificar contraseña (NOTA: En producción, usar hashing seguro como bcrypt)
+    if user.contrasena != login_data.password:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Email o contraseña incorrectos"
+        )
+    
+    # Crear token JWT
+    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    token = create_access_token(
+        data={"sub": user.email},
+        expires_delta=access_token_expires
+    )
+    
+    # Retornar token y datos del usuario
+    return {
+        "token": token,
+        "user": {
+            "id": user.user_id,
+            "email": user.email,
+            "name": user.nombre,
+            "role": user.role
+        }
+    }
+
+#Endpoint para buscar por id
+@router.get("/{user_id}")
+def get_user(user_id: int, db: Session = Depends(get_db)):
+
+    user = db.query(models.User).filter(models.User.user_id == user_id).first()
+
+    if not user:
+        return {"error": "Usuario no encontrado"}
+
+    return user
+#Endpoint para actualizar el user
+@router.put("/{user_id}")
+def update_user(user_id: int, user: schemas.UserCreate, db: Session = Depends(get_db)):
+
+    db_user = db.query(models.User).filter(models.User.user_id == user_id).first()
+
+    if not db_user:
+        return {"error": "Usuario no encontrado"}
+
+    for key, value in user.dict().items():
+        setattr(db_user, key, value)
+
+    db.commit()
+    db.refresh(db_user)
+
+    return db_user
+#Endpoint para borrar el user
+@router.delete("/{user_id}")
+def delete_user(user_id: int, db: Session = Depends(get_db)):
+
+    user = db.query(models.User).filter(models.User.user_id == user_id).first()
+
+    if not user:
+        return {"error": "Usuario no encontrado"}
+
+    db.delete(user)
+    db.commit()
+
+    return {"mensaje": "Usuario eliminado correctamente"}
+</file>
+
+<file path="app/routers/vehicles.py">
+from fastapi import APIRouter, Depends
+from sqlalchemy.orm import Session
+from app.database import get_db
+from app import models, schemas
+
+router = APIRouter(
+    prefix="/vehicles", # Todas las rutas comenzarán con /users
+    tags=["Vehicles"]   # Nombre que aparecerá en la documentación automática de FastAPI
+)
+
+# Obtener todos los vehículos
+@router.get("/")
+def get_vehicles(db: Session = Depends(get_db)):
+    return db.query(models.Vehicle).all()
+
+
+# Obtener vehículo por ID
+@router.get("/{vehicle_id}")
+def get_vehicle(vehicle_id: int, db: Session = Depends(get_db)):
+
+    vehicle = db.query(models.Vehicle).filter(models.Vehicle.vehicle_id == vehicle_id).first()
+
+    if not vehicle:
+        return {"error": "Vehículo no encontrado"}
+
+    return vehicle
+
+
+# Crear vehículo
+@router.post("/")
+def create_vehicle(vehicle: schemas.VehicleCreate, db: Session = Depends(get_db)):
+
+    new_vehicle = models.Vehicle(**vehicle.dict())
+
+    db.add(new_vehicle)
+    db.commit()
+    db.refresh(new_vehicle)
+
+    return new_vehicle
+
+
+# Actualizar vehículo
+@router.put("/{vehicle_id}")
+def update_vehicle(vehicle_id: int, vehicle: schemas.VehicleCreate, db: Session = Depends(get_db)):
+
+    db_vehicle = db.query(models.Vehicle).filter(models.Vehicle.vehicle_id == vehicle_id).first()
+
+    if not db_vehicle:
+        return {"error": "Vehículo no encontrado"}
+
+    for key, value in vehicle.dict().items():
+        setattr(db_vehicle, key, value)
+
+    db.commit()
+    db.refresh(db_vehicle)
+
+    return db_vehicle
+
+
+# Eliminar vehículo
+@router.delete("/{vehicle_id}")
+def delete_vehicle(vehicle_id: int, db: Session = Depends(get_db)):
+
+    vehicle = db.query(models.Vehicle).filter(models.Vehicle.vehicle_id == vehicle_id).first()
+
+    if not vehicle:
+        return {"error": "Vehículo no encontrado"}
+
+    db.delete(vehicle)
+    db.commit()
+
+    return {"mensaje": "Vehículo eliminado correctamente"}
+</file>
+
+<file path="app/schemas.py">
+from pydantic import BaseModel
+from datetime import datetime
+from typing import Optional
+
+# =========================
+# USERS
+# =========================
+
+class UserBase(BaseModel):
+    nombre: str
+    email: str
+    contrasena: str
+    role: str
+
+
+class UserCreate(UserBase):
+    pass
+
+
+class UserResponse(UserBase):
+    user_id: int
+
+    class Config:
+        from_attributes = True
+
+
+class UserLogin(BaseModel):
+    email: str
+    password: str
+
+
+class LoginResponse(BaseModel):
+    token: str
+    user: dict
+
+    class Config:
+        from_attributes = True
+
+
+# =========================
+# CLIENTS
+# =========================
+
+class ClientBase(BaseModel):
+    nombre: str
+    email: str
+    telefono: str
+    cedula: str
+    direccion: str
+    estado: str
+
+
+class ClientCreate(ClientBase):
+    pass
+
+
+class ClientResponse(ClientBase):
+    client_id: int
+
+    class Config:
+        from_attributes = True
+
+
+# =========================
+# DRIVERS
+# =========================
+
+class DriverBase(BaseModel):
+    nombre: str
+    telefono: str
+    numero_licencia: str
+    cedula: str
+    tipo_licencia: str
+    estado: str
+    imagen: Optional[str] = None
+    descripcion: Optional[str] = None
+
+
+class DriverCreate(DriverBase):
+    pass
+
+
+class DriverResponse(DriverBase):
+    driver_id: int
+
+    class Config:
+        from_attributes = True
+
+
+# =========================
+# VEHICLES
+# =========================
+
+class VehicleBase(BaseModel):
+    driver_id: int
+    plate_number: str
+    modelo: str
+    marca: str
+    color: str
+    year: int
+
+
+class VehicleCreate(VehicleBase):
+    pass
+
+
+class VehicleResponse(VehicleBase):
+    vehicle_id: int
+
+    class Config:
+        from_attributes = True
+
+
+# =========================
+# LOCATIONS
+# =========================
+
+class LocationBase(BaseModel):
+    driver_id: int
+    latitud: float
+    longitud: float
+    velocidad: float
+
+
+class LocationCreate(LocationBase):
+    pass
+
+
+class LocationResponse(LocationBase):
+    location_id: int
+
+    class Config:
+        from_attributes = True
+
+
+# =========================
+# route
+# =========================
+
+class RouteBase(BaseModel):
+    user_id: int
+    vehicle_id: int
+    origen: str
+    destino: str
+
+
+class RouteCreate(RouteBase):
+    pass
+
+
+class RouteResponse(RouteBase):
+    route_id: int
+    fecha: datetime
+    estado: str | None = None
+
+    class Config:
+        from_attributes = True
+
+
+
+from pydantic import BaseModel
+from datetime import datetime
+
+
+# =========================
+# REQUEST
+# =========================
+
+class RequestBase(BaseModel):
+    route_id: int
+    user_id: int
+    vehicle_id: int
+    inicio: datetime
+    fin: datetime
+    estado: str
+
+
+class RequestCreate(RequestBase):
+    pass
+
+
+class RequestResponse(RequestBase):
+    request_id: int
+
+    class Config:
+        from_attributes = True
+</file>
+
+<file path="create_test_clients.py">
+import requests
+
+API_BASE = "http://127.0.0.1:8000"
+
+# Datos de prueba para clientes
+clientes_prueba = [
+    {
+        "nombre": "Juan Pérez",
+        "email": "juan.perez@example.com",
+        "telefono": "809-555-0001",
+        "cedula": "402-1234567-1",
+        "direccion": "Calle Principal #123, Santo Domingo",
+        "estado": "Activo"
+    },
+    {
+        "nombre": "María García",
+        "email": "maria.garcia@example.com",
+        "telefono": "809-555-0002",
+        "cedula": "402-1234567-2",
+        "direccion": "Avenida Independencia #456, Santiago",
+        "estado": "Activo"
+    },
+    {
+        "nombre": "Carlos Rodríguez",
+        "email": "carlos.rodriguez@example.com",
+        "telefono": "809-555-0003",
+        "cedula": "402-1234567-3",
+        "direccion": "Calle 27 de Febrero #789, Santo Domingo",
+        "estado": "Inactivo"
+    }
+]
+
+def crear_clientes():
+    for cliente in clientes_prueba:
+        try:
+            response = requests.post(f"{API_BASE}/clients/", json=cliente)
+            if response.status_code == 200:
+                print(f"✅ Cliente {cliente['nombre']} creado exitosamente")
+            else:
+                print(f"❌ Error al crear cliente {cliente['nombre']}: {response.status_code} - {response.text}")
+        except Exception as e:
+            print(f"❌ Error de conexión: {e}")
+
+if __name__ == "__main__":
+    crear_clientes()
+</file>
+
+<file path="create_test_users.py">
+#!/usr/bin/env python3
+"""
+Script para crear usuarios de prueba en la base de datos de TransFleet
+Uso: python create_test_users.py
+"""
+
+import requests
+import json
+import sys
+from typing import Dict, List
+
+API_BASE = "http://127.0.0.1:8000"
+
+# Usuarios de prueba a crear
+TEST_USERS = [
+    {
+        "nombre": "Admin Usuario",
+        "email": "admin@transfleet.com",
+        "contrasena": "admin123",
+        "role": "admin"
+    },
+    {
+        "nombre": "Gerente Operaciones",
+        "email": "gerente@transfleet.com",
+        "contrasena": "gerente123",
+        "role": "manager"
+    },
+    {
+        "nombre": "Operario Sistema",
+        "email": "operario@transfleet.com",
+        "contrasena": "operario123",
+        "role": "operator"
+    }
+]
+
+
+def create_user(user_data: Dict) -> bool:
+    """Crea un usuario en la base de datos"""
+    try:
+        response = requests.post(
+            f"{API_BASE}/users/",
+            json=user_data,
+            timeout=5
+        )
+        
+        if response.status_code == 200:
+            print(f"✅ Usuario creado: {user_data['email']}")
+            return True
+        else:
+            print(f"❌ Error al crear {user_data['email']}: {response.text}")
+            return False
+            
+    except requests.exceptions.ConnectionError:
+        print("❌ Error: No se puede conectar al servidor")
+        print(f"   Verifica que el backend esté corriendo en {API_BASE}")
+        return False
+    except Exception as e:
+        print(f"❌ Error: {str(e)}")
+        return False
+
+
+def test_login(email: str, password: str) -> bool:
+    """Prueba el login de un usuario"""
+    try:
+        response = requests.post(
+            f"{API_BASE}/api/login",
+            json={"email": email, "password": password},
+            timeout=5
+        )
+        
+        if response.status_code == 200:
+            data = response.json()
+            print(f"✅ Login exitoso: {email}")
+            print(f"   Token: {data['token'][:20]}...")
+            print(f"   Usuario: {data['user']['name']}")
+            return True
+        else:
+            print(f"❌ Login fallido: {response.json().get('detail', 'Error desconocido')}")
+            return False
+            
+    except Exception as e:
+        print(f"❌ Error en login: {str(e)}")
+        return False
+
+
+def main():
+    """Función principal"""
+    print("=" * 60)
+    print("TransFleet - Script de Creación de Usuarios de Prueba")
+    print("=" * 60)
+    print()
+    
+    # Verificar conexión
+    try:
+        response = requests.get(f"{API_BASE}/users/", timeout=5)
+        print(f"✅ Conexión al servidor: {API_BASE}")
+        print()
+    except:
+        print(f"❌ No se puede conectar a {API_BASE}")
+        print("   Asegúrate de que el backend esté corriendo:")
+        print("   python -m uvicorn app.main:app --reload --host 127.0.0.1 --port 8000")
+        sys.exit(1)
+    
+    # Crear usuarios
+    print("👤 Creando usuarios de prueba...")
+    print("-" * 60)
+    
+    created_count = 0
+    for user in TEST_USERS:
+        if create_user(user):
+            created_count += 1
+    
+    print()
+    print(f"📊 Resultado: {created_count}/{len(TEST_USERS)} usuarios creados")
+    print()
+    
+    # Probar login
+    if created_count > 0:
+        print("🔐 Probando login...")
+        print("-" * 60)
+        
+        login_count = 0
+        for user in TEST_USERS:
+            if test_login(user["email"], user["contrasena"]):
+                login_count += 1
+        
+        print()
+        print(f"📊 Resultado: {login_count}/{len(TEST_USERS)} logins exitosos")
+    
+    print()
+    print("=" * 60)
+    print("✨ Datos de Prueba Listos")
+    print("=" * 60)
+    print()
+    print("Puedes probar el login en:")
+    print(f"  🌐 {API_BASE}/login.html")
+    print()
+    print("Usuarios disponibles:")
+    for user in TEST_USERS:
+        print(f"  📧 {user['email']}")
+        print(f"     🔐 {user['contrasena']}")
+    print()
+
+
+if __name__ == "__main__":
+    main()
+</file>
+
+<file path="create_users_direct.py">
+#!/usr/bin/env python3
+"""
+Script alternativo para crear usuarios directamente en la base de datos (sin API)
+Uso: python create_users_direct.py
+"""
+
+from app.database import SessionLocal
+from app import models
+
+def create_users_direct():
+    """Crea usuarios directamente en la base de datos"""
+    db = SessionLocal()
+    
+    print("=" * 60)
+    print("TransFleet - Crear Usuarios (Directo a BD)")
+    print("=" * 60)
+    print()
+    
+    users_data = [
+        {
+            "nombre": "Admin Usuario",
+            "email": "admin@transfleet.com",
+            "contrasena": "admin123",
+            "role": "admin"
+        },
+        {
+            "nombre": "Gerente Operaciones",
+            "email": "gerente@transfleet.com",
+            "contrasena": "gerente123",
+            "role": "manager"
+        },
+        {
+            "nombre": "Operario Sistema",
+            "email": "operario@transfleet.com",
+            "contrasena": "operario123",
+            "role": "operator"
+        }
+    ]
+    
+    try:
+        created_count = 0
+        for user_data in users_data:
+            try:
+                # Verificar si el usuario ya existe
+                existing = db.query(models.User).filter(
+                    models.User.email == user_data["email"]
+                ).first()
+                
+                if existing:
+                    print(f"⚠️  Usuario ya existe: {user_data['email']}")
+                    continue
+                
+                # Crear nuevo usuario
+                new_user = models.User(**user_data)
+                db.add(new_user)
+                db.commit()
+                db.refresh(new_user)
+                
+                print(f"✅ Usuario creado: {user_data['email']}")
+                created_count += 1
+                
+            except Exception as e:
+                db.rollback()
+                print(f"❌ Error creando {user_data['email']}: {str(e)}")
+        
+        print()
+        print(f"📊 Resultado: {created_count}/{len(users_data)} usuarios creados")
+        print()
+        
+        # Listar usuarios creados
+        print("👥 Usuarios en la base de datos:")
+        print("-" * 60)
+        all_users = db.query(models.User).all()
+        for user in all_users:
+            print(f"  ID: {user.user_id} | Email: {user.email} | Role: {user.role}")
+        
+        print()
+        print("=" * 60)
+        print("✨ Usuarios listos para login")
+        print("=" * 60)
+        print()
+        
+    except Exception as e:
+        print(f"❌ Error en la operación: {str(e)}")
+        db.rollback()
+    finally:
+        db.close()
+
+if __name__ == "__main__":
+    create_users_direct()
+</file>
+
+<file path="init_database.py">
+#!/usr/bin/env python3
+"""
+Script para inicializar la base de datos y crear las tablas necesarias
+Uso: python init_database.py
+"""
+
+from app.database import Base, engine
+from app import models
+
+def init_db():
+    """Crea todas las tablas en la base de datos"""
+    print("=" * 60)
+    print("TransFleet - Inicializando Base de Datos")
+    print("=" * 60)
+    print()
+    
+    try:
+        print("🔄 Creando tablas en la base de datos...")
+        
+        # Crear todas las tablas definidas en models.py
+        Base.metadata.create_all(bind=engine)
+        
+        print("✅ Tablas creadas exitosamente!")
+        print()
+        print("Tablas creadas:")
+        print("  - users")
+        print("  - drivers")
+        print("  - locations")
+        print("  - vehicles")
+        print("  - routes")
+        print("  - request")
+        print()
+        print("=" * 60)
+        print("✨ Base de datos lista para usar")
+        print("=" * 60)
+        print()
+        
+    except Exception as e:
+        print(f"❌ Error al crear las tablas: {str(e)}")
+        print()
+        print("Posibles causas:")
+        print("  - No hay conexión a la base de datos")
+        print("  - Las credenciales son incorrectas")
+        print("  - El servidor está caído")
+        print()
+        raise
+
+if __name__ == "__main__":
+    init_db()
+</file>
+
+<file path="README.txt">
+EJEMPLO DE ESTRUCTURA DE BASE DE DATOS (PUEDE CAMBIAR SEGUN LAS DECISIONES DE DESARROLLO)
+
+# Backend - Driver Tracking System
+
+Backend del sistema de tracking de conductores.  
+Proporciona una API para gestionar conductores y recibir sus ubicaciones.
+
+## Tecnologías
+
+- Python
+- FastAPI
+- Uvicorn
+
+## Descripción
+
+El backend expone endpoints que permiten:
+
+- registrar conductores
+- recibir ubicaciones de conductores
+- consultar conductores
+- obtener información específica de un conductor
+
+La API se comunica con el frontend mediante solicitudes HTTP.
+
+## Instalación
+
+1. Entrar en la carpeta del backend
+
+cd Backend_fastapi
+
+2. Instalar dependencias
+
+pip install -r requirements.txt
+
+## Ejecutar el servidor
+
+uvicorn app.main:app --reload
+
+El servidor estará disponible en:
+
+http://127.0.0.1:8000
+
+## Documentación automática
+
+La API genera documentación automática en:
+
+http://127.0.0.1:8000/docs
+
+## Endpoints principales
+
+GET /drivers  
+Obtiene la lista de conductores.
+
+GET /drivers/{id}  
+Obtiene información de un conductor específico.
+
+POST /drivers  
+Registra un nuevo conductor.
+
+POST /drivers/location  
+Envía la ubicación de un conductor.
+
+## Estructura del backend
+
+backend/
+│
+app/
+│
+main.py → punto de entrada de la API  
+routes/ → endpoints  
+models/ → modelos de datos  
+services/ → lógica del sistema  
+
+requirements.txt → dependencias del proyecto
+</file>
+
+<file path="requirements.txt">
+fastapi
+uvicorn
+sqlalchemy
+psycopg2-binary
+python-multipart
+PyJWT
+python-dotenv
+</file>
+
+</files>

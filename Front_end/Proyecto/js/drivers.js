@@ -268,6 +268,12 @@ async function editarDriver(id) {
             preview.src = d.imagen || "https://via.placeholder.com/150?text=Subir+Foto";
         }
 
+        const modalCard = document.querySelector(".modal-card");
+        if (modalCard) {
+            modalCard.classList.remove("modo-crear");
+            modalCard.classList.add("modo-editar");
+        }
+
         const tituloModal = document.getElementById("tituloModalConductor");
         if (tituloModal) {
             tituloModal.textContent = "Editar Conductor";
