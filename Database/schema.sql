@@ -13,6 +13,18 @@ CREATE TABLE users (
     creado_desde TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+-- TABLA: clients
+CREATE TABLE clients (
+    client_id SERIAL PRIMARY KEY,
+    nombre TEXT NOT NULL,
+    email TEXT UNIQUE NOT NULL,
+    telefono VARCHAR(10),
+    cedula VARCHAR(11),
+    direccion TEXT,
+    estado TEXT,
+    creado_desde TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 -- TABLA: drivers
 CREATE TABLE drivers (
     driver_id SERIAL PRIMARY KEY,

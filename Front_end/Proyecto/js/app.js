@@ -89,6 +89,21 @@ function cargarPagina(pagina) {
                 cargarConductores();
             }
 
+            if (pagina === "clientes") {
+                // Cargar script de clientes
+                const script = document.createElement("script");
+                script.src = "js/clients.js";
+                script.onload = () => {
+                    if (typeof cargarClientes === "function") {
+                        cargarClientes();
+                    }
+                    if (typeof initClientModals === "function") {
+                        initClientModals();
+                    }
+                };
+                document.head.appendChild(script);
+            }
+
             if (pagina === "mapa") {
                 setTimeout(() => {
                     initMapa();

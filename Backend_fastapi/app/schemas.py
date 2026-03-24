@@ -38,6 +38,30 @@ class LoginResponse(BaseModel):
 
 
 # =========================
+# CLIENTS
+# =========================
+
+class ClientBase(BaseModel):
+    nombre: str
+    email: str
+    telefono: str
+    cedula: str
+    direccion: str
+    estado: str
+
+
+class ClientCreate(ClientBase):
+    pass
+
+
+class ClientResponse(ClientBase):
+    client_id: int
+
+    class Config:
+        from_attributes = True
+
+
+# =========================
 # DRIVERS
 # =========================
 
