@@ -1,0 +1,27 @@
+---
+
+## ⚙️ Requisitos
+
+- Python 3.10+
+- Flutter SDK
+- Android Studio (emulador o dispositivo)
+- SQL Server
+- Git
+
+---
+
+## 🚀 Instalación
+
+### 1. Clonar repositorio
+
+```bash
+git clone https://github.com/tu-repo/driver-tracking-system.git
+cd driver-tracking-system
+
+fastapi==0.111.0
+uvicorn==0.30.1
+sqlalchemy==2.0.30
+pydantic==2.7.4
+python-multipart==0.0.9
+pyodbc==5.1.0
+python-dotenv==1.0.1

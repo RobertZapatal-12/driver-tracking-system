@@ -27,8 +27,7 @@ Frontend
 - JavaScript
 
 Base de datos
-- PostgreSQL
-- PostGIS
+- SQL Server
 
 ## Estructura del proyecto
 

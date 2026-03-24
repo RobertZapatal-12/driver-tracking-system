@@ -1,0 +1,92 @@
+# 🚗 Driver Tracking System
+Sistema completo de seguimiento de conductores en tiempo real.
+
+---
+
+## 📌 Descripción
+
+Este proyecto permite rastrear conductores en tiempo real mediante:
+
+- 📱 App móvil (Flutter) → envía ubicación GPS
+- ⚡ Backend (FastAPI) → procesa y guarda datos
+- 🗄️ SQL Server → almacena ubicaciones
+- 🌍 Frontend (Leaflet) → visualiza el mapa en vivo
+
+---
+
+## 🧱 Arquitectura
+Flutter App
+↓
+FastAPI Backend
+↓
+SQL Server
+↓
+Frontend Web (Mapa en tiempo real)
+
+---
+
+## 📂 Estructura del proyecto
+driver-tracking-system/
+│
+├── Backend_fastapi/
+├── Database/
+├── Front_end/
+└── mobile/
+└── driver_tracking_app/
+
+---
+
+## ⚙️ Requisitos
+
+- Python 3.10+
+- Flutter SDK
+- Android Studio (emulador o dispositivo)
+- SQL Server
+- Git
+
+---
+
+## 🚀 Instalación
+
+### 1. Clonar repositorio
+
+```bash
+git clone https://github.com/tu-repo/driver-tracking-system.git
+cd driver-tracking-system
+
+Entrar al proyecto
+cd mobile/driver_tracking_app
+
+Instalar Dependencias
+flutter pub get
+
+Ejecutar app
+flutter run
+
+Configuración de conexión
+final String baseUrl = 'http://10.0.2.2:8000';
+
+📍 Permisos Android
+
+Archivo:
+
+android/app/src/main/AndroidManifest.xml
+
+Agregar:
+
+<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+<uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+
+🚀 Uso completo del sistema
+Iniciar backend
+Ejecutar app Flutter
+Activar ubicación
+Enviar datos
+Abrir frontend
+Visualizar conductor en mapa
+
+
+
+⚠️ IMPORTANTE
+El conductor debe existir antes de usar la app
+Si no existe → error 500
