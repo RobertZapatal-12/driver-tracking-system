@@ -393,59 +393,140 @@
 
 <!-- =========================================================
      MODAL NUEVO / EDITAR VEHÍCULO
-     - Lo dejamos listo para el siguiente paso
      ========================================================= -->
 <div id="modalFormularioVehiculo" class="modal-overlay modal-vehiculo-form">
     <div class="modal-card modal-card-vehiculo-form modo-crear">
-        <h5 id="tituloModalVehiculo" class="fw-bold mb-3">Nuevo Vehículo</h5>
 
-        <form id="formVehiculoNuevo">
-            <div class="row">
-                <div class="col-md-6 mb-3">
-                    <label class="form-label small fw-bold">Marca</label>
-                    <input type="text" id="marcaVehiculo" class="form-control" placeholder="Ej: Toyota">
+        <div class="vehiculo-form-header">
+            <div>
+                <p class="vehiculo-form-label">Gestión de vehículo</p>
+                <h5 id="tituloModalVehiculo" class="vehiculo-form-title">Nuevo Vehículo</h5>
+                <p class="vehiculo-form-subtitle">
+                    Completa la información principal de la unidad para registrarla en el sistema.
+                </p>
+            </div>
+
+            <button id="btnCerrarFormularioVehiculo" class="btn-cerrar-modal-form" type="button" aria-label="Cerrar formulario">
+                <i class="bi bi-x-lg"></i>
+            </button>
+        </div>
+
+        <form id="formVehiculoNuevo" class="vehiculo-form-body">
+
+            <!-- =================================================
+                 BLOQUE: DATOS PRINCIPALES
+                 ================================================= -->
+            <div class="vehiculo-form-section">
+                <h6 class="vehiculo-form-section-title">Datos principales</h6>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label small fw-bold">Marca</label>
+                        <input
+                            type="text"
+                            id="marcaVehiculo"
+                            class="form-control"
+                            placeholder="Ej: Toyota"
+                        >
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label small fw-bold">Modelo</label>
+                        <input
+                            type="text"
+                            id="modeloVehiculo"
+                            class="form-control"
+                            placeholder="Ej: Corolla"
+                        >
+                    </div>
                 </div>
 
-                <div class="col-md-6 mb-3">
-                    <label class="form-label small fw-bold">Modelo</label>
-                    <input type="text" id="modeloVehiculo" class="form-control" placeholder="Ej: Corolla">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label small fw-bold">Tipo de vehículo</label>
+                        <select id="tipoVehiculoFormulario" class="form-select">
+                            <option value="">Selecciona un tipo</option>
+                            <option value="SUV">SUV</option>
+                            <option value="Sedan">Sedan</option>
+                            <option value="Camioneta">Camioneta</option>
+                            <option value="Minibus">Minibus</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label small fw-bold">Capacidad</label>
+                        <input
+                            type="number"
+                            id="capacidadVehiculo"
+                            class="form-control"
+                            placeholder="Ej: 4"
+                            min="1"
+                        >
+                    </div>
                 </div>
             </div>
 
-            <div class="row">
-                <div class="col-md-6 mb-3">
-                    <label class="form-label small fw-bold">Capacidad</label>
-                    <input type="number" id="capacidadVehiculo" class="form-control" placeholder="Ej: 4">
-                </div>
+            <!-- =================================================
+                 BLOQUE: IDENTIFICACIÓN Y ESTADO
+                 ================================================= -->
+            <div class="vehiculo-form-section">
+                <h6 class="vehiculo-form-section-title">Identificación y estado</h6>
 
-                <div class="col-md-6 mb-3">
-                    <label class="form-label small fw-bold">Placa</label>
-                    <input type="text" id="placaVehiculo" class="form-control" placeholder="Ej: A123BC">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label small fw-bold">Placa</label>
+                        <input
+                            type="text"
+                            id="placaVehiculo"
+                            class="form-control"
+                            placeholder="Ej: A123BC"
+                        >
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label small fw-bold">Estado</label>
+                        <select id="estadoVehiculoFormulario" class="form-select">
+                            <option value="Disponible">Disponible</option>
+                            <option value="En ruta">En ruta</option>
+                            <option value="Mantenimiento">Mantenimiento</option>
+                        </select>
+                    </div>
                 </div>
             </div>
 
-            <div class="row">
-                <div class="col-md-6 mb-3">
-                    <label class="form-label small fw-bold">Estado</label>
-                    <select id="estadoVehiculoFormulario" class="form-select">
-                        <option value="Disponible">Disponible</option>
-                        <option value="En ruta">En ruta</option>
-                        <option value="Mantenimiento">Mantenimiento</option>
-                    </select>
-                </div>
+            <!-- =================================================
+                 BLOQUE: ASIGNACIÓN E IMAGEN
+                 ================================================= -->
+            <div class="vehiculo-form-section">
+                <h6 class="vehiculo-form-section-title">Asignación e imagen</h6>
 
-                <div class="col-md-6 mb-3">
-                    <label class="form-label small fw-bold">Conductor asignado</label>
-                    <input type="text" id="conductorVehiculo" class="form-control" placeholder="Ej: Juan Pérez">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label small fw-bold">Conductor asignado</label>
+                        <input
+                            type="text"
+                            id="conductorVehiculo"
+                            class="form-control"
+                            placeholder="Ej: Juan Pérez"
+                        >
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label small fw-bold">Imagen principal</label>
+                        <input
+                            type="file"
+                            id="imagenPrincipalVehiculo"
+                            class="form-control"
+                            accept="image/*"
+                        >
+                    </div>
                 </div>
             </div>
 
-            <div class="mb-3">
-                <label class="form-label small fw-bold">Imagen principal</label>
-                <input type="file" id="imagenPrincipalVehiculo" class="form-control" accept="image/*">
-            </div>
-
-            <div class="d-flex justify-content-end gap-2">
+            <!-- =================================================
+                 ACCIONES
+                 ================================================= -->
+            <div class="vehiculo-form-actions">
                 <button id="btnCancelarVehiculo" type="button" class="btn btn-light">
                     Cancelar
                 </button>

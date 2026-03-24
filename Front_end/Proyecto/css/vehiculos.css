@@ -621,10 +621,12 @@
 }
 
 .modal-card-vehiculo-form {
-    width: min(700px, 95vw);
+    width: min(820px, 96vw);
+    max-height: 92vh;
+    overflow-y: auto;
     background: #ffffff;
-    border-radius: 24px;
-    padding: 24px;
+    border-radius: 26px;
+    padding: 0;
     box-shadow: 0 26px 55px rgba(15, 23, 42, 0.22);
     border-top: 6px solid #0d6efd;
 }
@@ -635,6 +637,118 @@
 
 .modal-card-vehiculo-form.modo-edicion {
     border-top-color: #f59e0b;
+}
+
+/* HEADER DEL FORMULARIO */
+.vehiculo-form-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 18px;
+    padding: 24px 24px 18px;
+    border-bottom: 1px solid var(--vehiculo-border);
+}
+
+.vehiculo-form-label {
+    margin: 0 0 6px;
+    font-size: 0.86rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--vehiculo-muted);
+}
+
+.vehiculo-form-title {
+    margin: 0 0 6px;
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--vehiculo-text);
+}
+
+.vehiculo-form-subtitle {
+    margin: 0;
+    color: var(--vehiculo-muted);
+    font-size: 0.95rem;
+    line-height: 1.5;
+}
+
+.btn-cerrar-modal-form {
+    border: none;
+    background: #f3f4f6;
+    color: var(--vehiculo-text);
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+    flex-shrink: 0;
+}
+
+.btn-cerrar-modal-form:hover {
+    background: #e5e7eb;
+    transform: scale(1.05);
+}
+
+/* CUERPO DEL FORMULARIO */
+.vehiculo-form-body {
+    padding: 22px 24px 24px;
+}
+
+.vehiculo-form-section {
+    background: #fbfcfe;
+    border: 1px solid var(--vehiculo-border);
+    border-radius: 20px;
+    padding: 18px 18px 6px;
+    margin-bottom: 18px;
+}
+
+.vehiculo-form-section:last-of-type {
+    margin-bottom: 0;
+}
+
+.vehiculo-form-section-title {
+    margin: 0 0 16px;
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--vehiculo-text);
+}
+
+.modal-card-vehiculo-form .form-control,
+.modal-card-vehiculo-form .form-select {
+    border-radius: 14px;
+    min-height: 46px;
+    border: 1px solid #dbe1ea;
+    box-shadow: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.modal-card-vehiculo-form .form-control:focus,
+.modal-card-vehiculo-form .form-select:focus {
+    border-color: #86b7fe;
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.12);
+}
+
+.modal-card-vehiculo-form input[type="file"] {
+    padding-top: 10px;
+    padding-bottom: 10px;
+}
+
+/* ACCIONES */
+.vehiculo-form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 22px;
+    padding-top: 18px;
+    border-top: 1px solid var(--vehiculo-border);
+}
+
+.vehiculo-form-actions .btn {
+    border-radius: 14px;
+    min-width: 120px;
+    font-weight: 600;
+    padding-top: 10px;
+    padding-bottom: 10px;
 }
 
 /* =========================================================
@@ -703,5 +817,138 @@
 
     .vehiculo-detalle-miniaturas {
         grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .modal-card-vehiculo-form {
+        width: min(96vw, 96vw);
+        border-radius: 22px;
+    }
+
+    .vehiculo-form-header {
+        padding: 20px 18px 16px;
+    }
+
+    .vehiculo-form-body {
+        padding: 18px;
+    }
+
+    .vehiculo-form-actions {
+        flex-direction: column;
+    }
+
+    .vehiculo-form-actions .btn {
+        width: 100%;
+    }
+}
+
+/* =========================================================
+   TOAST DE MENSAJES
+   ========================================================= */
+
+.vehiculos-toast {
+    position: fixed;
+    top: 24px;
+    right: 24px;
+    z-index: 1300;
+    pointer-events: none;
+}
+
+.vehiculos-toast-content {
+    min-width: 260px;
+    max-width: 360px;
+    background: #111827;
+    color: #ffffff;
+    padding: 14px 18px;
+    border-radius: 16px;
+    box-shadow: 0 18px 34px rgba(15, 23, 42, 0.22);
+    font-weight: 600;
+    opacity: 0;
+    transform: translateY(-10px);
+    transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+.vehiculos-toast-content.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.vehiculos-toast-content.success {
+    background: linear-gradient(135deg, #065f46 0%, #10b981 100%);
+}
+
+.vehiculos-toast-content.error {
+    background: linear-gradient(135deg, #991b1b 0%, #ef4444 100%);
+}
+
+.vehiculos-toast-content.info {
+    background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+}
+
+/* =========================================================
+   MODAL DE CONFIRMACIÓN
+   ========================================================= */
+
+.modal-confirmacion-vehiculo {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    background: rgba(15, 23, 42, 0.55);
+    backdrop-filter: blur(4px);
+    z-index: 1250;
+}
+
+.modal-card-confirmacion-vehiculo {
+    width: min(460px, 94vw);
+    background: #ffffff;
+    border-radius: 22px;
+    padding: 24px;
+    box-shadow: 0 26px 55px rgba(15, 23, 42, 0.22);
+}
+
+.confirmacion-header h5 {
+    margin: 0 0 10px;
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: var(--vehiculo-text);
+}
+
+.confirmacion-header p {
+    margin: 0;
+    color: var(--vehiculo-muted);
+    line-height: 1.5;
+}
+
+.confirmacion-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 22px;
+}
+
+.confirmacion-actions .btn {
+    border-radius: 14px;
+    min-width: 110px;
+    font-weight: 600;
+}
+
+@media (max-width: 767px) {
+    .vehiculos-toast {
+        top: 16px;
+        right: 16px;
+        left: 16px;
+    }
+
+    .vehiculos-toast-content {
+        max-width: 100%;
+        width: 100%;
+    }
+
+    .confirmacion-actions {
+        flex-direction: column;
+    }
+
+    .confirmacion-actions .btn {
+        width: 100%;
     }
 }

@@ -85,23 +85,41 @@ function cargarPagina(pagina) {
             setActiveLink(pagina);
             initModals();
 
+            if (pagina === "dashboard" && typeof actualizarDashboardVehiculos === "function") {
+                actualizarDashboardVehiculos();
+            }
+
             if (pagina === "conductores" && typeof cargarConductores === "function") {
                 cargarConductores();
             }
 
+            if (pagina === "vehiculos" && typeof initVehiculosModule === "function") {
+                initVehiculosModule();
+            }
+
             if (pagina === "clientes") {
-                // Cargar script de clientes
-                const script = document.createElement("script");
-                script.src = "js/clients.js";
-                script.onload = () => {
+                const scriptExistente = document.querySelector('script[src="js/clients.js"]');
+
+                if (scriptExistente) {
                     if (typeof cargarClientes === "function") {
                         cargarClientes();
                     }
                     if (typeof initClientModals === "function") {
                         initClientModals();
                     }
-                };
-                document.head.appendChild(script);
+                } else {
+                    const script = document.createElement("script");
+                    script.src = "js/clients.js";
+                    script.onload = () => {
+                        if (typeof cargarClientes === "function") {
+                            cargarClientes();
+                        }
+                        if (typeof initClientModals === "function") {
+                            initClientModals();
+                        }
+                    };
+                    document.head.appendChild(script);
+                }
             }
 
             if (pagina === "mapa") {
