@@ -17,6 +17,22 @@ class User(Base):
 
 
 # =========================
+# CLIENTS
+# =========================
+
+class Client(Base):
+    __tablename__ = "clients"
+
+    client_id = Column(Integer, primary_key=True, index=True)
+    nombre = Column(String)
+    email = Column(String, unique=True)
+    telefono = Column(String)
+    cedula = Column(String)
+    direccion = Column(String)
+    estado = Column(String)
+
+
+# =========================
 # DRIVERS
 # =========================
 

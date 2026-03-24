@@ -24,6 +24,43 @@ class UserResponse(UserBase):
         from_attributes = True
 
 
+class UserLogin(BaseModel):
+    email: str
+    password: str
+
+
+class LoginResponse(BaseModel):
+    token: str
+    user: dict
+
+    class Config:
+        from_attributes = True
+
+
+# =========================
+# CLIENTS
+# =========================
+
+class ClientBase(BaseModel):
+    nombre: str
+    email: str
+    telefono: str
+    cedula: str
+    direccion: str
+    estado: str
+
+
+class ClientCreate(ClientBase):
+    pass
+
+
+class ClientResponse(ClientBase):
+    client_id: int
+
+    class Config:
+        from_attributes = True
+
+
 # =========================
 # DRIVERS
 # =========================
