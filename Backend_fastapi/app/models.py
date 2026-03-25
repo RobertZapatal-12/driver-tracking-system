@@ -95,15 +95,20 @@ class Vehicle(Base):
     __tablename__ = "vehicles"
 
     vehicle_id = Column(Integer, primary_key=True, index=True)
-
     driver_id = Column(Integer, ForeignKey("drivers.driver_id"))
 
-    plate_number = Column(String)
-    modelo = Column(String)
-    marca = Column(String)
-    color = Column(String)
-    year = Column(Integer)
+    plate_number = Column(String(7))
+    modelo = Column(String(50))
+    marca = Column(String(50))
+    tipo_vehiculo = Column(String(50))
+    capacidad = Column(String(20))
+    estado = Column(String(20), default="Disponible")
 
+    imagen1 = Column(String(255))
+    imagen2 = Column(String(255))
+    imagen3 = Column(String(255))
+    imagen4 = Column(String(255))
+    imagen5 = Column(String(255))
 # =========================
 # request
 # =========================

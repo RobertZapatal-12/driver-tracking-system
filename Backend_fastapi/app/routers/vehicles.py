@@ -1,72 +1,88 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app import models, schemas
 
 router = APIRouter(
-    prefix="/vehicles", # Todas las rutas comenzarán con /users
-    tags=["Vehicles"]   # Nombre que aparecerá en la documentación automática de FastAPI
+    prefix="/vehicles",
+    tags=["Vehicles"]
 )
 
-# Obtener todos los vehículos
-@router.get("/")
+
+@router.get("/", response_model=list[schemas.VehicleResponse])
 def get_vehicles(db: Session = Depends(get_db)):
-    return db.query(models.Vehicle).all()
+    try:
+        return db.query(models.Vehicle).all()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error obteniendo vehículos: {str(e)}")
 
 
-# Obtener vehículo por ID
-@router.get("/{vehicle_id}")
+@router.get("/{vehicle_id}", response_model=schemas.VehicleResponse)
 def get_vehicle(vehicle_id: int, db: Session = Depends(get_db)):
+    try:
+        vehicle = db.query(models.Vehicle).filter(models.Vehicle.vehicle_id == vehicle_id).first()
 
-    vehicle = db.query(models.Vehicle).filter(models.Vehicle.vehicle_id == vehicle_id).first()
+        if not vehicle:
+            raise HTTPException(status_code=404, detail="Vehículo no encontrado")
 
-    if not vehicle:
-        return {"error": "Vehículo no encontrado"}
+        return vehicle
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error obteniendo vehículo: {str(e)}")
 
-    return vehicle
 
-
-# Crear vehículo
-@router.post("/")
+@router.post("/", response_model=schemas.VehicleResponse)
 def create_vehicle(vehicle: schemas.VehicleCreate, db: Session = Depends(get_db)):
+    try:
+        new_vehicle = models.Vehicle(**vehicle.dict())
 
-    new_vehicle = models.Vehicle(**vehicle.dict())
+        db.add(new_vehicle)
+        db.commit()
+        db.refresh(new_vehicle)
 
-    db.add(new_vehicle)
-    db.commit()
-    db.refresh(new_vehicle)
+        return new_vehicle
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Error creando vehículo: {str(e)}")
 
-    return new_vehicle
 
-
-# Actualizar vehículo
-@router.put("/{vehicle_id}")
+@router.put("/{vehicle_id}", response_model=schemas.VehicleResponse)
 def update_vehicle(vehicle_id: int, vehicle: schemas.VehicleCreate, db: Session = Depends(get_db)):
+    try:
+        db_vehicle = db.query(models.Vehicle).filter(models.Vehicle.vehicle_id == vehicle_id).first()
 
-    db_vehicle = db.query(models.Vehicle).filter(models.Vehicle.vehicle_id == vehicle_id).first()
+        if not db_vehicle:
+            raise HTTPException(status_code=404, detail="Vehículo no encontrado")
 
-    if not db_vehicle:
-        return {"error": "Vehículo no encontrado"}
+        for key, value in vehicle.dict().items():
+            setattr(db_vehicle, key, value)
 
-    for key, value in vehicle.dict().items():
-        setattr(db_vehicle, key, value)
+        db.commit()
+        db.refresh(db_vehicle)
 
-    db.commit()
-    db.refresh(db_vehicle)
+        return db_vehicle
+    except HTTPException:
+        raise
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Error actualizando vehículo: {str(e)}")
 
-    return db_vehicle
 
-
-# Eliminar vehículo
 @router.delete("/{vehicle_id}")
 def delete_vehicle(vehicle_id: int, db: Session = Depends(get_db)):
+    try:
+        vehicle = db.query(models.Vehicle).filter(models.Vehicle.vehicle_id == vehicle_id).first()
 
-    vehicle = db.query(models.Vehicle).filter(models.Vehicle.vehicle_id == vehicle_id).first()
+        if not vehicle:
+            raise HTTPException(status_code=404, detail="Vehículo no encontrado")
 
-    if not vehicle:
-        return {"error": "Vehículo no encontrado"}
+        db.delete(vehicle)
+        db.commit()
 
-    db.delete(vehicle)
-    db.commit()
-
-    return {"mensaje": "Vehículo eliminado correctamente"}
+        return {"mensaje": "Vehículo eliminado correctamente"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Error eliminando vehículo: {str(e)}")

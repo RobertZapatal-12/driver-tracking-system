@@ -96,8 +96,14 @@ class VehicleBase(BaseModel):
     plate_number: str
     modelo: str
     marca: str
-    color: str
-    year: int
+    tipo_vehiculo: str
+    capacidad: str
+    estado: str = "Disponible"
+    imagen1: Optional[str] = None
+    imagen2: Optional[str] = None
+    imagen3: Optional[str] = None
+    imagen4: Optional[str] = None
+    imagen5: Optional[str] = None
 
 
 class VehicleCreate(VehicleBase):
