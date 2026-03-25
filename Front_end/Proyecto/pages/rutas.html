@@ -6,33 +6,35 @@
         </div>
 
         <div class="table-responsive">
-            <table class="table align-middle">
-                <thead class="table-light">
-                    <tr>
-                        <th>Route ID</th>
-                        <th>User ID</th>
-                        <th>Vehicle ID</th>
-                        <th>Driver ID</th>
-                        <th>Conductor</th>
-                        <th>Origen</th>
-                        <th>Destino</th>
-                        <th>Fecha</th>
-                        <th>Estado</th>
-                    </tr>
-                </thead>
-                <tbody id="routes-table-body">
-                </tbody>
-            </table>
+<table class="table align-middle">
+    <thead class="table-light">
+        <tr>
+            <th>Route ID</th>
+            <th>User ID</th>
+            <th>Vehicle ID</th>
+            <th>Driver ID</th>
+            <th>Conductor</th>
+            <th>Origen</th>
+            <th>Destino</th>
+            <th>Fecha</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody id="routes-table-body"></tbody>
+</table>
         </div>
     </div>
 </div>
 
 <div class="modal-overlay">
     <div class="modal-card">
-        <h5>Registrar Nueva Ruta</h5>
+        <h5 id="routeModalTitle">Registrar Nueva Ruta</h5>
         <hr>
 
         <form id="routeForm">
+            <input type="hidden" id="route_id">
+
             <input type="number" id="vehicle_id" class="form-control mb-3" placeholder="ID del Vehículo" required>
 
             <input type="text" id="origen" class="form-control mb-3" placeholder="Punto de Origen" required>
@@ -41,7 +43,7 @@
 
             <div class="d-flex justify-content-end gap-2">
                 <button type="button" class="btn btn-light btn-close-modal">Cerrar</button>
-                <button type="button" class="btn btn-primary" onclick="crearRuta()">Crear Ruta</button>
+                <button type="button" class="btn btn-primary" id="routeSubmitBtn" onclick="guardarRuta()">Guardar Ruta</button>
             </div>
         </form>
     </div>

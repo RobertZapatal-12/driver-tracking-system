@@ -121,6 +121,10 @@ function cargarPagina(pagina) {
                     document.head.appendChild(script);
                 }
             }
+            
+            if (pagina === "rutas" && typeof cargarRutas === "function") {
+                cargarRutas();
+            }
 
             if (pagina === "mapa") {
                 setTimeout(() => {
