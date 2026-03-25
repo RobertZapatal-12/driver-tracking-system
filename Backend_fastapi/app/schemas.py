@@ -11,6 +11,8 @@ class UserBase(BaseModel):
     email: str
     contrasena: str
     role: str
+    usertelefono: str 
+    idoperador: str
 
 
 class UserCreate(UserBase):

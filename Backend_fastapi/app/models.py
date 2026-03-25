@@ -14,7 +14,8 @@ class User(Base):
     email = Column(String, unique=True)
     contrasena = Column(String)
     role = Column(String)
-
+    idoperador = Column(String)
+    usertelefono = Column(String)
 
 # =========================
 # CLIENTS
