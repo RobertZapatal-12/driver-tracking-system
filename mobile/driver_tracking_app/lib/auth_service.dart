@@ -1,4 +1,3 @@
-import 'package:http/http.dart' as http;
 
 class AuthService {
   Future<Map<String, dynamic>?> login({

@@ -339,9 +339,11 @@
 }
 
 .modal-card-vehiculo-detalle {
-    width: min(1800px, 99vw);
-    max-height: 92vh;
+    width: min(1500px, 150vw);
+    max-width: none;
+    max-height: 150vh;
     overflow-y: auto;
+    margin: 0;
     background: #ffffff;
     border-radius: 28px;
     padding: 28px;
@@ -482,14 +484,16 @@
     flex-direction: column;
     gap: 24px;
     min-width: 0;
+    position: relative;
+    padding-bottom: 90px;
 }
 
 .vehiculo-detalle-top {
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-start;
     align-items: flex-start;
     gap: 20px;
-    padding-right: 10px;
+    padding-top: 10px;
 }
 
 .vehiculo-detalle-heading {
@@ -515,9 +519,12 @@
 }
 
 .vehiculo-detalle-actions {
-    position: relative;
-    flex-shrink: 0;
-    margin-right: 0;
+    position: absolute;
+    right: 28px;
+    bottom: 28px;
+    display: flex;
+    justify-content: flex-end;
+    z-index: 15;
 }
 
 .btn-tuerca-vehiculo {
