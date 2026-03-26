@@ -66,3 +66,4 @@ O descargar manualmente los archivos.py
 Luis jose Gonzalez
 Robert Yarel Zapata
 Yan Franco Caminero
+Wascar Alonzo 
