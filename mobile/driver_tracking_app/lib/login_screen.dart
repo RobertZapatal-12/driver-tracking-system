@@ -10,7 +10,7 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final TextEditingController usernameController = TextEditingController();
+  final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   final AuthService authService = AuthService();
 
@@ -18,45 +18,58 @@ class _LoginScreenState extends State<LoginScreen> {
   String errorMessage = '';
 
   Future<void> handleLogin() async {
+    final email = emailController.text.trim();
+    final password = passwordController.text.trim();
+
+    if (email.isEmpty || password.isEmpty) {
+      setState(() {
+        errorMessage = 'Completa el correo y la contraseña';
+      });
+      return;
+    }
+
     setState(() {
       isLoading = true;
       errorMessage = '';
     });
 
-    final result = await authService.login(
-      username: usernameController.text.trim(),
-      password: passwordController.text.trim(),
-    );
-
-    setState(() {
-      isLoading = false;
-    });
-
-    if (result != null) {
-      final int driverId = result['driver_id'];
-      final String nombre = result['nombre'];
-
-      if (!mounted) return;
-
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (_) => HomeScreen(
-            driverId: driverId,
-            driverName: nombre,
-          ),
-        ),
+    try {
+      final result = await authService.login(
+        email: email,
+        password: password,
       );
-    } else {
+
       setState(() {
-        errorMessage = 'Usuario o contraseña incorrectos';
+        isLoading = false;
+      });
+
+      if (result != null) {
+        final int userId = result['user_id'];
+        final String nombre = result['nombre'] ?? 'Usuario';
+
+        if (!mounted) return;
+
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (_) => HomeScreen(
+              driverId: userId,
+              driverName: nombre,
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      setState(() {
+        isLoading = false;
+        errorMessage = e.toString().replaceFirst('Exception: ', '');
       });
     }
   }
 
   @override
   void dispose() {
-    usernameController.dispose();
+    emailController.dispose();
     passwordController.dispose();
     super.dispose();
   }
@@ -98,9 +111,10 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 const SizedBox(height: 24),
                 TextField(
-                  controller: usernameController,
+                  controller: emailController,
+                  keyboardType: TextInputType.emailAddress,
                   decoration: InputDecoration(
-                    labelText: 'Usuario',
+                    labelText: 'Correo electrónico',
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(14),
                     ),
@@ -122,6 +136,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   Text(
                     errorMessage,
                     style: const TextStyle(color: Colors.red),
+                    textAlign: TextAlign.center,
                   ),
                 const SizedBox(height: 16),
                 SizedBox(
