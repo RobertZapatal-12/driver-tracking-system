@@ -2,7 +2,6 @@ from pathlib import Path
 from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
 from app.routers import drivers, users, locations, vehicles, trips, trips2, clients
 from app import schemas, models
 from sqlalchemy.orm import Session
@@ -49,45 +48,45 @@ def create_access_token(data: dict, expires_delta: timedelta = None):
     return encoded_jwt
 
 
-# Endpoint de login en la raíz /api/login (para conexión con frontend)
+# Endpoint de login en la raíz /api/login (para conexión con frontend y app móvil)
 @app.post("/api/login", response_model=schemas.LoginResponse)
 def api_login(login_data: schemas.UserLogin, db: Session = Depends(get_db)):
     """Endpoint de login que autentica usuarios"""
-    
-    # Buscar el usuario por email
+
     user = db.query(models.User).filter(models.User.email == login_data.email).first()
-    
+
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Email o contraseña incorrectos"
         )
-    
-    # Verificar contraseña
+
     if user.contrasena != login_data.password:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Email o contraseña incorrectos"
         )
-    
-    # Crear token JWT
+
+    driver = db.query(models.Driver).filter(models.Driver.user_id == user.user_id).first()
+
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     token = create_access_token(
-        data={"sub": user.email},
+        data={
+            "sub": user.email,
+            "user_id": user.user_id,
+            "role": user.role,
+            "driver_id": driver.driver_id if driver else None
+        },
         expires_delta=access_token_expires
     )
-    
-    # Retornar token y datos del usuario
+
     return {
         "token": token,
         "user": {
             "id": user.user_id,
             "email": user.email,
             "name": user.nombre,
-            "role": user.role
+            "role": user.role,
+            "driver_id": driver.driver_id if driver else None
         }
     }
-
-FRONTEND_DIR = Path(__file__).parent.parent.parent / "Front_end" / "Proyecto"
-
-app.mount("/", StaticFiles(directory=str(FRONTEND_DIR), html=True), name="static")

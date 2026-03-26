@@ -3,12 +3,12 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 class AuthService {
-  // Para Android Emulator
+  // Android Emulator
   static const String baseUrl = 'http://10.0.2.2:8000';
 
-  // Si luego pruebas en celular físico, esto se cambia por la IP de tu PC.
+  // Si pruebas en celular físico, cambia a la IP de tu PC.
   // Ejemplo:
-  // static const String baseUrl = 'http://192.168.100.15:8000';
+  // static const String baseUrl = 'http://192.168.1.100:8000';
 
   Future<Map<String, dynamic>?> login({
     required String email,
@@ -35,6 +35,7 @@ class AuthService {
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString('authToken', token);
         await prefs.setInt('userId', user['id']);
+        await prefs.setInt('driverId', user['driver_id'] ?? 0);
         await prefs.setString('userEmail', user['email'] ?? '');
         await prefs.setString('userName', user['name'] ?? '');
         await prefs.setString('userRole', user['role'] ?? '');
@@ -42,6 +43,7 @@ class AuthService {
         return {
           'token': token,
           'user_id': user['id'],
+          'driver_id': user['driver_id'],
           'nombre': user['name'],
           'email': user['email'],
           'role': user['role'],
@@ -71,6 +73,7 @@ class AuthService {
     return {
       'token': token,
       'user_id': prefs.getInt('userId'),
+      'driver_id': prefs.getInt('driverId'),
       'nombre': prefs.getString('userName') ?? '',
       'email': prefs.getString('userEmail') ?? '',
       'role': prefs.getString('userRole') ?? '',
@@ -81,6 +84,7 @@ class AuthService {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('authToken');
     await prefs.remove('userId');
+    await prefs.remove('driverId');
     await prefs.remove('userEmail');
     await prefs.remove('userName');
     await prefs.remove('userRole');

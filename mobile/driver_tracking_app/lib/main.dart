@@ -45,9 +45,9 @@ class AuthWrapper extends StatelessWidget {
 
         final user = snapshot.data;
 
-        if (user != null) {
+        if (user != null && user['driver_id'] != null && user['driver_id'] != 0) {
           return HomeScreen(
-            driverId: user['user_id'],
+            driverId: user['driver_id'],
             driverName: user['nombre'] ?? 'Usuario',
           );
         }

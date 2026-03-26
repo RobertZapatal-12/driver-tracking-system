@@ -37,18 +37,26 @@ class Client(Base):
 # DRIVERS
 # =========================
 
+# =========================
+# DRIVERS
+# =========================
+
 class Driver(Base):
     __tablename__ = "drivers"
 
     driver_id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.user_id"), unique=True, nullable=True)
+
     nombre = Column(String)
     telefono = Column(String)
     numero_licencia = Column(String)
     tipo_licencia = Column(String)
     cedula = Column(String)
     estado = Column(String)
-    imagen = Column(String)          
-    descripcion = Column(String)     
+    imagen = Column(String)
+    descripcion = Column(String)
+
+    user = relationship("User")    
     
 
 

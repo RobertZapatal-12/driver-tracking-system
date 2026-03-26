@@ -31,9 +31,20 @@ class UserLogin(BaseModel):
     password: str
 
 
+class LoginUserResponse(BaseModel):
+    id: int
+    email: str
+    name: str
+    role: str
+    driver_id: int | None = None
+
+    class Config:
+        from_attributes = True
+
+
 class LoginResponse(BaseModel):
     token: str
-    user: dict
+    user: LoginUserResponse
 
     class Config:
         from_attributes = True

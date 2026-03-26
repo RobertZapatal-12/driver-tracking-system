@@ -44,8 +44,15 @@ class _LoginScreenState extends State<LoginScreen> {
       });
 
       if (result != null) {
-        final int userId = result['user_id'];
+        final int? driverId = result['driver_id'];
         final String nombre = result['nombre'] ?? 'Usuario';
+
+        if (driverId == null || driverId == 0) {
+          setState(() {
+            errorMessage = 'Este usuario no está vinculado a un conductor';
+          });
+          return;
+        }
 
         if (!mounted) return;
 
@@ -53,7 +60,7 @@ class _LoginScreenState extends State<LoginScreen> {
           context,
           MaterialPageRoute(
             builder: (_) => HomeScreen(
-              driverId: userId,
+              driverId: driverId,
               driverName: nombre,
             ),
           ),
