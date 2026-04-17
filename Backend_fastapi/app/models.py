@@ -127,10 +127,11 @@ class Request(Base):
 
     request_id = Column(Integer, primary_key=True, index=True)
 
-    route_id = Column(Integer, ForeignKey("routes.route_id", ondelete="CASCADE"))
-    user_id = Column(Integer, ForeignKey("users.user_id", ondelete="CASCADE"))
-    vehicle_id = Column(Integer, ForeignKey("vehicles.vehicle_id", ondelete="CASCADE"))
-
-    inicio = Column(DateTime)
-    fin = Column(DateTime)
+    cliente = Column(String)
+    fecha = Column(String)
+    origen = Column(String)
+    destino = Column(String)
+    descripcion = Column(String)
+    tipo_vehiculo = Column(String)
     estado = Column(String)
+    prioridad = Column(String)

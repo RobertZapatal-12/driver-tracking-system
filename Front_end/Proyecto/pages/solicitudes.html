@@ -13,32 +13,32 @@
             <div class="row g-3">
                 <div class="col-md-6">
                     <label class="form-label fw-semibold">Cliente / Solicitante</label>
-                    <input type="text" class="form-control" placeholder="Nombre del cliente o empresa" required>
+                    <input type="text" id="solicitud-cliente" class="form-control" placeholder="Nombre del cliente o empresa" required>
                 </div>
                 
                 <div class="col-md-6">
                     <label class="form-label fw-semibold">Fecha de la Solicitud</label>
-                    <input type="date" class="form-control" required>
+                    <input type="date" id="solicitud-fecha" class="form-control" required>
                 </div>
 
                 <div class="col-md-6">
                     <label class="form-label fw-semibold">Origen</label>
-                    <input type="text" class="form-control" placeholder="Lugar de partida" required>
+                    <input type="text" id="solicitud-origen" class="form-control" placeholder="Lugar de partida" required>
                 </div>
                 
                 <div class="col-md-6">
                     <label class="form-label fw-semibold">Destino</label>
-                    <input type="text" class="form-control" placeholder="Lugar de llegada" required>
+                    <input type="text" id="solicitud-destino" class="form-control" placeholder="Lugar de llegada" required>
                 </div>
 
                 <div class="col-md-12">
                     <label class="form-label fw-semibold">Descripción de la Solicitud</label>
-                    <textarea class="form-control" rows="3" placeholder="Detalles de la carga, requerimientos especiales, etc." required></textarea>
+                    <textarea id="solicitud-descripcion" class="form-control" rows="3" placeholder="Detalles de la carga, requerimientos especiales, etc." required></textarea>
                 </div>
 
                 <div class="col-md-4">
                     <label class="form-label fw-semibold">Tipo de Vehículo Requerido</label>
-                    <select class="form-select">
+                    <select id="solicitud-tipo-vehiculo" class="form-select">
                         <option value="">Seleccione una opción...</option>
                         <option value="liviano">Liviano</option>
                         <option value="pesado">Pesado</option>
@@ -48,7 +48,7 @@
 
                 <div class="col-md-4">
                     <label class="form-label fw-semibold">Estado de la Solicitud</label>
-                    <select class="form-select">
+                    <select id="solicitud-estado" class="form-select">
                         <option value="pendiente" selected>Pendiente</option>
                         <option value="aprobada">Aprobada</option>
                         <option value="en_curso">En Curso</option>
@@ -57,7 +57,7 @@
                 
                 <div class="col-md-4">
                     <label class="form-label fw-semibold">Prioridad</label>
-                    <select class="form-select">
+                    <select id="solicitud-prioridad" class="form-select">
                         <option value="baja">Baja</option>
                         <option value="media" selected>Media</option>
                         <option value="alta">Alta</option>

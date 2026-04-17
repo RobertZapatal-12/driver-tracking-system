@@ -140,6 +140,25 @@ function cargarPagina(pagina) {
                     document.head.appendChild(script);
                 }
             }
+
+            if (pagina === "solicitudes") {
+                const scriptExistente = document.querySelector('script[src="js/solicitudes.js"]');
+
+                if (scriptExistente) {
+                    if (typeof initSolicitudes === "function") {
+                        initSolicitudes();
+                    }
+                } else {
+                    const script = document.createElement("script");
+                    script.src = "js/solicitudes.js";
+                    script.onload = () => {
+                        if (typeof initSolicitudes === "function") {
+                            initSolicitudes();
+                        }
+                    };
+                    document.head.appendChild(script);
+                }
+            }
             
             if (pagina === "rutas" && typeof cargarRutas === "function") {
                 cargarRutas();

@@ -193,12 +193,14 @@ from datetime import datetime
 # =========================
 
 class RequestBase(BaseModel):
-    route_id: int
-    user_id: int
-    vehicle_id: int
-    inicio: datetime
-    fin: datetime
+    cliente: str
+    fecha: str
+    origen: str
+    destino: str
+    descripcion: str
+    tipo_vehiculo: str
     estado: str
+    prioridad: str
 
 
 class RequestCreate(RequestBase):
