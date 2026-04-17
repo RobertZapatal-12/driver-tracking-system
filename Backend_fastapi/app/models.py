@@ -133,5 +133,11 @@ class Request(Base):
     destino = Column(String)
     descripcion = Column(String)
     tipo_vehiculo = Column(String)
-    estado = Column(String)
+    estado = Column(String, default="pendiente")
     prioridad = Column(String)
+    user_id = Column(Integer, ForeignKey("users.user_id"), nullable=True)
+    vehicle_id = Column(Integer, nullable=True)
+    driver_id = Column(Integer, nullable=True)
+    notas_operador = Column(String, nullable=True)
+
+    operador = relationship("User", foreign_keys=[user_id])

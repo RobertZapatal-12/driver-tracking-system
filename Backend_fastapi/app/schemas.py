@@ -184,9 +184,6 @@ class RouteResponse(RouteBase):
 
 
 
-from pydantic import BaseModel
-from datetime import datetime
-
 
 # =========================
 # REQUEST
@@ -199,16 +196,49 @@ class RequestBase(BaseModel):
     destino: str
     descripcion: str
     tipo_vehiculo: str
-    estado: str
+    estado: str = "pendiente"
     prioridad: str
+    user_id: Optional[int] = None
+    vehicle_id: Optional[int] = None
+    driver_id: Optional[int] = None
+    notas_operador: Optional[str] = None
 
 
-class RequestCreate(RequestBase):
-    pass
+class RequestCreate(BaseModel):
+    cliente: str
+    fecha: str
+    origen: str
+    destino: str
+    descripcion: str
+    tipo_vehiculo: str
+    prioridad: str
 
 
 class RequestResponse(RequestBase):
     request_id: int
+    operador_nombre: Optional[str] = None
+    driver_nombre: Optional[str] = None
+    vehicle_info: Optional[str] = None
 
     class Config:
         from_attributes = True
+
+
+class RequestTomar(BaseModel):
+    user_id: int
+
+
+class RequestCompletar(BaseModel):
+    user_id: int
+
+
+class RequestOperadorUpdate(BaseModel):
+    user_id: int
+    origen: Optional[str] = None
+    destino: Optional[str] = None
+    descripcion: Optional[str] = None
+    prioridad: Optional[str] = None
+    tipo_vehiculo: Optional[str] = None
+    vehicle_id: Optional[int] = None
+    driver_id: Optional[int] = None
+    notas_operador: Optional[str] = None

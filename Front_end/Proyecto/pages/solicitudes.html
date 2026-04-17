@@ -1,62 +1,110 @@
-<div class="row g-3 mb-4">
-    <div class="col-md-12">
-        <div class="card border-0 shadow-sm p-3 border-start border-primary border-4">
-            <h5 class="mb-0">Registro de Solicitud de Viaje</h5>
-            <small class="text-muted">Módulo Administrativo para ingreso de solicitudes</small>
+<div class="solicitudes-module">
+    <!-- Encabezado -->
+    <div class="glass-panel p-4 mb-4">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h4 class="fw-bold mb-1">Registro de Solicitud de Viaje</h4>
+                <p class="text-muted small mb-0">Módulo Administrativo para ingreso y gestión de solicitudes.</p>
+            </div>
+            <button class="btn btn-primary rounded-pill px-4 btn-open-modal-solicitud" id="btnCrearSolicitud">
+                <i class="bi bi-plus-circle me-2"></i> Añadir Solicitud
+            </button>
+        </div>
+    </div>
+
+    <!-- Filtros por estado -->
+    <div class="mb-3">
+        <div class="btn-group" role="group" id="filtroEstadoSolicitudes">
+            <button type="button" class="btn btn-outline-secondary active" data-filtro="todas">
+                <i class="bi bi-list-ul me-1"></i> Todas
+            </button>
+            <button type="button" class="btn btn-outline-warning" data-filtro="pendiente">
+                <i class="bi bi-clock me-1"></i> Pendientes
+            </button>
+            <button type="button" class="btn btn-outline-primary" data-filtro="en_proceso">
+                <i class="bi bi-gear me-1"></i> En Proceso
+            </button>
+            <button type="button" class="btn btn-outline-success" data-filtro="completada">
+                <i class="bi bi-check-circle me-1"></i> Completadas
+            </button>
+        </div>
+    </div>
+
+    <!-- Lista de Solicitudes -->
+    <div class="card border-0 shadow-sm">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0" id="tablaSolicitudes">
+                    <thead class="table-light">
+                        <tr>
+                            <th>ID</th>
+                            <th>Cliente</th>
+                            <th>Fecha</th>
+                            <th>Ruta</th>
+                            <th>Vehículo</th>
+                            <th>Estado/Prioridad</th>
+                            <th>Operador</th>
+                            <th class="text-end">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="listaSolicitudesBody">
+                        <tr>
+                            <td colspan="8" class="text-center py-4">
+                                <div class="spinner-border text-primary spinner-border-sm" role="status"></div>
+                                <span class="ms-2 text-muted">Cargando solicitudes...</span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 </div>
 
-<div class="card border-0 shadow-sm">
-    <div class="card-body p-4">
+<!-- ═══════════════════════════════════════════════════════════
+     MODAL: Crear / Editar Solicitud (Secretaria)
+     ═══════════════════════════════════════════════════════════ -->
+<div class="modal-overlay" id="modalSolicitud" style="display: none;">
+    <div class="modal-card" style="max-width: 700px;">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h5 class="fw-bold mb-0" id="tituloModalSolicitud">Nueva Solicitud de Viaje</h5>
+            <button type="button" class="btn-close btn-close-modal-solicitud"></button>
+        </div>
+        
         <form id="form-solicitud">
+            <input type="hidden" id="solicitud-id">
             <div class="row g-3">
                 <div class="col-md-6">
-                    <label class="form-label fw-semibold">Cliente / Solicitante</label>
-                    <input type="text" id="solicitud-cliente" class="form-control" placeholder="Nombre del cliente o empresa" required>
+                    <label class="form-label fw-semibold small">Cliente / Solicitante</label>
+                    <input type="text" id="solicitud-cliente" class="form-control" placeholder="Nombre de cliente o empresa" required>
                 </div>
-                
                 <div class="col-md-6">
-                    <label class="form-label fw-semibold">Fecha de la Solicitud</label>
+                    <label class="form-label fw-semibold small">Fecha</label>
                     <input type="date" id="solicitud-fecha" class="form-control" required>
                 </div>
-
                 <div class="col-md-6">
-                    <label class="form-label fw-semibold">Origen</label>
+                    <label class="form-label fw-semibold small">Origen</label>
                     <input type="text" id="solicitud-origen" class="form-control" placeholder="Lugar de partida" required>
                 </div>
-                
                 <div class="col-md-6">
-                    <label class="form-label fw-semibold">Destino</label>
+                    <label class="form-label fw-semibold small">Destino</label>
                     <input type="text" id="solicitud-destino" class="form-control" placeholder="Lugar de llegada" required>
                 </div>
-
                 <div class="col-md-12">
-                    <label class="form-label fw-semibold">Descripción de la Solicitud</label>
-                    <textarea id="solicitud-descripcion" class="form-control" rows="3" placeholder="Detalles de la carga, requerimientos especiales, etc." required></textarea>
+                    <label class="form-label fw-semibold small">Descripción</label>
+                    <textarea id="solicitud-descripcion" class="form-control" rows="2" placeholder="Detalles o requerimientos..." required></textarea>
                 </div>
-
-                <div class="col-md-4">
-                    <label class="form-label fw-semibold">Tipo de Vehículo Requerido</label>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold small">Vehículo Requerido</label>
                     <select id="solicitud-tipo-vehiculo" class="form-select">
-                        <option value="">Seleccione una opción...</option>
+                        <option value="">Seleccione...</option>
                         <option value="liviano">Liviano</option>
                         <option value="pesado">Pesado</option>
                         <option value="refrigerado">Refrigerado</option>
                     </select>
                 </div>
-
-                <div class="col-md-4">
-                    <label class="form-label fw-semibold">Estado de la Solicitud</label>
-                    <select id="solicitud-estado" class="form-select">
-                        <option value="pendiente" selected>Pendiente</option>
-                        <option value="aprobada">Aprobada</option>
-                        <option value="en_curso">En Curso</option>
-                    </select>
-                </div>
-                
-                <div class="col-md-4">
-                    <label class="form-label fw-semibold">Prioridad</label>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold small">Prioridad</label>
                     <select id="solicitud-prioridad" class="form-select">
                         <option value="baja">Baja</option>
                         <option value="media" selected>Media</option>
@@ -64,13 +112,143 @@
                     </select>
                 </div>
             </div>
-
-            <hr class="my-4">
-
-            <div class="d-flex justify-content-end gap-2">
-                <button type="reset" class="btn btn-light border">Limpiar</button>
-                <button type="submit" class="btn btn-primary px-4"><i class="bi bi-save me-2"></i>Guardar Solicitud</button>
+            <div class="mt-4 pt-3 border-top d-flex justify-content-end gap-2">
+                <button type="button" class="btn btn-light btn-close-modal-solicitud px-4 border">Cerrar</button>
+                <button type="submit" class="btn btn-primary px-4 rounded-pill"><i class="bi bi-save me-2"></i>Guardar Solicitud</button>
             </div>
         </form>
     </div>
-</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     MODAL: Panel de Trabajo del Operador
+     ═══════════════════════════════════════════════════════════ -->
+<div class="modal-overlay" id="modalTrabajoOperador" style="display: none;">
+    <div class="modal-card" style="max-width: 850px; max-height: 90vh; overflow-y: auto;">
+        
+        <!-- Header con info de la solicitud -->
+        <div class="d-flex justify-content-between align-items-start mb-3">
+            <div>
+                <h5 class="fw-bold mb-1">
+                    <i class="bi bi-clipboard2-check me-2 text-primary"></i>
+                    Gestión de Solicitud <span id="op-solicitud-id" class="text-primary">#—</span>
+                </h5>
+                <p class="text-muted small mb-0">Panel de trabajo del operador asignado</p>
+            </div>
+            <button type="button" class="btn-close" id="btnCerrarTrabajoOp"></button>
+        </div>
+
+        <!-- Info resumida de la solicitud -->
+        <div class="alert alert-light border mb-4" id="op-info-resumen">
+            <div class="row small">
+                <div class="col-md-4"><strong>Cliente:</strong> <span id="op-info-cliente">—</span></div>
+                <div class="col-md-4"><strong>Fecha:</strong> <span id="op-info-fecha">—</span></div>
+                <div class="col-md-4"><strong>Estado:</strong> <span id="op-info-estado" class="badge bg-primary">—</span></div>
+            </div>
+        </div>
+
+        <form id="form-trabajo-operador">
+            <!-- ──── SECCIÓN 1: Revisar y Validar ──── -->
+            <div class="card border-0 shadow-sm mb-3">
+                <div class="card-header bg-white border-bottom py-3">
+                    <h6 class="fw-bold mb-0">
+                        <i class="bi bi-geo-alt-fill text-danger me-2"></i>
+                        📍 Revisar y Validar Solicitud
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold small">Origen</label>
+                            <input type="text" id="op-origen" class="form-control" placeholder="Confirmar lugar de partida">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold small">Destino</label>
+                            <input type="text" id="op-destino" class="form-control" placeholder="Confirmar lugar de llegada">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold small">Prioridad</label>
+                            <select id="op-prioridad" class="form-select">
+                                <option value="baja">Baja</option>
+                                <option value="media">Media</option>
+                                <option value="alta">Alta</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold small">Tipo de Vehículo</label>
+                            <select id="op-tipo-vehiculo" class="form-select">
+                                <option value="">Seleccione...</option>
+                                <option value="liviano">Liviano</option>
+                                <option value="pesado">Pesado</option>
+                                <option value="refrigerado">Refrigerado</option>
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-semibold small">Descripción del Servicio</label>
+                            <textarea id="op-descripcion" class="form-control" rows="2" placeholder="Corregir o actualizar la descripción..."></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ──── SECCIÓN 2: Asignar Recursos ──── -->
+            <div class="card border-0 shadow-sm mb-3">
+                <div class="card-header bg-white border-bottom py-3">
+                    <h6 class="fw-bold mb-0">
+                        <i class="bi bi-truck text-success me-2"></i>
+                        🚛 Asignar Recursos
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold small">Vehículo Asignado</label>
+                            <select id="op-vehicle-id" class="form-select">
+                                <option value="">Cargando vehículos...</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold small">Conductor Asignado</label>
+                            <select id="op-driver-id" class="form-select">
+                                <option value="">Cargando conductores...</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ──── SECCIÓN 3: Notas e Incidencias ──── -->
+            <div class="card border-0 shadow-sm mb-3">
+                <div class="card-header bg-white border-bottom py-3">
+                    <h6 class="fw-bold mb-0">
+                        <i class="bi bi-journal-text text-warning me-2"></i>
+                        📝 Notas del Operador
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label fw-semibold small">Notas internas / Incidencias</label>
+                            <textarea id="op-notas" class="form-control" rows="3" placeholder="Añadir notas, observaciones o registrar incidencias..."></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Botones de acción -->
+            <div class="pt-3 border-top d-flex justify-content-between">
+                <button type="button" class="btn btn-outline-secondary px-4" id="btnCerrarTrabajoOp2">
+                    <i class="bi bi-x-lg me-1"></i> Cerrar
+                </button>
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary px-4 rounded-pill">
+                        <i class="bi bi-save me-2"></i>Guardar Cambios
+                    </button>
+                    <button type="button" class="btn btn-success px-4 rounded-pill" id="btnCompletarDesdePanel">
+                        <i class="bi bi-check-circle me-2"></i>Completar Solicitud
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
