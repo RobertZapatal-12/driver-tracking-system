@@ -313,6 +313,7 @@ async function cargarConductoresSelect() {
             const drivers = await response.json();
             select.innerHTML = '<option value="">Sin asignar</option>';
             drivers.forEach(d => {
+                if ((d.estado || "").toLowerCase() === 'inactivo') return;
                 const opt = document.createElement("option");
                 opt.value = d.driver_id;
                 opt.textContent = `${d.nombre} - ${d.numero_licencia} (${d.estado})`;
@@ -462,7 +463,32 @@ async function completarDesdePanel() {
 
     if (!confirm("¿Marcar esta solicitud como completada? Esta acción no se puede deshacer.")) return;
 
+    // Primero guardamos los datos actuales para asegurar que no se pierda el conductor/vehículo asignado
+    const dataActualizar = {
+        user_id: user.id,
+        origen: document.getElementById("op-origen").value,
+        destino: document.getElementById("op-destino").value,
+        descripcion: document.getElementById("op-descripcion").value,
+        prioridad: document.getElementById("op-prioridad").value,
+        tipo_vehiculo: document.getElementById("op-tipo-vehiculo").value,
+        notas_operador: document.getElementById("op-notas").value
+    };
+
+    const vehicleVal = document.getElementById("op-vehicle-id").value;
+    if (vehicleVal) dataActualizar.vehicle_id = parseInt(vehicleVal);
+
+    const driverVal = document.getElementById("op-driver-id").value;
+    if (driverVal) dataActualizar.driver_id = parseInt(driverVal);
+
     try {
+        // Enviar PATCH para actualizar info
+        await fetch(`${getBaseUrl()}/request/${solicitudEnTrabajo.request_id}/actualizar`, {
+            method: 'PATCH',
+            headers: getHeaders(),
+            body: JSON.stringify(dataActualizar)
+        });
+
+        // Luego marcar como completada
         const response = await fetch(`${getBaseUrl()}/request/${solicitudEnTrabajo.request_id}/completar`, {
             method: 'PATCH',
             headers: getHeaders(),
