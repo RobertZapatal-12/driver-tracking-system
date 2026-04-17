@@ -1,0 +1,142 @@
+<!-- =========================================================
+     ENCABEZADO DEL MÓDULO DE CLIENTES
+     - Título
+     - Botón para abrir el modal de nuevo cliente
+     ========================================================= -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h3 class="fw-bold">Gestión de Clientes</h3>
+    <button class="btn btn-primary btn-open-modal">Nuevo Cliente</button>
+</div>
+
+<!-- =========================================================
+     BUSCADOR DE CLIENTES
+     - Permite buscar por nombre en tiempo real
+     ========================================================= -->
+<div class="mb-3">
+    <input
+        type="text"
+        id="buscadorClientes"
+        class="form-control"
+        placeholder="Buscar por nombre, cédula, teléfono o email..."
+    >
+</div>
+
+<!-- =========================================================
+     LISTA DE CLIENTES
+     - Aquí se renderizan dinámicamente las tarjetas
+     ========================================================= -->
+<div id="listaClientes" class="row g-4"></div>
+
+<!-- =========================================================
+     PAGINACIÓN DE CLIENTES
+     - Aquí aparecerán los botones 1, 2, 3...
+     - Cada página mostrará 5 clientes
+     ========================================================= -->
+<div id="paginacionClientes" class="d-flex justify-content-center gap-2 mt-4"></div>
+
+<!-- =========================================================
+     MODAL: NUEVO / EDITAR CLIENTE
+     - Se usa tanto para crear como para editar
+     ========================================================= -->
+<div class="modal-overlay">
+    <div class="modal-card">
+        <h5 class="fw-bold mb-3">Nuevo Perfil de Cliente</h5>
+
+        <form id="formCliente">
+            <!-- =================================================
+                 FILA SUPERIOR
+                 - Nombre y teléfono
+                 ================================================= -->
+            <div class="row">
+                <div class="col-md-6 mb-2">
+                    <label class="form-label small fw-bold">Nombre Completo</label>
+                    <input
+                        type="text"
+                        id="nombreCliente"
+                        class="form-control"
+                        placeholder="Ej: Juan Pérez"
+                        required
+                    >
+                </div>
+
+                <div class="col-md-6 mb-2">
+                    <label class="form-label small fw-bold">Teléfono</label>
+                    <input
+                        type="text"
+                        id="telefonoCliente"
+                        class="form-control"
+                        placeholder="Ej: 809-555-0011"
+                        required
+                    >
+                </div>
+            </div>
+
+            <!-- =================================================
+                 SEGUNDA FILA
+                 - Email y cédula
+                 ================================================= -->
+            <div class="row">
+                <div class="col-md-6 mb-2">
+                    <label class="form-label small fw-bold">Email</label>
+                    <input
+                        type="email"
+                        id="emailCliente"
+                        class="form-control"
+                        placeholder="Ej: juan@example.com"
+                        required
+                    >
+                </div>
+
+                <div class="col-md-6 mb-2">
+                    <label class="form-label small fw-bold">Cédula</label>
+                    <input
+                        type="text"
+                        id="cedulaCliente"
+                        class="form-control"
+                        placeholder="Ej: 402-1234567-8"
+                        required
+                    >
+                </div>
+            </div>
+
+            <!-- =================================================
+                 DIRECCIÓN
+                 ================================================= -->
+            <div class="mb-2">
+                <label class="form-label small fw-bold">Dirección</label>
+                <input
+                    type="text"
+                    id="direccionCliente"
+                    class="form-control"
+                    placeholder="Ej: Calle Principal #123, Santo Domingo"
+                >
+            </div>
+
+            <!-- =================================================
+                 ESTADO
+                 ================================================= -->
+            <div class="mb-3">
+                <label class="form-label small fw-bold">Estado</label>
+                <select id="estadoCliente" class="form-select">
+                    <option value="Activo">Activo</option>
+                    <option value="Inactivo">Inactivo</option>
+                </select>
+            </div>
+
+            <!-- =================================================
+                 BOTONES DEL MODAL
+                 - Cancelar
+                 - Guardar
+                 ================================================= -->
+            <div class="d-flex justify-content-end gap-2">
+                <button type="button" class="btn btn-light btn-close-modal">
+                    Cancelar
+                </button>
+
+                <button type="submit" class="btn btn-primary px-4">
+                    Guardar
+                </button>
+            </div>
+        </form>
+    </div>
+</div>

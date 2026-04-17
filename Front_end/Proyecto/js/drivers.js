@@ -1,7 +1,7 @@
 /* =========================================================
    CONFIGURACIÓN GENERAL
    ========================================================= */
-const API_URL = "http://127.0.0.1:8000/drivers";
+const DRIVERS_ENDPOINT = "/drivers";
 
 let editandoDriverId = null;
 
@@ -22,12 +22,13 @@ async function cargarConductores() {
         if (lista) {
             lista.innerHTML = `
                 <div class="col-12 text-center text-muted py-4">
+                    <div class="spinner-border spinner-border-sm me-2" role="status"></div>
                     Cargando conductores...
                 </div>
             `;
         }
 
-        const res = await fetch(`${API_URL}/`);
+        const res = await CONFIG.fetchAuth(`${DRIVERS_ENDPOINT}/`);
         if (!res.ok) {
             throw new Error("No se pudieron cargar los conductores");
         }
@@ -42,6 +43,7 @@ async function cargarConductores() {
 
     } catch (error) {
         console.error("Error al cargar desde la API:", error);
+        Toast.error("No se pudieron cargar los conductores. Verifica la conexión.");
     }
 }
 
@@ -176,11 +178,8 @@ function renderPaginacionConductores() {
    CREAR CONDUCTOR
    ========================================================= */
 async function crearDriver(driver) {
-    const res = await fetch(`${API_URL}/`, {
+    const res = await CONFIG.fetchAuth(`${DRIVERS_ENDPOINT}/`, {
         method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
         body: JSON.stringify(driver)
     });
 
@@ -195,11 +194,8 @@ async function crearDriver(driver) {
    ACTUALIZAR CONDUCTOR
    ========================================================= */
 async function actualizarDriver(id, driver) {
-    const res = await fetch(`${API_URL}/${id}`, {
+    const res = await CONFIG.fetchAuth(`${DRIVERS_ENDPOINT}/${id}`, {
         method: "PUT",
-        headers: {
-            "Content-Type": "application/json"
-        },
         body: JSON.stringify(driver)
     });
 
@@ -214,7 +210,7 @@ async function actualizarDriver(id, driver) {
    ELIMINAR CONDUCTOR
    ========================================================= */
 async function eliminarDriver(id) {
-    const res = await fetch(`${API_URL}/${id}`, {
+    const res = await CONFIG.fetchAuth(`${DRIVERS_ENDPOINT}/${id}`, {
         method: "DELETE"
     });
 
@@ -226,18 +222,19 @@ async function eliminarDriver(id) {
 }
 
 /* =========================================================
-   CONFIRMAR ELIMINACIÓN
+   CONFIRMAR ELIMINACIÓN (usa Toast.confirm)
    ========================================================= */
 async function confirmarEliminacion(id) {
-    if (!confirm("¿Estás seguro de que deseas eliminar a este conductor?")) return;
+    const confirmado = await Toast.confirm("¿Estás seguro de que deseas eliminar a este conductor? Esta acción no se puede deshacer.");
+    if (!confirmado) return;
 
     try {
         await eliminarDriver(id);
         await cargarConductores();
-        alert("✅ Conductor eliminado correctamente");
+        Toast.success("Conductor eliminado correctamente");
     } catch (error) {
         console.error(error);
-        alert("❌ Error al eliminar");
+        Toast.error("No se pudo eliminar el conductor");
     }
 }
 
@@ -246,7 +243,7 @@ async function confirmarEliminacion(id) {
    ========================================================= */
 async function editarDriver(id) {
     try {
-        const res = await fetch(`${API_URL_DRIVERS}/${id}`);
+        const res = await CONFIG.fetchAuth(`${DRIVERS_ENDPOINT}/${id}`);
         if (!res.ok) {
             throw new Error("No se pudo obtener el conductor");
         }
@@ -255,18 +252,19 @@ async function editarDriver(id) {
 
         editandoDriverId = id;
 
-        document.getElementById("nombreConductor").value = d.nombre || "";
-        document.getElementById("telefonoConductor").value = d.telefono || "";
-        document.getElementById("cedulaConductor").value = d.cedula || "";
-        document.getElementById("licenciaConductor").value = d.numero_licencia || "";
-        document.getElementById("tipoLicenciaConductor").value = d.tipo_licencia || "";
-        document.getElementById("estadoConductor").value = d.estado || "";
-        document.getElementById("descripcionConductor").value = d.descripcion || "";
+        // IDs corregidos para coincidir con conductores.html
+        document.getElementById("nombreC").value = d.nombre || "";
+        document.getElementById("telefonoC").value = d.telefono || "";
+        document.getElementById("cedulaC").value = d.cedula || "";
+        document.getElementById("numLicenciaC").value = d.numero_licencia || "";
+        document.getElementById("tipoLicenciaC").value = d.tipo_licencia || "";
+        document.getElementById("estadoC").value = d.estado || "";
+        document.getElementById("descripcionC").value = d.descripcion || "";
 
         window.driverAppData = window.driverAppData || {};
         window.driverAppData.foto = d.imagen || "";
 
-        const preview = document.getElementById("previewConductor");
+        const preview = document.getElementById("imgPreview");
         if (preview) {
             preview.src = d.imagen || "https://via.placeholder.com/80x80?text=Foto";
         }
@@ -294,7 +292,7 @@ async function editarDriver(id) {
 
     } catch (error) {
         console.error(error);
-        alert("❌ No se pudo cargar el conductor para editar");
+        Toast.error("No se pudo cargar el conductor para editar");
     }
 }
 
@@ -303,4 +301,9 @@ async function editarDriver(id) {
    ========================================================= */
 function limpiarModoEdicion() {
     editandoDriverId = null;
+}
+
+// Alias para compatibilidad con app.js
+function limpiarModoEdicionDriver() {
+    limpiarModoEdicion();
 }

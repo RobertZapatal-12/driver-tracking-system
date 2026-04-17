@@ -8,32 +8,102 @@ router = APIRouter(
     prefix="/request", 
     tags=["Request"]   
 )
-# Crear request
+
+
+# ─── Helper: enriquecer respuesta con nombres de operador/driver/vehicle ───
+def _enrich_request(req, db):
+    """Agrega operador_nombre, driver_nombre y vehicle_info al dict de respuesta"""
+    data = {
+        "request_id": req.request_id,
+        "cliente": req.cliente,
+        "fecha": req.fecha,
+        "origen": req.origen,
+        "destino": req.destino,
+        "descripcion": req.descripcion,
+        "tipo_vehiculo": req.tipo_vehiculo,
+        "estado": req.estado,
+        "prioridad": req.prioridad,
+        "user_id": req.user_id,
+        "vehicle_id": req.vehicle_id,
+        "driver_id": req.driver_id,
+        "notas_operador": req.notas_operador,
+        "operador_nombre": None,
+        "driver_nombre": None,
+        "vehicle_info": None,
+    }
+
+    # Nombre del operador desde la tabla users
+    if req.user_id:
+        user = db.query(models.User).filter(
+            models.User.user_id == req.user_id
+        ).first()
+        if user:
+            data["operador_nombre"] = user.nombre
+
+    # Nombre del conductor
+    if req.driver_id:
+        driver = db.query(models.Driver).filter(
+            models.Driver.driver_id == req.driver_id
+        ).first()
+        if driver:
+            data["driver_nombre"] = driver.nombre
+
+    # Info del vehículo
+    if req.vehicle_id:
+        vehicle = db.query(models.Vehicle).filter(
+            models.Vehicle.vehicle_id == req.vehicle_id
+        ).first()
+        if vehicle:
+            data["vehicle_info"] = f"{vehicle.marca} {vehicle.modelo} - {vehicle.plate_number}"
+
+    return data
+
+
+# Crear request (secretaria crea con estado pendiente)
 @router.post("/", response_model=schemas.RequestResponse)
 def create_request(request: schemas.RequestCreate, db: Session = Depends(get_db)):
 
-    new_request = models.Request(**request.dict())
+    new_request = models.Request(
+        cliente=request.cliente,
+        fecha=request.fecha,
+        origen=request.origen,
+        destino=request.destino,
+        descripcion=request.descripcion,
+        tipo_vehiculo=request.tipo_vehiculo,
+        prioridad=request.prioridad,
+        estado="pendiente",
+        user_id=None,
+        vehicle_id=None,
+        driver_id=None,
+        notas_operador=None
+    )
 
     db.add(new_request)
     db.commit()
     db.refresh(new_request)
 
-    return new_request
+    return _enrich_request(new_request, db)
 
 
 # Obtener todos
 @router.get("/", response_model=list[schemas.RequestResponse])
 def get_requests(db: Session = Depends(get_db)):
-
     requests = db.query(models.Request).all()
+    return [_enrich_request(r, db) for r in requests]
 
-    return requests
+
+# Obtener solicitudes pendientes (para operadores)
+@router.get("/pendientes", response_model=list[schemas.RequestResponse])
+def get_pending_requests(db: Session = Depends(get_db)):
+    requests = db.query(models.Request).filter(
+        models.Request.estado == "pendiente"
+    ).all()
+    return [_enrich_request(r, db) for r in requests]
 
 
 # Obtener por id
 @router.get("/{request_id}", response_model=schemas.RequestResponse)
 def get_request(request_id: int, db: Session = Depends(get_db)):
-
     request = db.query(models.Request).filter(
         models.Request.request_id == request_id
     ).first()
@@ -41,36 +111,143 @@ def get_request(request_id: int, db: Session = Depends(get_db)):
     if not request:
         raise HTTPException(status_code=404, detail="Request no encontrado")
 
-    return request
+    return _enrich_request(request, db)
 
 
-# Actualizar
+# Operador toma la solicitud
+@router.patch("/{request_id}/tomar", response_model=schemas.RequestResponse)
+def tomar_request(request_id: int, data: schemas.RequestTomar, db: Session = Depends(get_db)):
+    request = db.query(models.Request).filter(
+        models.Request.request_id == request_id
+    ).first()
+
+    if not request:
+        raise HTTPException(status_code=404, detail="Solicitud no encontrada")
+    if request.estado != "pendiente":
+        raise HTTPException(status_code=400, detail="La solicitud no está pendiente")
+    if request.user_id is not None:
+        raise HTTPException(status_code=400, detail="La solicitud ya tiene un operador asignado")
+
+    # Verificar que el user_id existe en la tabla users
+    user = db.query(models.User).filter(models.User.user_id == data.user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="Usuario no encontrado")
+
+    request.estado = "en_proceso"
+    request.user_id = data.user_id
+
+    db.commit()
+    db.refresh(request)
+
+    return _enrich_request(request, db)
+
+
+# Operador actualiza la solicitud (validar, asignar recursos, notas)
+@router.patch("/{request_id}/actualizar", response_model=schemas.RequestResponse)
+def actualizar_request(request_id: int, data: schemas.RequestOperadorUpdate, db: Session = Depends(get_db)):
+    request = db.query(models.Request).filter(
+        models.Request.request_id == request_id
+    ).first()
+
+    if not request:
+        raise HTTPException(status_code=404, detail="Solicitud no encontrada")
+
+    if request.estado != "en_proceso":
+        raise HTTPException(status_code=400, detail="Solo se pueden actualizar solicitudes en proceso")
+
+    if request.user_id != data.user_id:
+        raise HTTPException(status_code=403, detail="Solo el operador asignado puede actualizar esta solicitud")
+
+    # Actualizar campos que vengan con valor
+    if data.origen is not None:
+        request.origen = data.origen
+    if data.destino is not None:
+        request.destino = data.destino
+    if data.descripcion is not None:
+        request.descripcion = data.descripcion
+    if data.prioridad is not None:
+        request.prioridad = data.prioridad
+    if data.tipo_vehiculo is not None:
+        request.tipo_vehiculo = data.tipo_vehiculo
+    if data.notas_operador is not None:
+        request.notas_operador = data.notas_operador
+
+    # Asignar vehículo
+    if data.vehicle_id is not None:
+        vehicle = db.query(models.Vehicle).filter(
+            models.Vehicle.vehicle_id == data.vehicle_id
+        ).first()
+        if not vehicle:
+            raise HTTPException(status_code=404, detail="Vehículo no encontrado")
+        request.vehicle_id = data.vehicle_id
+
+    # Asignar conductor
+    if data.driver_id is not None:
+        driver = db.query(models.Driver).filter(
+            models.Driver.driver_id == data.driver_id
+        ).first()
+        if not driver:
+            raise HTTPException(status_code=404, detail="Conductor no encontrado")
+        request.driver_id = data.driver_id
+
+    db.commit()
+    db.refresh(request)
+
+    return _enrich_request(request, db)
+
+
+# Operador completa la solicitud
+@router.patch("/{request_id}/completar", response_model=schemas.RequestResponse)
+def completar_request(request_id: int, data: schemas.RequestCompletar, db: Session = Depends(get_db)):
+    request = db.query(models.Request).filter(
+        models.Request.request_id == request_id
+    ).first()
+
+    if not request:
+        raise HTTPException(status_code=404, detail="Solicitud no encontrada")
+    if request.estado != "en_proceso":
+        raise HTTPException(status_code=400, detail="La solicitud no está en proceso")
+    if request.user_id != data.user_id:
+        raise HTTPException(status_code=403, detail="Solo el operador asignado puede completar esta solicitud")
+
+    request.estado = "completada"
+
+    db.commit()
+    db.refresh(request)
+
+    return _enrich_request(request, db)
+
+
+# Actualizar (edición general - solo pendientes)
 @router.put("/{request_id}", response_model=schemas.RequestResponse)
 def update_request(request_id: int, request: schemas.RequestCreate, db: Session = Depends(get_db)):
-
-    request_query = db.query(models.Request).filter(
+    request_db = db.query(models.Request).filter(
         models.Request.request_id == request_id
-    )
-
-    request_db = request_query.first()
+    ).first()
 
     if not request_db:
         raise HTTPException(status_code=404, detail="Request no encontrado")
 
-    request_query.update(request.dict(), synchronize_session=False)
-    db.commit()
+    request_db.cliente = request.cliente
+    request_db.fecha = request.fecha
+    request_db.origen = request.origen
+    request_db.destino = request.destino
+    request_db.descripcion = request.descripcion
+    request_db.tipo_vehiculo = request.tipo_vehiculo
+    request_db.prioridad = request.prioridad
 
-    return request_query.first()
+    db.commit()
+    db.refresh(request_db)
+
+    return _enrich_request(request_db, db)
 
 
 # Eliminar
 @router.delete("/{request_id}")
 def delete_request(request_id: int, db: Session = Depends(get_db)):
-
     request_query = db.query(models.Request).filter(
         models.Request.request_id == request_id
     )
-
     request = request_query.first()
 
     if not request:

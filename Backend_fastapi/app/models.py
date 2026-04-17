@@ -132,10 +132,20 @@ class Request(Base):
 
     request_id = Column(Integer, primary_key=True, index=True)
 
-    route_id = Column(Integer, ForeignKey("routes.route_id", ondelete="CASCADE"))
-    user_id = Column(Integer, ForeignKey("users.user_id", ondelete="CASCADE"))
-    vehicle_id = Column(Integer, ForeignKey("vehicles.vehicle_id", ondelete="CASCADE"))
+    cliente = Column(String)
+    fecha = Column(String)
+    origen = Column(String)
+    destino = Column(String)
+    descripcion = Column(String)
+    tipo_vehiculo = Column(String)
+    estado = Column(String, default="pendiente")
+    prioridad = Column(String)
+    user_id = Column(Integer, ForeignKey("users.user_id"), nullable=True)
+    vehicle_id = Column(Integer, nullable=True)
+    driver_id = Column(Integer, nullable=True)
+    notas_operador = Column(String, nullable=True)
 
+<<<<<<< HEAD
     inicio = Column(DateTime)
     fin = Column(DateTime)
     estado = Column(String)
@@ -161,3 +171,6 @@ class DriverTrip(Base):
     lon_fin = Column(Float, nullable=True)
 
     driver = relationship("Driver")
+=======
+    operador = relationship("User", foreign_keys=[user_id])
+>>>>>>> 65badea53a8c6090f6d46bc961a15cd61f2b496e

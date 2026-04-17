@@ -1,0 +1,540 @@
+<!-- =========================================================
+     ENCABEZADO DEL MÓDULO DE VEHÍCULOS
+     - Título
+     - Botón de filtros colapsable
+     - Botón para nuevo vehículo
+     ========================================================= -->
+<div class="vehiculos-header">
+    <div>
+        <h3 class="vehiculos-titulo">Gestión de Vehículos</h3>
+        <p class="vehiculos-subtitulo">
+            Consulta la flota, revisa su estado y accede a los detalles de cada unidad.
+        </p>
+    </div>
+
+    <div class="vehiculos-header-actions">
+        <button id="btnToggleFiltrosVehiculos" class="btn btn-light vehiculos-btn-filtro" type="button">
+            <i class="bi bi-funnel"></i>
+            Filtros
+        </button>
+
+        <button class="btn btn-primary btn-open-modal-vehiculo" type="button">
+            <i class="bi bi-plus-lg"></i>
+            Nuevo Vehículo
+        </button>
+    </div>
+</div>
+
+<!-- =========================================================
+     LAYOUT PRINCIPAL
+     - Sidebar de filtros colapsable
+     - Grid de tarjetas
+     ========================================================= -->
+<div class="vehiculos-layout">
+
+    <!-- =====================================================
+         SIDEBAR DE FILTROS
+         - Independiente del sidebar principal del sistema
+         ===================================================== -->
+    <aside id="vehiculosFiltros" class="vehiculos-filtros-panel">
+        <div class="vehiculos-filtros-header">
+            <h5>Filtros</h5>
+            <button id="btnCerrarFiltrosVehiculos" class="btn-cerrar-filtros" type="button" aria-label="Cerrar filtros">
+                <i class="bi bi-x-lg"></i>
+            </button>
+        </div>
+
+        <div class="vehiculos-filtros-body">
+
+            <!-- ESTADO -->
+            <div class="filtro-bloque">
+                <h6>Estado</h6>
+
+                <label class="filtro-check">
+                    <input type="checkbox" name="estadoVehiculo" value="Disponible">
+                    <span>Disponible</span>
+                </label>
+
+                <label class="filtro-check">
+                    <input type="checkbox" name="estadoVehiculo" value="En ruta">
+                    <span>En ruta</span>
+                </label>
+
+                <label class="filtro-check">
+                    <input type="checkbox" name="estadoVehiculo" value="Mantenimiento">
+                    <span>Mantenimiento</span>
+                </label>
+            </div>
+
+            <!-- TIPO -->
+            <div class="filtro-bloque">
+                <h6>Tipo</h6>
+
+                <label class="filtro-check">
+                    <input type="checkbox" name="tipoVehiculo" value="SUV">
+                    <span>SUV</span>
+                </label>
+
+                <label class="filtro-check">
+                    <input type="checkbox" name="tipoVehiculo" value="Sedan">
+                    <span>Sedan</span>
+                </label>
+
+                <label class="filtro-check">
+                    <input type="checkbox" name="tipoVehiculo" value="Camioneta">
+                    <span>Camioneta</span>
+                </label>
+
+                <label class="filtro-check">
+                    <input type="checkbox" name="tipoVehiculo" value="Minibus">
+                    <span>Minibus</span>
+                </label>
+            </div>
+
+            <!-- CAPACIDAD -->
+            <div class="filtro-bloque">
+                <h6>Capacidad</h6>
+
+                <label class="filtro-check">
+                    <input type="checkbox" name="capacidadVehiculo" value="1-4">
+                    <span>1 - 4 personas</span>
+                </label>
+
+                <label class="filtro-check">
+                    <input type="checkbox" name="capacidadVehiculo" value="5-10">
+                    <span>5 - 10 personas</span>
+                </label>
+
+                <label class="filtro-check">
+                    <input type="checkbox" name="capacidadVehiculo" value="10-40">
+                    <span>10 - 40 personas</span>
+                </label>
+            </div>
+
+            <!-- MARCA -->
+            <div class="filtro-bloque">
+                <h6>Marca</h6>
+
+                <label class="filtro-check">
+                    <input type="checkbox" name="marcaVehiculo" value="Toyota">
+                    <span>Toyota</span>
+                </label>
+
+                <label class="filtro-check">
+                    <input type="checkbox" name="marcaVehiculo" value="Hyundai">
+                    <span>Hyundai</span>
+                </label>
+
+                <label class="filtro-check">
+                    <input type="checkbox" name="marcaVehiculo" value="Kia">
+                    <span>Kia</span>
+                </label>
+
+                <label class="filtro-check">
+                    <input type="checkbox" name="marcaVehiculo" value="Nissan">
+                    <span>Nissan</span>
+                </label>
+            </div>
+
+            <!-- CONDUCTOR -->
+            <div class="filtro-bloque">
+                <h6>Conductor</h6>
+
+                <label class="filtro-check">
+                    <input type="checkbox" name="conductorVehiculo" value="Asignado">
+                    <span>Asignado</span>
+                </label>
+
+                <label class="filtro-check">
+                    <input type="checkbox" name="conductorVehiculo" value="Sin asignar">
+                    <span>Sin asignar</span>
+                </label>
+            </div>
+
+            <!-- RESET -->
+            <div class="filtro-bloque filtro-bloque-reset">
+                <button id="btnLimpiarFiltrosVehiculos" class="btn btn-outline-secondary w-100" type="button">
+                    Limpiar filtros
+                </button>
+            </div>
+
+        </div>
+    </aside>
+
+    <!-- =====================================================
+         CONTENIDO DE TARJETAS
+         ===================================================== -->
+    <section class="vehiculos-contenido">
+
+        <div class="vehiculos-resumen">
+            <p class="vehiculos-resumen-texto">
+                Explora la flota disponible y selecciona una unidad para ver más detalles.
+            </p>
+        </div>
+
+        <!-- GRID DE VEHÍCULOS -->
+        <div id="listaVehiculos" class="vehiculos-grid">
+
+            <!-- =================================================
+                 TARJETA 1
+                 ================================================= -->
+            <article class="vehiculo-card" tabindex="0">
+                <div class="vehiculo-card-media">
+                    <img
+                        src="https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=900&q=80"
+                        alt="Toyota Corolla"
+                        class="vehiculo-card-img"
+                    >
+                </div>
+
+                <div class="vehiculo-card-body">
+                    <h4 class="vehiculo-card-titulo">Toyota Corolla</h4>
+                    <p class="vehiculo-card-capacidad">Capacidad: 4 personas</p>
+                </div>
+
+                <div class="vehiculo-card-estado estado-disponible">
+                    Disponible
+                </div>
+            </article>
+
+            <!-- =================================================
+                 TARJETA 2
+                 ================================================= -->
+            <article class="vehiculo-card" tabindex="0">
+                <div class="vehiculo-card-media">
+                    <img
+                        src="https://images.unsplash.com/photo-1494976388531-d1058494cdd8?auto=format&fit=crop&w=900&q=80"
+                        alt="Hyundai Staria"
+                        class="vehiculo-card-img"
+                    >
+                </div>
+
+                <div class="vehiculo-card-body">
+                    <h4 class="vehiculo-card-titulo">Hyundai Staria</h4>
+                    <p class="vehiculo-card-capacidad">Capacidad: 10 personas</p>
+                </div>
+
+                <div class="vehiculo-card-estado estado-en-ruta">
+                    En ruta
+                </div>
+            </article>
+
+            <!-- =================================================
+                 TARJETA 3
+                 ================================================= -->
+            <article class="vehiculo-card" tabindex="0">
+                <div class="vehiculo-card-media">
+                    <img
+                        src="https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&w=900&q=80"
+                        alt="Chevrolet Suburban"
+                        class="vehiculo-card-img"
+                    >
+                </div>
+
+                <div class="vehiculo-card-body">
+                    <h4 class="vehiculo-card-titulo">Chevrolet Suburban</h4>
+                    <p class="vehiculo-card-capacidad">Capacidad: 7 personas</p>
+                </div>
+
+                <div class="vehiculo-card-estado estado-mantenimiento">
+                    Mantenimiento
+                </div>
+            </article>
+
+            <!-- =================================================
+                 TARJETA 4
+                 ================================================= -->
+            <article class="vehiculo-card" tabindex="0">
+                <div class="vehiculo-card-media">
+                    <img
+                        src="https://images.unsplash.com/photo-1502877338535-766e1452684a?auto=format&fit=crop&w=900&q=80"
+                        alt="Kia Carnival"
+                        class="vehiculo-card-img"
+                    >
+                </div>
+
+                <div class="vehiculo-card-body">
+                    <h4 class="vehiculo-card-titulo">Kia Carnival</h4>
+                    <p class="vehiculo-card-capacidad">Capacidad: 8 personas</p>
+                </div>
+
+                <div class="vehiculo-card-estado estado-disponible">
+                    Disponible
+                </div>
+            </article>
+
+        </div>
+    </section>
+</div>
+
+<!-- =========================================================
+     MODAL DETALLE DE VEHÍCULO
+     - Se abre al hacer click en una tarjeta
+     ========================================================= -->
+<div id="modalDetalleVehiculo" class="modal-overlay modal-vehiculo-detalle">
+    <div class="modal-card modal-card-vehiculo-detalle">
+
+        <button id="btnCerrarDetalleVehiculo" class="btn-cerrar-modal-detalle" type="button" aria-label="Cerrar detalle">
+            <i class="bi bi-x-lg"></i>
+        </button>
+
+        <div class="vehiculo-detalle-layout">
+
+            <!-- GALERÍA -->
+            <div class="vehiculo-detalle-galeria">
+                <div class="vehiculo-detalle-imagen-principal-wrapper">
+                    <button class="vehiculo-galeria-arrow vehiculo-galeria-arrow-left" type="button" aria-label="Imagen anterior">
+                        <i class="bi bi-chevron-left"></i>
+                    </button>
+
+                    <img
+                        id="vehiculoImagenPrincipal"
+                        src="https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1200&q=80"
+                        alt="Imagen principal del vehículo"
+                        class="vehiculo-detalle-imagen-principal"
+                    >
+
+                    <button class="vehiculo-galeria-arrow vehiculo-galeria-arrow-right" type="button" aria-label="Imagen siguiente">
+                        <i class="bi bi-chevron-right"></i>
+                    </button>
+                </div>
+
+                <div class="vehiculo-detalle-miniaturas">
+                    <button class="vehiculo-miniatura activa" type="button">
+                        <img
+                            src="https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=500&q=80"
+                            alt="Miniatura 1"
+                        >
+                    </button>
+
+                    <button class="vehiculo-miniatura" type="button">
+                        <img
+                            src="https://images.unsplash.com/photo-1494976388531-d1058494cdd8?auto=format&fit=crop&w=500&q=80"
+                            alt="Miniatura 2"
+                        >
+                    </button>
+
+                    <button class="vehiculo-miniatura" type="button">
+                        <img
+                            src="https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&w=500&q=80"
+                            alt="Miniatura 3"
+                        >
+                    </button>
+
+                    <button class="vehiculo-miniatura" type="button">
+                        <img
+                            src="https://images.unsplash.com/photo-1502877338535-766e1452684a?auto=format&fit=crop&w=500&q=80"
+                            alt="Miniatura 4"
+                        >
+                    </button>
+
+                    <button class="vehiculo-miniatura" type="button">
+                        <img
+                            src="https://images.unsplash.com/photo-1541899481282-d53bffe3c35d?auto=format&fit=crop&w=500&q=80"
+                            alt="Miniatura 5"
+                        >
+                    </button>
+                </div>
+            </div>
+
+            <!-- INFORMACIÓN -->
+            <div class="vehiculo-detalle-info">
+
+                <div class="vehiculo-detalle-top">
+                    <div class="vehiculo-detalle-heading">
+                        <p class="vehiculo-detalle-label">Vehículo</p>
+                        <h3 id="vehiculoDetalleTitulo">Toyota Corolla</h3>
+                    </div>
+
+                    <div class="vehiculo-detalle-actions">
+                        <button id="btnMenuVehiculo" class="btn-tuerca-vehiculo" type="button" aria-label="Opciones del vehículo">
+                            <i class="bi bi-gear"></i>
+                        </button>
+
+                        <div id="menuVehiculoOpciones" class="dropdown-vehiculo-menu">
+                            <button type="button">
+                                <i class="bi bi-pencil-square"></i>
+                                Editar
+                            </button>
+                            <button type="button" class="text-danger">
+                                <i class="bi bi-trash"></i>
+                                Eliminar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="vehiculo-detalle-datos">
+                    <div class="vehiculo-dato-item">
+                        <span class="vehiculo-dato-label">Capacidad</span>
+                        <strong>4 personas</strong>
+                    </div>
+
+                    <div class="vehiculo-dato-item">
+                        <span class="vehiculo-dato-label">Conductor asignado</span>
+                        <strong>Juan Pérez</strong>
+                    </div>
+
+                    <div class="vehiculo-dato-item">
+                        <span class="vehiculo-dato-label">Estado</span>
+                        <strong class="texto-estado-disponible">Disponible</strong>
+                    </div>
+
+                    <div class="vehiculo-dato-item">
+                        <span class="vehiculo-dato-label">Placa</span>
+                        <strong>A123BC</strong>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- =========================================================
+     MODAL NUEVO / EDITAR VEHÍCULO
+     ========================================================= -->
+<div id="modalFormularioVehiculo" class="modal-overlay modal-vehiculo-form">
+    <div class="modal-card modal-card-vehiculo-form modo-crear">
+
+        <div class="vehiculo-form-header">
+            <div>
+                <p class="vehiculo-form-label">Gestión de vehículo</p>
+                <h5 id="tituloModalVehiculo" class="vehiculo-form-title">Nuevo Vehículo</h5>
+                <p class="vehiculo-form-subtitle">
+                    Completa la información principal de la unidad para registrarla en el sistema.
+                </p>
+            </div>
+
+            <button id="btnCerrarFormularioVehiculo" class="btn-cerrar-modal-form" type="button" aria-label="Cerrar formulario">
+                <i class="bi bi-x-lg"></i>
+            </button>
+        </div>
+
+        <form id="formVehiculoNuevo" class="vehiculo-form-body">
+
+            <!-- =================================================
+                 BLOQUE: DATOS PRINCIPALES
+                 ================================================= -->
+            <div class="vehiculo-form-section">
+                <h6 class="vehiculo-form-section-title">Datos principales</h6>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label small fw-bold">Marca</label>
+                        <input
+                            type="text"
+                            id="marcaVehiculo"
+                            class="form-control"
+                            placeholder="Ej: Toyota"
+                        >
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label small fw-bold">Modelo</label>
+                        <input
+                            type="text"
+                            id="modeloVehiculo"
+                            class="form-control"
+                            placeholder="Ej: Corolla"
+                        >
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label small fw-bold">Tipo de vehículo</label>
+                        <select id="tipoVehiculoFormulario" class="form-select">
+                            <option value="">Selecciona un tipo</option>
+                            <option value="SUV">SUV</option>
+                            <option value="Sedan">Sedan</option>
+                            <option value="Camioneta">Camioneta</option>
+                            <option value="Minibus">Minibus</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label small fw-bold">Capacidad</label>
+                        <input
+                            type="number"
+                            id="capacidadVehiculo"
+                            class="form-control"
+                            placeholder="Ej: 4"
+                            min="1"
+                        >
+                    </div>
+                </div>
+            </div>
+
+            <!-- =================================================
+                 BLOQUE: IDENTIFICACIÓN Y ESTADO
+                 ================================================= -->
+            <div class="vehiculo-form-section">
+                <h6 class="vehiculo-form-section-title">Identificación y estado</h6>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label small fw-bold">Placa</label>
+                        <input
+                            type="text"
+                            id="placaVehiculo"
+                            class="form-control"
+                            placeholder="Ej: A123BC"
+                        >
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label small fw-bold">Estado</label>
+                        <select id="estadoVehiculoFormulario" class="form-select">
+                            <option value="Disponible">Disponible</option>
+                            <option value="En ruta">En ruta</option>
+                            <option value="Mantenimiento">Mantenimiento</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- =================================================
+                 BLOQUE: ASIGNACIÓN E IMAGEN
+                 ================================================= -->
+            <div class="vehiculo-form-section">
+                <h6 class="vehiculo-form-section-title">Asignación e imagen</h6>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label small fw-bold">Conductor asignado</label>
+                        <input
+                            type="text"
+                            id="conductorVehiculo"
+                            class="form-control"
+                            placeholder="Ej: Juan Pérez"
+                        >
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label small fw-bold">Imagen principal</label>
+                        <input
+                            type="file"
+                            id="imagenPrincipalVehiculo"
+                            class="form-control"
+                            accept="image/*"
+                        >
+                    </div>
+                </div>
+            </div>
+
+            <!-- =================================================
+                 ACCIONES
+                 ================================================= -->
+            <div class="vehiculo-form-actions">
+                <button id="btnCancelarVehiculo" type="button" class="btn btn-light">
+                    Cancelar
+                </button>
+
+                <button id="btnGuardarVehiculo" type="submit" class="btn btn-primary px-4">
+                    Guardar
+                </button>
+            </div>
+        </form>
+    </div>
+</div>

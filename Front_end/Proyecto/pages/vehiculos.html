@@ -1,270 +1,95 @@
 <!-- =========================================================
-     ENCABEZADO DEL MÓDULO DE VEHÍCULOS
-     - Título
-     - Botón de filtros colapsable
-     - Botón para nuevo vehículo
+     TOOLBAR (SaaS Style)
      ========================================================= -->
-<div class="vehiculos-header">
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
     <div>
-        <h3 class="vehiculos-titulo">Gestión de Vehículos</h3>
-        <p class="vehiculos-subtitulo">
-            Consulta la flota, revisa su estado y accede a los detalles de cada unidad.
-        </p>
+        <p class="text-muted mb-0 fs-6">Administra y monitorea el estado actual de tu flotilla</p>
     </div>
 
-    <div class="vehiculos-header-actions">
-        <button id="btnToggleFiltrosVehiculos" class="btn btn-light vehiculos-btn-filtro" type="button">
-            <i class="bi bi-funnel"></i>
-            Filtros
-        </button>
+    <div class="d-flex flex-wrap gap-2">
+        <div class="input-group" style="max-width: 250px;">
+            <span class="input-group-text bg-white border-end-0 rounded-start-3"><i class="bi bi-search text-muted"></i></span>
+            <input type="text" class="form-control border-start-0 rounded-end-3" placeholder="Buscar placa, modelo...">
+        </div>
+        
+        <select class="form-select bg-white rounded-3" style="width: 140px;">
+            <option value="">Estado</option>
+            <option value="Disponible">Disponible</option>
+            <option value="En ruta">En ruta</option>
+            <option value="Mantenimiento">Mantenimiento</option>
+        </select>
 
-        <button class="btn btn-primary btn-open-modal-vehiculo" type="button">
-            <i class="bi bi-plus-lg"></i>
-            Nuevo Vehículo
+        <button class="btn btn-primary rounded-3 btn-open-modal-vehiculo">
+            <i class="bi bi-plus-lg me-1"></i> Vehículo
         </button>
     </div>
 </div>
 
 <!-- =========================================================
-     LAYOUT PRINCIPAL
-     - Sidebar de filtros colapsable
-     - Grid de tarjetas
+     MODERN VEHICLES GRID
      ========================================================= -->
-<div class="vehiculos-layout">
+<div class="row g-4" id="listaVehiculos">
 
-    <!-- =====================================================
-         SIDEBAR DE FILTROS
-         - Independiente del sidebar principal del sistema
-         ===================================================== -->
-    <aside id="vehiculosFiltros" class="vehiculos-filtros-panel">
-        <div class="vehiculos-filtros-header">
-            <h5>Filtros</h5>
-            <button id="btnCerrarFiltrosVehiculos" class="btn-cerrar-filtros" type="button" aria-label="Cerrar filtros">
-                <i class="bi bi-x-lg"></i>
-            </button>
+    <!-- Vehículo 1 -->
+    <div class="col-12 col-md-6 col-lg-4 col-xl-3">
+        <div class="card h-100 border-0 rounded-4 shadow-sm" style="transition: transform 0.3s; cursor: pointer;" onmouseover="this.style.transform='translateY(-5px)'; this.classList.add('shadow-hover')" onmouseout="this.style.transform='translateY(0)'; this.classList.remove('shadow-hover')">
+            <div class="position-relative">
+                <img src="https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=600&q=80" 
+                     class="card-img-top rounded-top-4" style="height: 180px; object-fit: cover;" alt="Toyota Corolla">
+                <span class="badge bg-success position-absolute top-0 end-0 m-3 px-3 py-2 rounded-pill shadow-sm">Disponible</span>
+            </div>
+            <div class="card-body p-4">
+                <h5 class="card-title fw-bold mb-1">Toyota Corolla</h5>
+                <p class="text-muted small mb-3">Placa: ABCD-123</p>
+                <div class="d-flex justify-content-between align-items-center mt-auto">
+                    <div class="d-flex align-items-center gap-2 text-secondary small fw-medium">
+                        <i class="bi bi-people fill text-primary"></i> 4 Personas
+                    </div>
+                </div>
+            </div>
         </div>
+    </div>
 
-        <div class="vehiculos-filtros-body">
-
-            <!-- ESTADO -->
-            <div class="filtro-bloque">
-                <h6>Estado</h6>
-
-                <label class="filtro-check">
-                    <input type="checkbox" name="estadoVehiculo" value="Disponible">
-                    <span>Disponible</span>
-                </label>
-
-                <label class="filtro-check">
-                    <input type="checkbox" name="estadoVehiculo" value="En ruta">
-                    <span>En ruta</span>
-                </label>
-
-                <label class="filtro-check">
-                    <input type="checkbox" name="estadoVehiculo" value="Mantenimiento">
-                    <span>Mantenimiento</span>
-                </label>
+    <!-- Vehículo 2 -->
+    <div class="col-12 col-md-6 col-lg-4 col-xl-3">
+        <div class="card h-100 border-0 rounded-4 shadow-sm" style="transition: transform 0.3s; cursor: pointer;" onmouseover="this.style.transform='translateY(-5px)'; this.classList.add('shadow-hover')" onmouseout="this.style.transform='translateY(0)'; this.classList.remove('shadow-hover')">
+            <div class="position-relative">
+                <img src="https://images.unsplash.com/photo-1494976388531-d1058494cdd8?auto=format&fit=crop&w=600&q=80" 
+                     class="card-img-top rounded-top-4" style="height: 180px; object-fit: cover;" alt="Hyundai Staria">
+                <span class="badge bg-primary position-absolute top-0 end-0 m-3 px-3 py-2 rounded-pill shadow-sm">En ruta</span>
             </div>
-
-            <!-- TIPO -->
-            <div class="filtro-bloque">
-                <h6>Tipo</h6>
-
-                <label class="filtro-check">
-                    <input type="checkbox" name="tipoVehiculo" value="SUV">
-                    <span>SUV</span>
-                </label>
-
-                <label class="filtro-check">
-                    <input type="checkbox" name="tipoVehiculo" value="Sedan">
-                    <span>Sedan</span>
-                </label>
-
-                <label class="filtro-check">
-                    <input type="checkbox" name="tipoVehiculo" value="Camioneta">
-                    <span>Camioneta</span>
-                </label>
-
-                <label class="filtro-check">
-                    <input type="checkbox" name="tipoVehiculo" value="Minibus">
-                    <span>Minibus</span>
-                </label>
+            <div class="card-body p-4">
+                <h5 class="card-title fw-bold mb-1">Hyundai Staria</h5>
+                <p class="text-muted small mb-3">Placa: WXYZ-789</p>
+                <div class="d-flex justify-content-between align-items-center mt-auto">
+                    <div class="d-flex align-items-center gap-2 text-secondary small fw-medium">
+                        <i class="bi bi-people fill text-primary"></i> 10 Personas
+                    </div>
+                </div>
             </div>
-
-            <!-- CAPACIDAD -->
-            <div class="filtro-bloque">
-                <h6>Capacidad</h6>
-
-                <label class="filtro-check">
-                    <input type="checkbox" name="capacidadVehiculo" value="1-4">
-                    <span>1 - 4 personas</span>
-                </label>
-
-                <label class="filtro-check">
-                    <input type="checkbox" name="capacidadVehiculo" value="5-10">
-                    <span>5 - 10 personas</span>
-                </label>
-
-                <label class="filtro-check">
-                    <input type="checkbox" name="capacidadVehiculo" value="10-40">
-                    <span>10 - 40 personas</span>
-                </label>
-            </div>
-
-            <!-- MARCA -->
-            <div class="filtro-bloque">
-                <h6>Marca</h6>
-
-                <label class="filtro-check">
-                    <input type="checkbox" name="marcaVehiculo" value="Toyota">
-                    <span>Toyota</span>
-                </label>
-
-                <label class="filtro-check">
-                    <input type="checkbox" name="marcaVehiculo" value="Hyundai">
-                    <span>Hyundai</span>
-                </label>
-
-                <label class="filtro-check">
-                    <input type="checkbox" name="marcaVehiculo" value="Kia">
-                    <span>Kia</span>
-                </label>
-
-                <label class="filtro-check">
-                    <input type="checkbox" name="marcaVehiculo" value="Nissan">
-                    <span>Nissan</span>
-                </label>
-            </div>
-
-            <!-- CONDUCTOR -->
-            <div class="filtro-bloque">
-                <h6>Conductor</h6>
-
-                <label class="filtro-check">
-                    <input type="checkbox" name="conductorVehiculo" value="Asignado">
-                    <span>Asignado</span>
-                </label>
-
-                <label class="filtro-check">
-                    <input type="checkbox" name="conductorVehiculo" value="Sin asignar">
-                    <span>Sin asignar</span>
-                </label>
-            </div>
-
-            <!-- RESET -->
-            <div class="filtro-bloque filtro-bloque-reset">
-                <button id="btnLimpiarFiltrosVehiculos" class="btn btn-outline-secondary w-100" type="button">
-                    Limpiar filtros
-                </button>
-            </div>
-
         </div>
-    </aside>
+    </div>
 
-    <!-- =====================================================
-         CONTENIDO DE TARJETAS
-         ===================================================== -->
-    <section class="vehiculos-contenido">
-
-        <div class="vehiculos-resumen">
-            <p class="vehiculos-resumen-texto">
-                Explora la flota disponible y selecciona una unidad para ver más detalles.
-            </p>
+    <!-- Vehículo 3 -->
+    <div class="col-12 col-md-6 col-lg-4 col-xl-3">
+        <div class="card h-100 border-0 rounded-4 shadow-sm" style="transition: transform 0.3s; cursor: pointer;" onmouseover="this.style.transform='translateY(-5px)'; this.classList.add('shadow-hover')" onmouseout="this.style.transform='translateY(0)'; this.classList.remove('shadow-hover')">
+            <div class="position-relative">
+                <img src="https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&w=600&q=80" 
+                     class="card-img-top rounded-top-4" style="height: 180px; object-fit: cover;" alt="Chevrolet Suburban">
+                <span class="badge bg-danger position-absolute top-0 end-0 m-3 px-3 py-2 rounded-pill shadow-sm">Mantenimiento</span>
+            </div>
+            <div class="card-body p-4">
+                <h5 class="card-title fw-bold mb-1">Chevrolet Suburban</h5>
+                <p class="text-muted small mb-3">Placa: RSTU-456</p>
+                <div class="d-flex justify-content-between align-items-center mt-auto">
+                    <div class="d-flex align-items-center gap-2 text-secondary small fw-medium">
+                        <i class="bi bi-people fill text-primary"></i> 7 Personas
+                    </div>
+                </div>
+            </div>
         </div>
+    </div>
 
-        <!-- GRID DE VEHÍCULOS -->
-        <div id="listaVehiculos" class="vehiculos-grid">
-
-            <!-- =================================================
-                 TARJETA 1
-                 ================================================= -->
-            <article class="vehiculo-card" tabindex="0">
-                <div class="vehiculo-card-media">
-                    <img
-                        src="https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=900&q=80"
-                        alt="Toyota Corolla"
-                        class="vehiculo-card-img"
-                    >
-                </div>
-
-                <div class="vehiculo-card-body">
-                    <h4 class="vehiculo-card-titulo">Toyota Corolla</h4>
-                    <p class="vehiculo-card-capacidad">Capacidad: 4 personas</p>
-                </div>
-
-                <div class="vehiculo-card-estado estado-disponible">
-                    Disponible
-                </div>
-            </article>
-
-            <!-- =================================================
-                 TARJETA 2
-                 ================================================= -->
-            <article class="vehiculo-card" tabindex="0">
-                <div class="vehiculo-card-media">
-                    <img
-                        src="https://images.unsplash.com/photo-1494976388531-d1058494cdd8?auto=format&fit=crop&w=900&q=80"
-                        alt="Hyundai Staria"
-                        class="vehiculo-card-img"
-                    >
-                </div>
-
-                <div class="vehiculo-card-body">
-                    <h4 class="vehiculo-card-titulo">Hyundai Staria</h4>
-                    <p class="vehiculo-card-capacidad">Capacidad: 10 personas</p>
-                </div>
-
-                <div class="vehiculo-card-estado estado-en-ruta">
-                    En ruta
-                </div>
-            </article>
-
-            <!-- =================================================
-                 TARJETA 3
-                 ================================================= -->
-            <article class="vehiculo-card" tabindex="0">
-                <div class="vehiculo-card-media">
-                    <img
-                        src="https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&w=900&q=80"
-                        alt="Chevrolet Suburban"
-                        class="vehiculo-card-img"
-                    >
-                </div>
-
-                <div class="vehiculo-card-body">
-                    <h4 class="vehiculo-card-titulo">Chevrolet Suburban</h4>
-                    <p class="vehiculo-card-capacidad">Capacidad: 7 personas</p>
-                </div>
-
-                <div class="vehiculo-card-estado estado-mantenimiento">
-                    Mantenimiento
-                </div>
-            </article>
-
-            <!-- =================================================
-                 TARJETA 4
-                 ================================================= -->
-            <article class="vehiculo-card" tabindex="0">
-                <div class="vehiculo-card-media">
-                    <img
-                        src="https://images.unsplash.com/photo-1502877338535-766e1452684a?auto=format&fit=crop&w=900&q=80"
-                        alt="Kia Carnival"
-                        class="vehiculo-card-img"
-                    >
-                </div>
-
-                <div class="vehiculo-card-body">
-                    <h4 class="vehiculo-card-titulo">Kia Carnival</h4>
-                    <p class="vehiculo-card-capacidad">Capacidad: 8 personas</p>
-                </div>
-
-                <div class="vehiculo-card-estado estado-disponible">
-                    Disponible
-                </div>
-            </article>
-
-        </div>
-    </section>
 </div>
 
 <!-- =========================================================

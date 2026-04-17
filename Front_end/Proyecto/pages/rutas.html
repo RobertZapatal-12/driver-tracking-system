@@ -1,50 +1,112 @@
-<div class="card shadow-sm border-0">
-    <div class="card-body">
-        <div class="d-flex justify-content-between mb-4">
-            <h4>Planificación de Rutas</h4>
-            <button class="btn btn-primary btn-open-modal">+ Nueva Ruta</button>
+<div class="dispatch-container">
+    <div class="glass-panel p-4 mb-4">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h4 class="fw-bold mb-1">Despacho de Servicios Operativos</h4>
+                <p class="text-muted small mb-0">Gestione la asignación de carga, vehículos y rutas de entrega.</p>
+            </div>
+            <button class="btn btn-primary rounded-pill px-4 btn-open-modal">
+                <i class="bi bi-plus-lg me-2"></i> Nuevo Servicio
+            </button>
         </div>
+    </div>
 
+    <!-- Tabla de Gestión -->
+    <div class="glass-panel p-0 overflow-hidden">
         <div class="table-responsive">
-<table class="table align-middle">
-    <thead class="table-light">
-        <tr>
-            <th>Route ID</th>
-            <th>User ID</th>
-            <th>Vehicle ID</th>
-            <th>Driver ID</th>
-            <th>Conductor</th>
-            <th>Origen</th>
-            <th>Destino</th>
-            <th>Fecha</th>
-            <th>Estado</th>
-            <th>Acciones</th>
-        </tr>
-    </thead>
-    <tbody id="routes-table-body"></tbody>
-</table>
+            <table class="table table-hover align-middle mb-0">
+                <thead class="bg-light">
+                    <tr>
+                        <th class="ps-4">ID SERVICIO</th>
+                        <th>VEHÍCULO</th>
+                        <th>CONDUCTOR</th>
+                        <th>RUTA (ORIGEN - DESTINO)</th>
+                        <th>FECHA / HORA</th>
+                        <th>PRECIO</th>
+                        <th>ESTADO</th>
+                        <th class="text-end pe-4">GESTIÓN</th>
+                    </tr>
+                </thead>
+                <tbody id="routes-table-body" class="small">
+                    <!-- Data cargada por JS -->
+                    <tr>
+                        <td colspan="8" class="text-center py-5 text-muted">
+                            <div class="spinner-border spinner-border-sm me-2" role="status"></div>
+                            Sincronizando con el centro de despacho...
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
     </div>
 </div>
 
+<!-- Modal de Despacho Moderno -->
 <div class="modal-overlay">
-    <div class="modal-card">
-        <h5 id="routeModalTitle">Registrar Nueva Ruta</h5>
-        <hr>
-
+    <div class="modal-card" style="max-width: 550px;">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="fw-bold mb-0" id="routeModalTitle">Generar Orden de Servicio</h5>
+            <button class="btn-close btn-close-modal" style="font-size: 0.8rem;"></button>
+        </div>
+        <p class="text-muted small mb-4">Complete los datos de la carga y asigne los recursos necesarios.</p>
+        
         <form id="routeForm">
             <input type="hidden" id="route_id">
 
-            <input type="number" id="vehicle_id" class="form-control mb-3" placeholder="ID del Vehículo" required>
+            <div class="row g-3">
+                <div class="col-md-12">
+                    <label class="form-label small fw-bold text-muted">Vehículo Asignado (ID)</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light border-end-0"><i class="bi bi-truck"></i></span>
+                        <input type="number" id="vehicle_id" class="form-control" placeholder="Ej: 102" required>
+                    </div>
+                </div>
 
-            <input type="text" id="origen" class="form-control mb-3" placeholder="Punto de Origen" required>
+                <div class="col-md-6">
+                    <label class="form-label small fw-bold text-muted">Punto de Origen</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light border-end-0"><i class="bi bi-geo-alt"></i></span>
+                        <input type="text" id="origen" class="form-control" placeholder="Ciudad / Almacén" required>
+                    </div>
+                </div>
 
-            <input type="text" id="destino" class="form-control mb-3" placeholder="Punto de Destino" required>
+                <div class="col-md-6">
+                    <label class="form-label small fw-bold text-muted">Punto de Destino</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light border-end-0"><i class="bi bi-flag"></i></span>
+                        <input type="text" id="destino" class="form-control" placeholder="Dirección Entrega" required>
+                    </div>
+                </div>
 
-            <div class="d-flex justify-content-end gap-2">
-                <button type="button" class="btn btn-light btn-close-modal">Cerrar</button>
-                <button type="button" class="btn btn-primary" id="routeSubmitBtn" onclick="guardarRuta()">Guardar Ruta</button>
+                <div class="col-md-12">
+                    <label class="form-label small fw-bold text-muted">Precio del Servicio (RD$)</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light border-end-0">RD$</span>
+                        <input type="number" id="service_price" class="form-control" placeholder="0.00">
+                    </div>
+                    <div class="form-text small">Valor facturado al cliente por este desplazamiento.</div>
+                </div>
+            </div>
+
+            <div class="mt-4 pt-3 border-top d-flex justify-content-end gap-2">
+                <button type="button" class="btn btn-light px-4 btn-close-modal">Cancelar</button>
+                <button type="button" class="btn btn-primary px-4" id="routeSubmitBtn" onclick="guardarRuta()">Publicar Servicio</button>
             </div>
         </form>
     </div>
 </div>
+
+<style>
+    .dispatch-container th {
+        font-weight: 700;
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: #64748b;
+        padding: 15px 10px;
+    }
+    .dispatch-container td {
+        padding: 15px 10px;
+        color: #1e293b;
+    }
+</style>

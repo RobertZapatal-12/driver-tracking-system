@@ -1,7 +1,8 @@
 /* =========================================================
    CONFIGURACIÓN DE API
    ========================================================= */
-const API_BASE = "http://127.0.0.1:8000";
+// Usa CONFIG si está disponible, sino fallback directo
+const LOGIN_API_BASE = (typeof CONFIG !== "undefined") ? CONFIG.API_BASE : "http://127.0.0.1:8000";
 
 /* =========================================================
    VARIABLES GLOBALES
@@ -69,7 +70,7 @@ async function handleLoginSubmit(e) {
 
     try {
         // Realizar solicitud de login
-        const response = await fetch(`${API_BASE}/api/login`, {
+        const response = await fetch(`${LOGIN_API_BASE}/api/login`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -120,9 +121,11 @@ async function handleLoginSubmit(e) {
    ACTUALIZAR ESTADO DE CARGA
    ========================================================= */
 function updateLoadingState() {
-    const submitBtn = document.querySelector(".btn-login");
+    const submitBtn = document.querySelector(".btn-login-glow") || document.querySelector(".btn-login");
     const spinner = document.getElementById("btnSpinner");
     const btnText = document.getElementById("btnText");
+
+    if (!submitBtn) return;
 
     if (isLoading) {
         submitBtn.disabled = true;
@@ -131,7 +134,7 @@ function updateLoadingState() {
     } else {
         submitBtn.disabled = false;
         spinner.style.display = "none";
-        btnText.textContent = "Iniciar Sesión";
+        btnText.textContent = "Acceder al Sistema";
     }
 }
 
@@ -144,6 +147,7 @@ function showAlert(message, type = "info") {
     const alert = document.createElement("div");
     alert.className = `alert alert-${type}`;
     alert.role = "alert";
+    alert.style.cssText = "border-radius: 12px; margin-top: 16px; font-size: 14px; font-weight: 500;";
     alert.textContent = message;
 
     alertContainer.appendChild(alert);
@@ -210,13 +214,15 @@ function demoLogin() {
    MANEJO DE ENTER EN INPUTS
    ========================================================= */
 document.addEventListener("DOMContentLoaded", () => {
-    const inputs = document.querySelectorAll(".form-control");
+    const inputs = document.querySelectorAll(".form-control, .form-control-custom");
     inputs.forEach(input => {
         input.addEventListener("keypress", (e) => {
             if (e.key === "Enter") {
+                // Prevenir comportamiento default para evitar doble submit
+                e.preventDefault();
                 const form = document.getElementById("loginForm");
                 if (form) {
-                    form.dispatchEvent(new Event("submit"));
+                    form.dispatchEvent(new Event("submit", { cancelable: true, bubbles: true }));
                 }
             }
         });

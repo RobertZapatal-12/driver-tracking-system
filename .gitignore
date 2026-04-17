@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.env
+.venv
+env/
+venv/
+ENV/
+
+# IDEs
+.vscode/
+.idea/
+
+# Backups (optional, but requested 'everything', so I'll leave them unless it's too heavy)
+# Front_end/Proyecto_backup/
+# Front_end/Proyecto_backup_2.0/
+
+# OS
+Thumbs.db
+Desktop.ini
+.DS_Store
