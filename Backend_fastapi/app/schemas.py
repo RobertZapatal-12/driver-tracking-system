@@ -161,11 +161,18 @@ class RouteBase(BaseModel):
     vehicle_id: int
     origen: str
     destino: str
-    
+    lat_origen: Optional[float] = None
+    lon_origen: Optional[float] = None
+    lat_destino: Optional[float] = None
+    lon_destino: Optional[float] = None
 
 
 class RouteCreate(RouteBase):
     pass
+
+
+class RouteStatusUpdate(BaseModel):
+    estado: str   # Pendiente | Aceptado | En camino | Completado
 
 
 class RouteResponse(RouteBase):
@@ -175,6 +182,10 @@ class RouteResponse(RouteBase):
     driver_id: int | None = None
     origen: str
     destino: str
+    lat_origen: Optional[float] = None
+    lon_origen: Optional[float] = None
+    lat_destino: Optional[float] = None
+    lon_destino: Optional[float] = None
     fecha: datetime
     estado: str | None = None
     driver_nombre: str | None = None
@@ -210,3 +221,33 @@ class RequestResponse(RequestBase):
 
     class Config:
         from_attributes = True
+
+
+# =========================
+# DRIVER TRIPS (App Móvil)
+# =========================
+
+class DriverTripCreate(BaseModel):
+    driver_id: int
+    lat_inicio: float
+    lon_inicio: float
+
+
+class DriverTripEnd(BaseModel):
+    lat_fin: float
+    lon_fin: float
+
+
+class DriverTripResponse(BaseModel):
+    trip_id: int
+    driver_id: int
+    estado: str
+    inicio: datetime
+    fin: Optional[datetime] = None
+    lat_inicio: Optional[float] = None
+    lon_inicio: Optional[float] = None
+    lat_fin: Optional[float] = None
+    lon_fin: Optional[float] = None
+
+    class Config:
+        from_attributes = True

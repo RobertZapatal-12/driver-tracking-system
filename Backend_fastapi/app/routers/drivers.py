@@ -35,6 +35,21 @@ def create_driver(driver: schemas.DriverCreate, db: Session = Depends(get_db)):
     
    
     return new_driver
+
+# Endpoint para marcar conductor como Activo o Inactivo (usado por la app móvil)
+@router.patch("/{driver_id}/estado")
+def update_driver_estado(driver_id: int, body: dict, db: Session = Depends(get_db)):
+    driver = db.query(models.Driver).filter(models.Driver.driver_id == driver_id).first()
+    if not driver:
+        raise HTTPException(status_code=404, detail="Conductor no encontrado")
+    nuevo_estado = body.get("estado")
+    if not nuevo_estado:
+        raise HTTPException(status_code=400, detail="Campo 'estado' requerido")
+    driver.estado = nuevo_estado
+    db.commit()
+    db.refresh(driver)
+    return {"driver_id": driver_id, "estado": driver.estado}
+
 #Endpoint para actualizar un conductor
 @router.put("/{driver_id}")
 def update_driver(driver_id: int, driver: schemas.DriverCreate, db: Session = Depends(get_db)):
@@ -70,4 +85,4 @@ def delete_driver(driver_id: int, db: Session = Depends(get_db)):
     db.delete(driver)
     db.commit()
 
-    return {"mensaje": "Conductor eliminado"}
+    return {"mensaje": "Conductor eliminado"}

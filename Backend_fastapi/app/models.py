@@ -92,6 +92,11 @@ class Route(Base):
     origen = Column(String)
     destino = Column(String)
 
+    lat_origen = Column(Float, nullable=True)
+    lon_origen = Column(Float, nullable=True)
+    lat_destino = Column(Float, nullable=True)
+    lon_destino = Column(Float, nullable=True)
+
     fecha = Column(DateTime, server_default=func.now())
     estado = Column(String, default="Pendiente")
     driver = relationship("Driver")
@@ -134,3 +139,25 @@ class Request(Base):
     inicio = Column(DateTime)
     fin = Column(DateTime)
     estado = Column(String)
+
+
+# =========================
+# DRIVER TRIPS (App Móvil)
+# =========================
+
+class DriverTrip(Base):
+    __tablename__ = "driver_trips"
+
+    trip_id = Column(Integer, primary_key=True, index=True)
+    driver_id = Column(Integer, ForeignKey("drivers.driver_id"))
+
+    estado = Column(String, default="En curso")       # "En curso" | "Completado"
+    inicio = Column(DateTime, server_default=func.now())
+    fin = Column(DateTime, nullable=True)
+
+    lat_inicio = Column(Float, nullable=True)
+    lon_inicio = Column(Float, nullable=True)
+    lat_fin = Column(Float, nullable=True)
+    lon_fin = Column(Float, nullable=True)
+
+    driver = relationship("Driver")

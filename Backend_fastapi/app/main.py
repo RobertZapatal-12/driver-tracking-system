@@ -2,7 +2,7 @@ from pathlib import Path
 from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from app.routers import drivers, users, locations, vehicles, trips, trips2, clients
+from app.routers import drivers, users, locations, vehicles, trips, trips2, clients, driver_trips
 from app import schemas, models
 from sqlalchemy.orm import Session
 from app.database import get_db
@@ -29,6 +29,7 @@ app.include_router(locations.router)
 app.include_router(trips.router)
 app.include_router(trips2.router)
 app.include_router(clients.router)
+app.include_router(driver_trips.router)
 
 # Configuración JWT
 SECRET_KEY = os.getenv("SECRET_KEY", "your-secret-key-change-this-in-production")

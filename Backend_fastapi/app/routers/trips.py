@@ -159,9 +159,124 @@ def update_route(route_id: int, route_data: schemas.RouteCreate, db: Session = D
         "driver_id": route.driver_id,
         "origen": route.origen,
         "destino": route.destino,
+        "lat_origen": route.lat_origen,
+        "lon_origen": route.lon_origen,
+        "lat_destino": route.lat_destino,
+        "lon_destino": route.lon_destino,
         "fecha": route.fecha,
         "estado": route.estado,
         "driver_nombre": driver.nombre
+    }
+
+
+# Obtener rutas asignadas a un conductor
+@router.get("/driver/{driver_id}", response_model=list[schemas.RouteResponse])
+def get_routes_by_driver(driver_id: int, db: Session = Depends(get_db)):
+    routes = db.query(models.Route).filter(
+        models.Route.driver_id == driver_id
+    ).order_by(models.Route.fecha.desc()).all()
+
+    response = []
+    for r in routes:
+        driver_nombre = None
+        if r.driver_id:
+            driver = db.query(models.Driver).filter(
+                models.Driver.driver_id == r.driver_id
+            ).first()
+            if driver:
+                driver_nombre = driver.nombre
+
+        response.append({
+            "route_id": r.route_id,
+            "user_id": r.user_id,
+            "vehicle_id": r.vehicle_id,
+            "driver_id": r.driver_id,
+            "origen": r.origen,
+            "destino": r.destino,
+            "lat_origen": r.lat_origen,
+            "lon_origen": r.lon_origen,
+            "lat_destino": r.lat_destino,
+            "lon_destino": r.lon_destino,
+            "fecha": r.fecha,
+            "estado": r.estado,
+            "driver_nombre": driver_nombre
+        })
+
+    return response
+
+# Historial completo de viajes completados de un conductor
+@router.get("/driver/{driver_id}/history")
+def get_driver_history(driver_id: int, db: Session = Depends(get_db)):
+    routes = db.query(models.Route).filter(
+        models.Route.driver_id == driver_id,
+        models.Route.estado == "Completado"
+    ).order_by(models.Route.fecha.desc()).all()
+
+    response = []
+    for r in routes:
+        response.append({
+            "route_id": r.route_id,
+            "driver_id": r.driver_id,
+            "origen": r.origen,
+            "destino": r.destino,
+            "lat_origen": r.lat_origen,
+            "lon_origen": r.lon_origen,
+            "lat_destino": r.lat_destino,
+            "lon_destino": r.lon_destino,
+            "fecha": r.fecha,
+            "estado": r.estado,
+        })
+
+    return response
+
+
+# Actualizar estado de una ruta (desde la app móvil)
+@router.patch("/{route_id}/status", response_model=schemas.RouteResponse)
+def update_route_status(
+    route_id: int,
+    status_data: schemas.RouteStatusUpdate,
+    db: Session = Depends(get_db)
+):
+    route = db.query(models.Route).filter(
+        models.Route.route_id == route_id
+    ).first()
+
+    if not route:
+        raise HTTPException(status_code=404, detail="Ruta no encontrada")
+
+    valid_statuses = ["Pendiente", "Aceptado", "En camino", "Completado"]
+    if status_data.estado not in valid_statuses:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Estado inválido. Debe ser uno de: {valid_statuses}"
+        )
+
+    route.estado = status_data.estado
+    db.commit()
+    db.refresh(route)
+
+    driver_nombre = None
+    if route.driver_id:
+        driver = db.query(models.Driver).filter(
+            models.Driver.driver_id == route.driver_id
+        ).first()
+        if driver:
+            driver_nombre = driver.nombre
+
+    return {
+        "route_id": route.route_id,
+        "user_id": route.user_id,
+        "vehicle_id": route.vehicle_id,
+        "driver_id": route.driver_id,
+        "origen": route.origen,
+        "destino": route.destino,
+        "lat_origen": route.lat_origen,
+        "lon_origen": route.lon_origen,
+        "lat_destino": route.lat_destino,
+        "lon_destino": route.lon_destino,
+        "fecha": route.fecha,
+        "estado": route.estado,
+        "driver_nombre": driver_nombre
     }
 
 
