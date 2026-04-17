@@ -1,0 +1,185 @@
+<!-- =========================================================
+     ENCABEZADO DEL MÓDULO DE CONDUCTORES
+     - Título
+     - Botón para abrir el modal de nuevo conductor
+     ========================================================= -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h3 class="fw-bold">Gestión de Conductores</h3>
+    <button class="btn btn-primary btn-open-modal">Nuevo Conductor</button>
+</div>
+
+<!-- =========================================================
+     BUSCADOR DE CONDUCTORES
+     - Permite buscar por nombre en tiempo real
+     ========================================================= -->
+<div class="mb-3">
+    <input
+        type="text"
+        id="buscadorConductores"
+        class="form-control"
+        placeholder="Buscar por nombre, cédula, teléfono o licencia..."
+    >
+</div>
+
+<!-- =========================================================
+     LISTA DE CONDUCTORES
+     - Aquí se renderizan dinámicamente las tarjetas
+     ========================================================= -->
+<div id="listaConductores" class="row g-4"></div>
+
+<!-- =========================================================
+     PAGINACIÓN DE CONDUCTORES
+     - Aquí aparecerán los botones 1, 2, 3...
+     - Cada página mostrará 5 conductores
+     ========================================================= -->
+<div id="paginacionConductores" class="d-flex justify-content-center gap-2 mt-4"></div>
+
+<!-- =========================================================
+     MODAL: NUEVO / EDITAR CONDUCTOR
+     - Se usa tanto para crear como para editar
+     ========================================================= -->
+<div class="modal-overlay">
+    <div class="modal-card">
+        <h5 id="tituloModalConductor" class="fw-bold mb-3">Nuevo Perfil de Conductor</h5>
+
+        <form id="formConductor">
+            <!-- =================================================
+                 FILA SUPERIOR
+                 - Preview de imagen
+                 - Nombre y teléfono
+                 ================================================= -->
+            <div class="row">
+                <!-- FOTO / PREVIEW -->
+                <div class="col-md-4 text-center mb-3">
+                    <div class="preview-box">
+                        <img
+                            id="imgPreview"
+                            src="https://via.placeholder.com/150?text=Subir+Foto"
+                            alt="Preview"
+                        >
+                    </div>
+
+                    <button
+                        type="button"
+                        class="btn btn-sm btn-outline-secondary mt-2"
+                        onclick="document.getElementById('fotoC').click()"
+                    >
+                        Elegir Imagen
+                    </button>
+
+                    <input
+                        type="file"
+                        id="fotoC"
+                        accept="image/*"
+                        style="display: none;"
+                    >
+                </div>
+
+                <!-- DATOS PRINCIPALES -->
+                <div class="col-md-8">
+                    <div class="mb-2">
+                        <label class="form-label small fw-bold">Nombre Completo</label>
+                        <input
+                            type="text"
+                            id="nombreC"
+                            class="form-control"
+                            placeholder="Ej: Juan Pérez"
+                            required
+                        >
+                    </div>
+
+                    <div class="mb-2">
+                        <label class="form-label small fw-bold">Teléfono</label>
+                        <input
+                            type="text"
+                            id="telefonoC"
+                            class="form-control"
+                            placeholder="Ej: 809-555-0011"
+                            required
+                        >
+                    </div>
+                </div>
+            </div>
+
+            <!-- =================================================
+                 SEGUNDA FILA
+                 - Cédula
+                 - Número de licencia
+                 ================================================= -->
+            <div class="row">
+                <div class="col-md-6 mb-2">
+                    <label class="form-label small fw-bold">Cédula</label>
+                    <input
+                        type="text"
+                        id="cedulaC"
+                        class="form-control"
+                        placeholder="Ej: 402-1234567-8"
+                        required
+                    >
+                </div>
+
+                <div class="col-md-6 mb-2">
+                    <label class="form-label small fw-bold">N° Licencia</label>
+                    <input
+                        type="text"
+                        id="numLicenciaC"
+                        class="form-control"
+                        placeholder="Ej: 980XXXX"
+                        required
+                    >
+                </div>
+            </div>
+
+            <!-- =================================================
+                 TERCERA FILA
+                 - Tipo de licencia
+                 - Estado
+                 ================================================= -->
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label small fw-bold">Tipo de Licencia</label>
+                    <select id="tipoLicenciaC" class="form-select">
+                        <option value="Cat. 03">Cat. 03</option>
+                        <option value="Cat. 04">Cat. 04</option>
+                        <option value="Cat. 05">Cat. 05</option>
+                    </select>
+                </div>
+
+                <div class="col-md-6 mb-3">
+                    <label class="form-label small fw-bold">Estado</label>
+                    <select id="estadoC" class="form-select">
+                        <option value="Activo">Activo</option>
+                        <option value="Inactivo">Inactivo</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- =================================================
+                 DESCRIPCIÓN DEL CONDUCTOR
+                 ================================================= -->
+            <div class="mb-3">
+                <label class="form-label small fw-bold">Descripción / Información</label>
+                <textarea
+                    id="descripcionC"
+                    class="form-control"
+                    rows="3"
+                ></textarea>
+            </div>
+
+            <!-- =================================================
+                 BOTONES DEL MODAL
+                 - Cancelar
+                 - Guardar
+                 ================================================= -->
+            <div class="d-flex justify-content-end gap-2">
+                <button type="button" class="btn btn-light btn-close-modal">
+                    Cancelar
+                </button>
+
+                <button id="btnGuardarConductor" type="submit" class="btn btn-primary px-4">
+                    Guardar
+                </button>
+            </div>
+        </form>
+    </div>
+</div>

@@ -1,0 +1,421 @@
+/* =========================================================
+   VARIABLES GLOBALES
+   ========================================================= */
+:root {
+    --sidebar-bg: #1e293b;
+    --sidebar-hover: #334155;
+    --accent-color: #3b82f6;
+}
+
+
+/* =========================================================
+   BASE
+   ========================================================= */
+body {
+    background-color: #f1f5f9;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.wrapper {
+    display: flex;
+    width: 100%;
+}
+
+
+/* =========================================================
+   SIDEBAR
+   ========================================================= */
+.sidebar-wrapper {
+    width: 260px;
+    background-color: var(--sidebar-bg);
+    min-height: 100vh;
+    color: white;
+    transition: all 0.3s;
+}
+
+.sidebar-header {
+    padding: 20px;
+    text-align: center;
+    border-bottom: 1px solid #334155;
+}
+
+.nav-link {
+    color: #94a3b8;
+    padding: 12px 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transition: 0.3s;
+}
+
+.nav-link:hover,
+.nav-link.active {
+    background-color: var(--sidebar-hover);
+    color: white;
+    border-left: 4px solid var(--accent-color);
+}
+
+
+/* =========================================================
+   CONTENIDO PRINCIPAL
+   ========================================================= */
+.main-container {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.top-navbar {
+    background: white;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 25px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+
+/* =========================================================
+   MODALES
+   ========================================================= */
+.modal-overlay {
+    display: none;
+    position: fixed;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    background: rgba(0,0,0,0.5);
+    z-index: 9999;
+}
+
+.modal-card {
+    background: white;
+    width: 90%;
+    max-width: 500px;
+    margin: 50px auto;
+    border-radius: 8px;
+    padding: 25px;
+}
+
+
+/* =========================================================
+   MAPA
+   ========================================================= */
+#map {
+    height: 500px !important;
+    width: 100%;
+    border-radius: 12px;
+    margin-top: 20px;
+    z-index: 1;
+}
+
+
+/* =========================================================
+   MÓDULO CONDUCTORES
+   ========================================================= */
+
+/* CONTENEDOR */
+.driver-container {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 20px;
+}
+
+
+/* ---------------------------------------------------------
+   TARJETA PRINCIPAL (ACORDEÓN)
+   --------------------------------------------------------- */
+.driver-row {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    cursor: pointer;
+    border: 1px solid transparent;
+    position: relative;
+
+    max-height: 250px;
+    overflow: hidden;
+
+    transition: all 0.3s ease;
+}
+
+.driver-row:hover {
+    border-color: var(--accent-color);
+}
+
+.driver-row.expanded {
+    max-height: 1000px;
+    border-color: var(--accent-color);
+    box-shadow: 0 10px 15px rgba(0,0,0,0.1);
+    padding-top: 20px; /* baja contenido */
+}
+
+
+/* ---------------------------------------------------------
+   CABECERA Y FOTO
+   --------------------------------------------------------- */
+.driver-header {
+    display: flex;
+    align-items: center;
+    gap: 30px;
+}
+
+.driver-row.expanded .driver-header {
+    align-items: flex-start;
+}
+
+/* FOTO */
+.driver-avatar-square {
+    width: 200px;
+    height: 200px;
+    overflow: hidden;
+    border-radius: 10px;
+    background: #f1f5f9;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.driver-avatar-square img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+
+/* ---------------------------------------------------------
+   INFORMACIÓN
+   --------------------------------------------------------- */
+.driver-main-info {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    flex-grow: 1;
+    gap: 10px;
+}
+
+/* AJUSTE EXPANDIDO */
+.driver-row.expanded .driver-main-info {
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 200px; /* antes 200px */
+    margin-top: 60px; /* baja contenido */
+}
+
+.info-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.info-item .label {
+    font-weight: 800;
+    color: var(--accent-color);
+    font-size: 14px;
+}
+
+.info-item .value {
+    font-size: 18px;
+    font-weight: 600;
+    color: #1e293b;
+}
+
+/* DATOS EXTRA */
+.extra-data {
+    opacity: 0;
+    visibility: hidden;
+    max-height: 0;
+}
+
+.driver-row.expanded .extra-data {
+    opacity: 1;
+    visibility: visible;
+    max-height: 100px;
+}
+
+
+/* ---------------------------------------------------------
+   DETALLES INFERIORES
+   --------------------------------------------------------- */
+.driver-details {
+    display: flex;
+    gap: 20px;
+    opacity: 0;
+    visibility: hidden;
+    max-height: 0;
+}
+
+.driver-row.expanded .driver-details {
+    opacity: 1;
+    visibility: visible;
+    max-height: 500px;
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid #edf2f7;
+}
+
+.bio-box {
+    flex: 1;
+    background: #f8fafc;
+    padding: 15px;
+    border-radius: 8px;
+    border-left: 4px solid var(--accent-color);
+}
+
+.status-box {
+    flex: 0 0 160px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.status-label {
+    font-size: 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+}
+
+.status-value {
+    font-size: 20px;
+    font-weight: 800;
+}
+
+.bg-status-activo {
+    background-color: #22c55e;
+    color: white;
+}
+
+.bg-status-inactivo {
+    background-color: #facc15;
+    color: #854d0e;
+}
+/* =========================================================
+   BOTÓN TUERCA Y MENÚ DE ACCIONES
+   ========================================================= */
+.driver-actions-container {
+    position: absolute;
+    opacity: 0.95;
+    top: 15px;
+    right: 15px;
+    z-index: 100;
+}
+
+.btn-tuerca {
+    background: white;
+    border: 1px solid #cbd5e1;
+    border-radius: 50%;
+    width: 38px;
+    height: 38px;
+    cursor: pointer;
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+.btn-tuerca:hover {
+    transform: rotate(45deg);
+    border-color: #3b82f6;
+    box-shadow: 0 4px 10px rgba(59, 130, 246, 0.2);
+}
+
+.dropdown-menu-custom {
+    display: none;
+    position: absolute;
+    right: 0;
+    top: 45px;
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    min-width: 130px;
+    overflow: hidden;
+}
+
+.dropdown-menu-custom.show {
+    display: block;
+}
+
+.dropdown-menu-custom button {
+    width: 100%;
+    padding: 10px 15px;
+    border: none;
+    background: none;
+    text-align: left;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background 0.2s ease;
+}
+
+.dropdown-menu-custom button:hover {
+    background: #f1f5f9;
+}
+
+.text-danger {
+    color: #ef4444;
+}
+
+
+/* =========================================================
+   PREVIEW IMAGEN
+   ========================================================= */
+.preview-box {
+    width: 150px;
+    height: 150px;
+    margin: 0 auto;
+    overflow: hidden;
+}
+
+#imgPreview {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+
+/* =========================================================
+   BUSCADOR
+   ========================================================= */
+#buscadorConductores {
+    max-width: 400px;
+    border-radius: 10px;
+    padding: 10px;
+    border: 1px solid #cbd5e1;
+}
+
+
+/* =========================================================
+   PAGINACIÓN
+   ========================================================= */
+#paginacionConductores {
+    margin-top: 20px;
+}
+
+#paginacionConductores button {
+    min-width: 40px;
+    border-radius: 8px;
+}
+
+#paginacionConductores button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* MODO EDITAR */
+.modal-card.modo-edicion {
+    border-top: 5px solid #f59e0b; /* naranja */
+}
+
+/* MODO CREAR */
+.modal-card.modo-crear {
+    border-top: 5px solid #3b82f6; /* azul */
+}

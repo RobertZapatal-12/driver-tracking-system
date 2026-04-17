@@ -1,3 +1,8 @@
+/* =========================================================
+   MÓDULO DE RUTAS
+   ========================================================= */
+const ROUTES_ENDPOINT = "/route";
+
 let editandoRutaId = null;
 
 function abrirModalRuta() {
@@ -31,7 +36,7 @@ function resetRouteForm() {
 
 async function cargarRutas() {
     try {
-        const response = await fetch("http://127.0.0.1:8000/route/");
+        const response = await CONFIG.fetchAuth(`${ROUTES_ENDPOINT}/`);
 
         if (!response.ok) {
             throw new Error(`Error HTTP ${response.status}`);
@@ -80,6 +85,7 @@ async function cargarRutas() {
 
     } catch (error) {
         console.error("Error cargando rutas:", error);
+        Toast.error("No se pudieron cargar las rutas.");
     }
 }
 
@@ -100,12 +106,12 @@ async function crearRuta() {
     const userId = userData.user_id || userData.id;
 
     if (!vehicleId || !origen || !destino) {
-        alert("Completa vehículo, origen y destino");
+        Toast.warning("Completa vehículo, origen y destino");
         return;
     }
 
     if (!userId) {
-        alert("No se encontró el usuario logeado");
+        Toast.error("No se encontró el usuario logeado");
         console.error("Objeto user en localStorage:", userData);
         return;
     }
@@ -118,11 +124,8 @@ async function crearRuta() {
     };
 
     try {
-        const response = await fetch("http://127.0.0.1:8000/route/", {
+        const response = await CONFIG.fetchAuth(`${ROUTES_ENDPOINT}/`, {
             method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
             body: JSON.stringify(data)
         });
 
@@ -130,11 +133,11 @@ async function crearRuta() {
 
         if (!response.ok) {
             console.error("Error creando ruta:", result);
-            alert(result.detail || "No se pudo crear la ruta");
+            Toast.error(result.detail || "No se pudo crear la ruta");
             return;
         }
 
-        alert("Ruta creada correctamente");
+        Toast.success("Ruta creada correctamente");
 
         resetRouteForm();
         cerrarModalRuta();
@@ -142,13 +145,13 @@ async function crearRuta() {
 
     } catch (error) {
         console.error("Error de conexión:", error);
-        alert("No se pudo conectar con el backend");
+        Toast.error("No se pudo conectar con el backend");
     }
 }
 
 async function editarRuta(routeId) {
     try {
-        const response = await fetch(`http://127.0.0.1:8000/route/${routeId}`);
+        const response = await CONFIG.fetchAuth(`${ROUTES_ENDPOINT}/${routeId}`);
 
         if (!response.ok) {
             throw new Error(`Error HTTP ${response.status}`);
@@ -173,7 +176,7 @@ async function editarRuta(routeId) {
 
     } catch (error) {
         console.error("Error cargando ruta para editar:", error);
-        alert("No se pudo cargar la ruta");
+        Toast.error("No se pudo cargar la ruta");
     }
 }
 
@@ -187,17 +190,17 @@ async function actualizarRuta() {
     const userId = userData.user_id || userData.id;
 
     if (!routeId) {
-        alert("No se encontró la ruta a editar");
+        Toast.warning("No se encontró la ruta a editar");
         return;
     }
 
     if (!vehicleId || !origen || !destino) {
-        alert("Completa vehículo, origen y destino");
+        Toast.warning("Completa vehículo, origen y destino");
         return;
     }
 
     if (!userId) {
-        alert("No se encontró el usuario logeado");
+        Toast.error("No se encontró el usuario logeado");
         return;
     }
 
@@ -209,11 +212,8 @@ async function actualizarRuta() {
     };
 
     try {
-        const response = await fetch(`http://127.0.0.1:8000/route/${routeId}`, {
+        const response = await CONFIG.fetchAuth(`${ROUTES_ENDPOINT}/${routeId}`, {
             method: "PUT",
-            headers: {
-                "Content-Type": "application/json"
-            },
             body: JSON.stringify(data)
         });
 
@@ -221,11 +221,11 @@ async function actualizarRuta() {
 
         if (!response.ok) {
             console.error("Error actualizando ruta:", result);
-            alert(result.detail || "No se pudo actualizar la ruta");
+            Toast.error(result.detail || "No se pudo actualizar la ruta");
             return;
         }
 
-        alert("Ruta actualizada correctamente");
+        Toast.success("Ruta actualizada correctamente");
 
         resetRouteForm();
         cerrarModalRuta();
@@ -233,16 +233,16 @@ async function actualizarRuta() {
 
     } catch (error) {
         console.error("Error de conexión:", error);
-        alert("No se pudo conectar con el backend");
+        Toast.error("No se pudo conectar con el backend");
     }
 }
 
 async function eliminarRuta(routeId) {
-    const confirmar = confirm("¿Seguro que quieres eliminar esta ruta?");
-    if (!confirmar) return;
+    const confirmado = await Toast.confirm("¿Seguro que quieres eliminar esta ruta? Esta acción no se puede deshacer.");
+    if (!confirmado) return;
 
     try {
-        const response = await fetch(`http://127.0.0.1:8000/route/${routeId}`, {
+        const response = await CONFIG.fetchAuth(`${ROUTES_ENDPOINT}/${routeId}`, {
             method: "DELETE"
         });
 
@@ -250,16 +250,16 @@ async function eliminarRuta(routeId) {
 
         if (!response.ok) {
             console.error("Error eliminando ruta:", result);
-            alert(result.detail || "No se pudo eliminar la ruta");
+            Toast.error(result.detail || "No se pudo eliminar la ruta");
             return;
         }
 
-        alert("Ruta eliminada correctamente");
+        Toast.success("Ruta eliminada correctamente");
         await cargarRutas();
 
     } catch (error) {
         console.error("Error de conexión:", error);
-        alert("No se pudo conectar con el backend");
+        Toast.error("No se pudo conectar con el backend");
     }
 }
 

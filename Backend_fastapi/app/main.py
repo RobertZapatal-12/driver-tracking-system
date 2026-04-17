@@ -2,6 +2,7 @@ from pathlib import Path
 from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from fastapi.responses import RedirectResponse
 from app.routers import drivers, users, locations, vehicles, trips, trips2, clients
 from app import schemas, models
 from sqlalchemy.orm import Session
@@ -14,10 +15,23 @@ app = FastAPI(
     title="Driver Tracking API"
 )
 
+# ─── Redirige la raíz al tracking público ───────────────────
+@app.get("/", include_in_schema=False)
+def root_redirect():
+    return RedirectResponse(url="/app/tracking.html")
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
+    allow_origins=[
+        "*",
+        "null",                      # file:// origin en algunos navegadores
+        "http://localhost",
+        "http://localhost:5500",      # Live Server de VSCode
+        "http://127.0.0.1",
+        "http://127.0.0.1:8000",
+        "http://127.0.0.1:5500",
+    ],
+    allow_credentials=False,         # False permite wildcard correctamente
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -29,6 +43,15 @@ app.include_router(locations.router)
 app.include_router(trips.router)
 app.include_router(trips2.router)
 app.include_router(clients.router)
+
+# ─── Servir el Frontend como archivos estáticos ─────────────
+# main.py está en: Backend_fastapi/app/main.py
+# repo root  está en: ../.. desde app/
+FRONTEND_PATH = Path(__file__).parent.parent.parent / "Front_end" / "Proyecto"
+if not FRONTEND_PATH.exists():
+    # Fallback: ruta absoluta directa
+    FRONTEND_PATH = Path("c:/Users/emiss/Desktop/Carrrr/driver-tracking-system/Front_end/Proyecto")
+app.mount("/app", StaticFiles(directory=str(FRONTEND_PATH), html=True), name="frontend")
 
 # Configuración JWT
 SECRET_KEY = os.getenv("SECRET_KEY", "your-secret-key-change-this-in-production")

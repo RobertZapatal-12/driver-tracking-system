@@ -1,7 +1,7 @@
 /* =========================================================
    CONFIGURACIÓN GENERAL
    ========================================================= */
-const API_URL_CLIENTS = "http://127.0.0.1:8000/clients";
+const CLIENTS_ENDPOINT = "/clients";
 
 let editandoClienteId = null;
 
@@ -22,12 +22,13 @@ async function cargarClientes() {
         if (lista) {
             lista.innerHTML = `
                 <div class="col-12 text-center text-muted py-4">
+                    <div class="spinner-border spinner-border-sm me-2" role="status"></div>
                     Cargando clientes...
                 </div>
             `;
         }
 
-        const res = await fetch(`${API_URL_CLIENTS}/`);
+        const res = await CONFIG.fetchAuth(`${CLIENTS_ENDPOINT}/`);
         if (!res.ok) {
             throw new Error("No se pudieron cargar los clientes");
         }
@@ -234,11 +235,8 @@ function renderPaginacionClientes() {
    CREAR CLIENTE
    ========================================================= */
 async function crearCliente(client) {
-    const res = await fetch(`${API_URL_CLIENTS}/`, {
+    const res = await CONFIG.fetchAuth(`${CLIENTS_ENDPOINT}/`, {
         method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
         body: JSON.stringify(client)
     });
 
@@ -253,11 +251,8 @@ async function crearCliente(client) {
    ACTUALIZAR CLIENTE
    ========================================================= */
 async function actualizarCliente(id, client) {
-    const res = await fetch(`${API_URL_CLIENTS}/${id}`, {
+    const res = await CONFIG.fetchAuth(`${CLIENTS_ENDPOINT}/${id}`, {
         method: "PUT",
-        headers: {
-            "Content-Type": "application/json"
-        },
         body: JSON.stringify(client)
     });
 
@@ -272,7 +267,7 @@ async function actualizarCliente(id, client) {
    ELIMINAR CLIENTE
    ========================================================= */
 async function eliminarCliente(id) {
-    const res = await fetch(`${API_URL_CLIENTS}/${id}`, {
+    const res = await CONFIG.fetchAuth(`${CLIENTS_ENDPOINT}/${id}`, {
         method: "DELETE"
     });
 
@@ -287,15 +282,16 @@ async function eliminarCliente(id) {
    CONFIRMAR ELIMINACIÓN
    ========================================================= */
 async function confirmarEliminacionCliente(id) {
-    if (!confirm("¿Estás seguro de que deseas eliminar a este cliente?")) return;
+    const confirmado = await Toast.confirm("¿Estás seguro de que deseas eliminar a este cliente? Esta acción no se puede deshacer.");
+    if (!confirmado) return;
 
     try {
         await eliminarCliente(id);
         await cargarClientes();
-        alert("✅ Cliente eliminado correctamente");
+        Toast.success("Cliente eliminado correctamente");
     } catch (error) {
         console.error(error);
-        alert("❌ Error al eliminar");
+        Toast.error("No se pudo eliminar el cliente");
     }
 }
 
@@ -304,7 +300,7 @@ async function confirmarEliminacionCliente(id) {
    ========================================================= */
 async function editarCliente(id) {
     try {
-        const res = await fetch(`${API_URL_CLIENTS}/${id}`);
+        const res = await CONFIG.fetchAuth(`${CLIENTS_ENDPOINT}/${id}`);
         if (!res.ok) {
             throw new Error("No se pudo obtener el cliente");
         }
@@ -335,7 +331,7 @@ async function editarCliente(id) {
 
     } catch (error) {
         console.error(error);
-        alert("❌ No se pudo cargar el cliente para editar");
+        Toast.error("No se pudo cargar el cliente para editar");
     }
 }
 
@@ -399,10 +395,10 @@ function initClientModals() {
             try {
                 if (editandoClienteId) {
                     await actualizarCliente(editandoClienteId, clientData);
-                    alert("✅ Cliente actualizado correctamente");
+                    Toast.success("Cliente actualizado correctamente");
                 } else {
                     await crearCliente(clientData);
-                    alert("✅ Cliente creado correctamente");
+                    Toast.success("Cliente creado correctamente");
                 }
 
                 modal.style.display = "none";
@@ -412,7 +408,7 @@ function initClientModals() {
 
             } catch (error) {
                 console.error(error);
-                alert("❌ Error al guardar el cliente");
+                Toast.error("Error al guardar el cliente");
             }
         };
     }

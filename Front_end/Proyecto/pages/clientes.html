@@ -1,141 +1,94 @@
-<!-- =========================================================
-     ENCABEZADO DEL MÓDULO DE CLIENTES
-     - Título
-     - Botón para abrir el modal de nuevo cliente
-     ========================================================= -->
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h3 class="fw-bold">Gestión de Clientes</h3>
-    <button class="btn btn-primary btn-open-modal">Nuevo Cliente</button>
-</div>
+<div class="clients-module">
+    <!-- Encabezado con estadísticas rápidas -->
+    <div class="glass-panel p-4 mb-4">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h4 class="fw-bold mb-1">Cartera de Clientes corporativos</h4>
+                <p class="text-muted small mb-0">Gestione la base de datos de empresas y clientes individuales.</p>
+            </div>
+            <button class="btn btn-primary rounded-pill px-4 btn-open-modal">
+                <i class="bi bi-person-plus-fill me-2"></i> Registrar Cliente
+            </button>
+        </div>
+    </div>
 
-<!-- =========================================================
-     BUSCADOR DE CLIENTES
-     - Permite buscar por nombre en tiempo real
-     ========================================================= -->
-<div class="mb-3">
-    <input
-        type="text"
-        id="buscadorClientes"
-        class="form-control"
-        placeholder="Buscar por nombre, cédula, teléfono o email..."
-    >
-</div>
-
-<!-- =========================================================
-     LISTA DE CLIENTES
-     - Aquí se renderizan dinámicamente las tarjetas
-     ========================================================= -->
-<div id="listaClientes" class="row g-4"></div>
-
-<!-- =========================================================
-     PAGINACIÓN DE CLIENTES
-     - Aquí aparecerán los botones 1, 2, 3...
-     - Cada página mostrará 5 clientes
-     ========================================================= -->
-<div id="paginacionClientes" class="d-flex justify-content-center gap-2 mt-4"></div>
-
-<!-- =========================================================
-     MODAL: NUEVO / EDITAR CLIENTE
-     - Se usa tanto para crear como para editar
-     ========================================================= -->
-<div class="modal-overlay">
-    <div class="modal-card">
-        <h5 class="fw-bold mb-3">Nuevo Perfil de Cliente</h5>
-
-        <form id="formCliente">
-            <!-- =================================================
-                 FILA SUPERIOR
-                 - Nombre y teléfono
-                 ================================================= -->
-            <div class="row">
-                <div class="col-md-6 mb-2">
-                    <label class="form-label small fw-bold">Nombre Completo</label>
-                    <input
-                        type="text"
-                        id="nombreCliente"
-                        class="form-control"
-                        placeholder="Ej: Juan Pérez"
-                        required
-                    >
-                </div>
-
-                <div class="col-md-6 mb-2">
-                    <label class="form-label small fw-bold">Teléfono</label>
-                    <input
-                        type="text"
-                        id="telefonoCliente"
-                        class="form-control"
-                        placeholder="Ej: 809-555-0011"
-                        required
-                    >
+    <!-- Filtros y Búsqueda -->
+    <div class="glass-panel p-3 mb-4">
+        <div class="row g-3">
+            <div class="col-md-8">
+                <div class="input-group">
+                    <span class="input-group-text bg-transparent border-end-0"><i class="bi bi-search"></i></span>
+                    <input type="text" id="buscadorClientes" class="form-control border-start-0" placeholder="Buscar por nombre, RNC/Cédula, teléfono o correo...">
                 </div>
             </div>
-
-            <!-- =================================================
-                 SEGUNDA FILA
-                 - Email y cédula
-                 ================================================= -->
-            <div class="row">
-                <div class="col-md-6 mb-2">
-                    <label class="form-label small fw-bold">Email</label>
-                    <input
-                        type="email"
-                        id="emailCliente"
-                        class="form-control"
-                        placeholder="Ej: juan@example.com"
-                        required
-                    >
-                </div>
-
-                <div class="col-md-6 mb-2">
-                    <label class="form-label small fw-bold">Cédula</label>
-                    <input
-                        type="text"
-                        id="cedulaCliente"
-                        class="form-control"
-                        placeholder="Ej: 402-1234567-8"
-                        required
-                    >
-                </div>
-            </div>
-
-            <!-- =================================================
-                 DIRECCIÓN
-                 ================================================= -->
-            <div class="mb-2">
-                <label class="form-label small fw-bold">Dirección</label>
-                <input
-                    type="text"
-                    id="direccionCliente"
-                    class="form-control"
-                    placeholder="Ej: Calle Principal #123, Santo Domingo"
-                >
-            </div>
-
-            <!-- =================================================
-                 ESTADO
-                 ================================================= -->
-            <div class="mb-3">
-                <label class="form-label small fw-bold">Estado</label>
-                <select id="estadoCliente" class="form-select">
-                    <option value="Activo">Activo</option>
-                    <option value="Inactivo">Inactivo</option>
+            <div class="col-md-4">
+                <select class="form-select" id="filtroEstadoCliente">
+                    <option value="">Todos los estados</option>
+                    <option value="Activo">Solo Activos</option>
+                    <option value="Inactivo">Inactivos</option>
                 </select>
             </div>
+        </div>
+    </div>
 
-            <!-- =================================================
-                 BOTONES DEL MODAL
-                 - Cancelar
-                 - Guardar
-                 ================================================= -->
-            <div class="d-flex justify-content-end gap-2">
-                <button type="button" class="btn btn-light btn-close-modal">
-                    Cancelar
-                </button>
+    <!-- Lista de Clientes -->
+    <div id="listaClientes" class="row g-4">
+        <!-- Render dinámico aquí -->
+        <div class="col-12 text-center py-5">
+            <div class="spinner-border text-primary" role="status"></div>
+            <p class="mt-2 text-muted">Cargando base de datos de clientes...</p>
+        </div>
+    </div>
 
-                <button type="submit" class="btn btn-primary px-4">
-                    Guardar
-                </button>
+    <!-- Paginación -->
+    <div id="paginacionClientes" class="d-flex justify-content-center gap-2 mt-4"></div>
+</div>
+
+<!-- Modal de Cliente Moderno -->
+<div class="modal-overlay">
+    <div class="modal-card" style="max-width: 600px;">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h5 class="fw-bold mb-0">Perfil de Cliente</h5>
+            <button class="btn-close btn-close-modal"></button>
+        </div>
+        
+        <form id="formCliente">
+            <div class="row g-3">
+                <div class="col-md-8">
+                    <label class="form-label small fw-bold">Nombre o Razón Social</label>
+                    <input type="text" id="nombreCliente" class="form-control" placeholder="Ej: Distribuidora Nacional S.A." required>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label small fw-bold">Estado</label>
+                    <select id="estadoCliente" class="form-select">
+                        <option value="Activo">Activo</option>
+                        <option value="Inactivo">Inactivo</option>
+                    </select>
+                </div>
+                
+                <div class="col-md-6">
+                    <label class="form-label small fw-bold">Cédula / RNC</label>
+                    <input type="text" id="cedulaCliente" class="form-control" placeholder="000-0000000-0" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label small fw-bold">Teléfono de contacto</label>
+                    <input type="text" id="telefonoCliente" class="form-control" placeholder="809-000-0000" required>
+                </div>
+
+                <div class="col-md-12">
+                    <label class="form-label small fw-bold">Correo Electrónico (Facturación)</label>
+                    <input type="email" id="emailCliente" class="form-control" placeholder="admin@empresa.com" required>
+                </div>
+
+                <div class="col-md-12">
+                    <label class="form-label small fw-bold">Dirección Fiscal / Entrega</label>
+                    <textarea id="direccionCliente" class="form-control" rows="2" placeholder="Calle, Número, Sector, Ciudad..."></textarea>
+                </div>
+            </div>
+
+            <div class="mt-4 pt-3 border-top d-flex justify-content-end gap-2">
+                <button type="button" class="btn btn-light btn-close-modal px-4">Cerrar</button>
+                <button type="submit" class="btn btn-primary px-5 rounded-pill">Guardar Cliente</button>
             </div>
         </form>
     </div>

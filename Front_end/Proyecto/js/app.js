@@ -4,9 +4,12 @@
 window.driverAppData = { foto: "" };
 
 /* =========================================================
-   API BASE
+   MAPA - VARIABLES GLOBALES
    ========================================================= */
-const API_BASE = "http://127.0.0.1:8000";
+let mapaGlobal = null;
+let marcadorChofer = null;
+let marcadoresConductores = {};
+let mapPollingInterval = null;
 
 /* =========================================================
    VERIFICACIÓN DE AUTENTICACIÓN
@@ -76,11 +79,27 @@ function cargarPagina(pagina) {
     const contenedor = document.getElementById("contenido");
     const titulo = document.getElementById("page-title");
 
+    // Detener polling del mapa al cambiar de página
+    detenerPollingMapa();
+
     fetch(`pages/${pagina}.html`)
         .then(res => res.text())
         .then(data => {
+            // First remove animation class
+            contenedor.classList.remove("page-enter");
+            // Force reflow
+            void contenedor.offsetWidth;
+            
             contenedor.innerHTML = data;
-            titulo.innerText = pagina.charAt(0).toUpperCase() + pagina.slice(1);
+            
+            const pTitle = pagina.charAt(0).toUpperCase() + pagina.slice(1);
+            if(titulo) titulo.innerText = pTitle;
+
+            const breadcrumbCurrent = document.getElementById("breadcrumb-current");
+            if(breadcrumbCurrent) breadcrumbCurrent.innerText = pTitle;
+
+            // Add animation class
+            contenedor.classList.add("page-enter");
 
             setActiveLink(pagina);
             initModals();
@@ -129,6 +148,7 @@ function cargarPagina(pagina) {
             if (pagina === "mapa") {
                 setTimeout(() => {
                     initMapa();
+                    iniciarPollingMapa();
                 }, 100);
             }
         })
@@ -302,10 +322,10 @@ function initModals() {
             try {
                 if (typeof editandoDriverId !== "undefined" && editandoDriverId !== null) {
                     await actualizarDriver(editandoDriverId, data);
-                    alert("✅ Conductor actualizado");
+                    Toast.success("Conductor actualizado correctamente");
                 } else {
                     await crearDriver(data);
-                    alert("✅ Conductor creado");
+                    Toast.success("Conductor creado correctamente");
                 }
 
                 if (typeof cargarConductores === "function") {
@@ -323,7 +343,7 @@ function initModals() {
                 }
             } catch (error) {
                 console.error("Error al conectar con la API:", error);
-                alert("❌ No se pudo guardar. Revisa que el servidor esté encendido.");
+                Toast.error("No se pudo guardar. Revisa que el servidor esté encendido.");
             }
         };
     }
@@ -449,13 +469,6 @@ function resetDriverForm() {
 }
 
 /* =========================================================
-   MAPA - VARIABLES GLOBALES
-   ========================================================= */
-let mapaGlobal = null;
-let marcadorChofer = null;
-let marcadoresConductores = {};
-
-/* =========================================================
    ICONO PERSONALIZADO DE CARRO
    ========================================================= */
 const carIcon = L.icon({
@@ -467,7 +480,9 @@ const carIcon = L.icon({
 
 /* =========================================================
    INICIALIZAR MAPA
-   - Opción 2: cargar todos los conductores
+   ========================================================= */
+/* =========================================================
+   INICIALIZAR MAPA
    ========================================================= */
 function initMapa() {
     const mapElement = document.getElementById("map");
@@ -485,21 +500,65 @@ function initMapa() {
         marcadorChofer = null;
     }
 
-    mapaGlobal = L.map("map").setView([18.4861, -69.9312], 13);
+    // Definir los límites de República Dominicana (SW, NE)
+    const boundsDR = L.latLngBounds(
+        L.latLng(17.47, -72.0), // Suroeste
+        L.latLng(19.95, -68.32) // Noreste
+    );
 
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        attribution: "© OpenStreetMap"
+    // Inicializar mapa con restricciones
+    mapaGlobal = L.map("map", {
+        center: [18.4861, -69.9312],
+        zoom: 13,
+        minZoom: 8,
+        maxBounds: boundsDR,
+        maxBoundsViscosity: 1.0,  // "Efecto rebote" al salir de los límites
+        zoomControl: false        // Quitamos controles nativos para usar los nuestros
+    });
+
+    // Cambiar a CartoDB Voyager (Muestra POIs, tiendas y centros comerciales con detalle)
+    L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png", {
+        attribution: "© OpenStreetMap © CARTO",
+        subdomains: "abcd",
+        maxZoom: 20
     }).addTo(mapaGlobal);
 
     cargarTodosLosConductores();
 }
 
 /* =========================================================
-   Opción 2: CARGAR TODOS LOS CONDUCTORES EN EL MAPA
+   POLLING DEL MAPA (solo cuando está visible)
+   ========================================================= */
+function iniciarPollingMapa() {
+    detenerPollingMapa();
+
+    mapPollingInterval = setInterval(() => {
+        const input = document.getElementById("codigoViaje");
+        if (!mapaGlobal) return;
+
+        const valor = input ? input.value.trim() : "";
+
+        if (valor !== "" && !isNaN(valor)) {
+            actualizarChoferSeleccionado();
+        } else {
+            cargarTodosLosConductores();
+        }
+    }, 3000);
+}
+
+function detenerPollingMapa() {
+    if (mapPollingInterval) {
+        clearInterval(mapPollingInterval);
+        mapPollingInterval = null;
+    }
+}
+
+/* =========================================================
+   CARGAR TODOS LOS CONDUCTORES EN EL MAPA
    ========================================================= */
 async function cargarTodosLosConductores() {
     try {
-        const response = await fetch(`${API_BASE}/locations/latest`);
+        const response = await CONFIG.fetchAuth("/locations/latest");
 
         if (!response.ok) {
             throw new Error(`Error HTTP ${response.status}`);
@@ -552,7 +611,7 @@ async function buscarUbicacion() {
         const codigo = document.getElementById("codigoViaje").value.trim();
 
         if (codigo === "" || isNaN(codigo)) {
-            alert("Introduce un driver_id válido. Ej: 6");
+            Toast.warning("Introduce un driver_id válido. Ej: 6");
             return;
         }
 
@@ -560,7 +619,7 @@ async function buscarUbicacion() {
         await actualizarChoferSeleccionado();
     } catch (error) {
         console.error("Error cargando ubicación:", error);
-        alert("Error cargando la ubicación del conductor.");
+        Toast.error("Error cargando la ubicación del conductor.");
     }
 }
 
@@ -568,7 +627,7 @@ async function actualizarChoferSeleccionado() {
     if (!driverIdSeleccionado) return;
 
     try {
-        const response = await fetch(`${API_BASE}/locations/latest`);
+        const response = await CONFIG.fetchAuth("/locations/latest");
 
         if (!response.ok) {
             throw new Error(`Error HTTP ${response.status}`);
@@ -583,7 +642,7 @@ async function actualizarChoferSeleccionado() {
         const chofer = data.find(d => String(d.driver_id) === String(driverIdSeleccionado));
 
         if (!chofer) {
-            alert("No se encontró ese conductor en las ubicaciones activas.");
+            Toast.warning("No se encontró ese conductor en las ubicaciones activas.");
             return;
         }
 
@@ -595,7 +654,9 @@ async function actualizarChoferSeleccionado() {
 
 /* =========================================================
    MOSTRAR CHOFER EN EL MAPA
-   - Opción 3: icono personalizado
+   ========================================================= */
+/* =========================================================
+   MOSTRAR CHOFER EN EL MAPA
    ========================================================= */
 function mostrarChofer(data) {
     if (!mapaGlobal) {
@@ -614,30 +675,38 @@ function mostrarChofer(data) {
 
     marcadorChofer = L.marker([lat, lng], { icon: carIcon }).addTo(mapaGlobal)
         .bindPopup(`
-            <b>Chofer:</b> ${data.nombre}<br>
-            <b>Latitud:</b> ${lat}<br>
-            <b>Longitud:</b> ${lng}<br>
-            <b>Velocidad:</b> ${data.velocidad}
+            <div style="font-family: 'Inter', sans-serif;">
+                <b style="color: var(--accent-primary);">${data.nombre}</b><br>
+                <small class="text-muted">ID Conductor: ${data.driver_id}</small>
+            </div>
         `)
         .openPopup();
-}
 
-/* =========================================================
-   Opción 1: ACTUALIZACIÓN AUTOMÁTICA CADA 3 SEGUNDOS
-   ========================================================= */
-setInterval(() => {
-    const input = document.getElementById("codigoViaje");
+    // Actualizar Panel de Información Flotante
+    const infoPanel = document.getElementById("map-info-panel");
+    const driverName = document.getElementById("map-driver-name");
+    const driverMeta = document.getElementById("map-driver-meta");
+    const driverImg = document.getElementById("map-driver-img");
+    const driverStatus = document.getElementById("map-driver-status");
 
-    if (!input || !mapaGlobal) return;
+    if (infoPanel && driverName) {
+        infoPanel.style.display = "block";
+        driverName.textContent = data.nombre;
+        driverMeta.textContent = `ID: ${data.driver_id} • Velocidad: ${data.velocidad || '0'} km/h • Lat: ${lat.toFixed(4)}`;
+        
+        // Imagen del conductor o inicial si no hay imagen
+        if (driverImg) {
+            driverImg.src = data.imagen || `https://ui-avatars.com/api/?name=${encodeURIComponent(data.nombre)}&background=3b82f6&color=fff&bold=true`;
+        }
 
-    const valor = input.value.trim();
-
-    if (valor !== "" && !isNaN(valor)) {
-        actualizarChoferSeleccionado();
-    } else {
-        cargarTodosLosConductores();
+        // Estilo del badge
+        if (driverStatus) {
+            driverStatus.textContent = "Activo en Mapa";
+            driverStatus.style.background = "#dcfce7";
+            driverStatus.style.color = "#15803d";
+        }
     }
-}, 3000);
+}
 
 /* =========================================================
    MENÚ DE ACCIONES DE CADA CARD

@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TransFleet | Rastrea tu Servicio</title>
+    <meta name="description" content="Consulta la ubicación de tu servicio de transporte en tiempo real.">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚚</text></svg>">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+    <link rel="stylesheet" href="css/tracking.css">
+</head>
+<body class="tracking-page">
+
+    <!-- ══ HEADER FIJO ══ -->
+    <header class="tf-header">
+        <div class="tf-logo">
+            <div class="tf-logo-icon"><i class="bi bi-truck"></i></div>
+            <span class="tf-logo-name">TransFleet</span>
+        </div>
+        <div class="tf-header-action">
+            <a href="login.html" class="tf-login-btn">
+                <i class="bi bi-box-arrow-in-right"></i> Ingresar
+            </a>
+            <span class="tf-admin-hint">Solo personal autorizado</span>
+        </div>
+    </header>
+
+    <main class="tf-main">
+
+        <!-- ══ HERO: texto + buscador inicial ══ -->
+        <section class="tf-hero" id="tf-hero">
+            <div class="tf-blob tf-blob-1"></div>
+            <div class="tf-blob tf-blob-2"></div>
+            <div class="tf-blob tf-blob-3"></div>
+
+            <div class="tf-hero-inner" id="tf-hero-inner">
+
+                <!-- BLOQUE DE TEXTO — colapsa al buscar -->
+                <div class="tf-hero-text" id="hero-text">
+                    <div class="tf-hero-badge">
+                        <span class="dot"></span>
+                        Sistema activo · Rastreo en tiempo real
+                    </div>
+                    <h1 class="tf-hero-title">
+                        ¿Dónde está<br><span class="highlight">tu servicio?</span>
+                    </h1>
+                    <p class="tf-hero-subtitle">
+                        Ingresa el código de tu servicio y localiza el vehículo<br>
+                        asignado al instante, sin crear cuenta ni instalar nada.
+                    </p>
+                </div>
+
+                <!-- BUSCADOR INICIAL (se oculta cuando aparece el mapa) -->
+                <div class="tf-search-card" id="search-card">
+                    <label class="tf-search-label" for="service-code">Código de Servicio</label>
+                    <div class="tf-search-group">
+                        <input type="text" id="service-code" class="tf-search-input"
+                            placeholder="Ej: 1042" inputmode="numeric" autocomplete="off" maxlength="10">
+                        <button id="search-btn" class="tf-search-btn" onclick="rastrearServicio()">
+                            <span class="btn-text">Rastrear</span>
+                            <i class="bi bi-arrow-right-short btn-icon" style="font-size:1.4rem;"></i>
+                            <span class="spinner"></span>
+                        </button>
+                    </div>
+                    <div id="status-banner" class="tf-status-banner"></div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- ══ MAPA (estilo Centro de Control, fuera del hero) ══ -->
+        <section class="tf-map-full" id="map-section">
+
+            <!-- Mapa base -->
+            <div id="tracking-map"></div>
+
+            <!-- ① Barra de búsqueda flotante (top-left) — igual que Centro de Control -->
+            <div class="map-overlay-search" id="map-overlay-search">
+                <div class="overlay-glass">
+                    <i class="bi bi-search overlay-icon"></i>
+                    <span id="overlay-codigo-label" class="overlay-code">—</span>
+                    <button class="overlay-back-btn" onclick="volverABuscar()">
+                        <i class="bi bi-x-lg"></i>
+                    </button>
+                </div>
+                <div id="map-status-banner" class="tf-status-banner" style="margin-top:10px;"></div>
+            </div>
+
+            <!-- ② Panel de info del conductor (bottom) — igual que Centro de Control -->
+            <div class="map-overlay-driver" id="map-overlay-driver">
+                <div class="overlay-driver-glass">
+                    <div class="overlay-driver-left">
+                        <div class="overlay-avatar">
+                            <img id="track-driver-img" src="" alt="Conductor">
+                        </div>
+                        <div>
+                            <h5 id="track-driver-name" class="mb-0">—</h5>
+                            <p id="track-driver-meta" class="mb-0">ID: —</p>
+                        </div>
+                    </div>
+                    <div class="overlay-status-pill">En Tránsito</div>
+                </div>
+            </div>
+
+            <!-- ③ Controles de zoom (top-right) — igual que Centro de Control -->
+            <div class="map-overlay-controls">
+                <button onclick="trackingMap && trackingMap.zoomIn()"><i class="bi bi-plus-lg"></i></button>
+                <button onclick="trackingMap && trackingMap.zoomOut()"><i class="bi bi-dash-lg"></i></button>
+            </div>
+
+        </section>
+
+        <!-- ══ CÓMO FUNCIONA (siempre visible) ══ -->
+        <section class="tf-how-section" id="how-section">
+            <div class="tf-how-inner">
+                <span class="tf-section-tag">Simple y rápido</span>
+                <h2 class="tf-how-title">¿Cómo funciona el rastreo?</h2>
+                <p class="tf-how-subtitle">Sin registros, sin contraseñas. Solo tu código y listo.</p>
+                <div class="tf-steps">
+                    <div class="tf-step">
+                        <div class="tf-step-icon"><i class="bi bi-receipt"></i></div>
+                        <h4>1. Ten tu código a mano</h4>
+                        <p>Es el número que encontrarás en el comprobante o mensaje de confirmación.</p>
+                    </div>
+                    <div class="tf-step">
+                        <div class="tf-step-icon"><i class="bi bi-search-heart"></i></div>
+                        <h4>2. Ingrésalo arriba</h4>
+                        <p>Escríbelo en el campo y presiona <em>Rastrear</em>. Sin formularios complicados.</p>
+                    </div>
+                    <div class="tf-step">
+                        <div class="tf-step-icon"><i class="bi bi-geo-fill"></i></div>
+                        <h4>3. Ve la ubicación al instante</h4>
+                        <p>El mapa se actualiza con la posición exacta de la unidad asignada.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ══ FEATURES (siempre visible) ══ -->
+        <div class="tf-features">
+            <div class="tf-feature-chip"><i class="bi bi-lightning-charge-fill"></i> Consulta instantánea</div>
+            <div class="tf-feature-chip"><i class="bi bi-shield-check"></i> Sin crear cuenta</div>
+            <div class="tf-feature-chip"><i class="bi bi-phone"></i> Funciona en móvil</div>
+            <div class="tf-feature-chip"><i class="bi bi-map-fill"></i> Mapa interactivo</div>
+            <div class="tf-feature-chip"><i class="bi bi-clock-history"></i> Tiempo real</div>
+            <div class="tf-feature-chip"><i class="bi bi-lock-fill"></i> Acceso seguro</div>
+        </div>
+
+    </main>
+
+    <!-- ══ FOOTER ══ -->
+    <footer class="tf-footer">
+        <div class="tf-footer-inner">
+            <div class="tf-footer-brand">
+                <div class="icon"><i class="bi bi-truck"></i></div>
+                TransFleet
+            </div>
+            <div style="font-size:0.82rem;">© 2025 TransFleet · Sistema de Gestión Logística</div>
+            <div class="tf-footer-links">
+                <a href="login.html">Panel Administrativo</a>
+                <a href="#">Soporte</a>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="js/tracking.js"></script>
+</body>
+</html>

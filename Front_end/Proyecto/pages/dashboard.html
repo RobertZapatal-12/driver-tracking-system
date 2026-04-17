@@ -1,29 +1,158 @@
-<div class="row g-3">
-    <div class="col-md-3">
-        <div class="card p-3 shadow-sm border-0 bg-primary text-white">
-            <h5>Total Vehículos</h5>
-            <h2 id="dashboardTotalVehiculos">0</h2>
+<div class="admin-dashboard container-fluid p-0">
+    <!-- Fila de KPI Principales -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-3">
+            <div class="stats-card glass-panel p-4" style="border-left: 5px solid #3b82f6;">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="text-muted small mb-1 fw-bold">SERVICIOS HOY</p>
+                        <h2 class="mb-0 fw-bold">24</h2>
+                    </div>
+                    <div class="icon-box bg-primary-light p-3 rounded-circle" style="background: #eff6ff;">
+                        <i class="bi bi-truck text-primary fs-3"></i>
+                    </div>
+                </div>
+                <div class="mt-3 small text-success">
+                    <i class="bi bi-arrow-up"></i> +12% vs ayer
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-card glass-panel p-4" style="border-left: 5px solid #10b981;">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="text-muted small mb-1 fw-bold">INGRESOS (MÉS)</p>
+                        <h2 class="mb-0 fw-bold">RD$ 145k</h2>
+                    </div>
+                    <div class="icon-box bg-success-light p-3 rounded-circle" style="background: #ecfdf5;">
+                        <i class="bi bi-cash-stack text-success fs-3"></i>
+                    </div>
+                </div>
+                <div class="mt-3 small text-success">
+                    <i class="bi bi-check-circle"></i> Meta: 85% alcanzada
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-card glass-panel p-4" style="border-left: 5px solid #f59e0b;">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="text-muted small mb-1 fw-bold">CHOFERES ACTIVOS</p>
+                        <h2 class="mb-0 fw-bold">18</h2>
+                    </div>
+                    <div class="icon-box bg-warning-light p-3 rounded-circle" style="background: #fffbeb;">
+                        <i class="bi bi-person-badge text-warning fs-3"></i>
+                    </div>
+                </div>
+                <div class="mt-3 small text-muted">
+                    Total plantilla: 22
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-card glass-panel p-4" style="border-left: 5px solid #ef4444;">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="text-muted small mb-1 fw-bold">ALERTAS CRÍTICAS</p>
+                        <h2 class="mb-0 fw-bold">3</h2>
+                    </div>
+                    <div class="icon-box bg-danger-light p-3 rounded-circle" style="background: #fef2f2;">
+                        <i class="bi bi-bell-fill text-danger fs-3"></i>
+                    </div>
+                </div>
+                <div class="mt-3 small text-danger fw-bold">
+                    Seguros vencidos o licencias
+                </div>
+            </div>
         </div>
     </div>
 
-    <div class="col-md-3">
-        <div class="card p-3 shadow-sm border-0 bg-success text-white">
-            <h5>Disponibles</h5>
-            <h2 id="dashboardVehiculosDisponibles">0</h2>
+    <div class="row g-4">
+        <!-- Panel de Servicios Recientes -->
+        <div class="col-md-8">
+            <div class="glass-panel p-4 h-100">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h5 class="fw-bold mb-0">Últimos Servicios Solicitados</h5>
+                    <button class="btn btn-primary btn-sm rounded-pill px-3" onclick="cargarPagina('rutas')">Nuevo Servicio</button>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead class="text-muted small">
+                            <tr>
+                                <th>CLIENTE</th>
+                                <th>ORIGEN / DESTINO</th>
+                                <th>CHOFER</th>
+                                <th>ESTADO</th>
+                                <th>VALOR</th>
+                            </tr>
+                        </thead>
+                        <tbody id="dashboard-recent-services">
+                            <!-- Ejemplo de data -->
+                            <tr style="cursor: pointer;">
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="avatar-sm me-2 bg-light rounded-circle text-center" style="width: 32px; height: 32px; line-height: 32px;">P</div>
+                                        <span class="fw-semibold">Perez Group</span>
+                                    </div>
+                                </td>
+                                <td><span class="small">SDQ <i class="bi bi-arrow-right"></i> Stgo</span></td>
+                                <td>Juan G.</td>
+                                <td><span class="badge bg-primary-light text-primary" style="background: #eff6ff;">En Ruta</span></td>
+                                <td class="fw-bold">RD$ 4,500</td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="avatar-sm me-2 bg-light rounded-circle text-center" style="width: 32px; height: 32px; line-height: 32px;">M</div>
+                                        <span class="fw-semibold">Megacentro</span>
+                                    </div>
+                                </td>
+                                <td><span class="small">Haina <i class="bi bi-arrow-right"></i> SD Este</span></td>
+                                <td>Manuel T.</td>
+                                <td><span class="badge bg-success-light text-success" style="background: #ecfdf5;">Entregado</span></td>
+                                <td class="fw-bold">RD$ 2,800</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
-    </div>
 
-    <div class="col-md-3">
-        <div class="card p-3 shadow-sm border-0 bg-warning text-dark">
-            <h5>En Ruta</h5>
-            <h2 id="dashboardVehiculosEnRuta">0</h2>
-        </div>
-    </div>
-
-    <div class="col-md-3">
-        <div class="card p-3 shadow-sm border-0 bg-danger text-white">
-            <h5>Mantenimiento</h5>
-            <h2 id="dashboardVehiculosMantenimiento">0</h2>
+        <!-- Panel Lateral: Disponibilidad de Flota -->
+        <div class="col-md-4">
+            <div class="glass-panel p-4 h-100">
+                <h5 class="fw-bold mb-4">Estado de la Flota</h5>
+                <div class="fleet-status-item mb-3 p-3 rounded-4" style="background: rgba(248,250,252,0.5); border: 1px solid #f1f5f9;">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <span class="badge bg-success mb-2">Libre</span>
+                            <h6 class="mb-0">Toyota Hiace 2023</h6>
+                            <small class="text-muted">Placa: L456789</small>
+                        </div>
+                        <i class="bi bi-check-circle-fill text-success"></i>
+                    </div>
+                </div>
+                <div class="fleet-status-item mb-3 p-3 rounded-4" style="background: rgba(248,250,252,0.5); border: 1px solid #f1f5f9;">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <span class="badge bg-primary mb-2">En Ruta</span>
+                            <h6 class="mb-0">Isuzu Forward</h6>
+                            <small class="text-muted">Placa: Z123456</small>
+                        </div>
+                        <i class="bi bi-clock-history text-primary"></i>
+                    </div>
+                </div>
+                <div class="fleet-status-item p-3 rounded-4" style="background: rgba(248,250,252,0.5); border: 1px solid #f1f5f9;">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <span class="badge bg-danger mb-2">Taller</span>
+                            <h6 class="mb-0">Hyundai H100</h6>
+                            <small class="text-muted">Próx: 15/Abr</small>
+                        </div>
+                        <i class="bi bi-tools text-danger"></i>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>

@@ -449,7 +449,7 @@ function initModalFormularioVehiculo() {
             const conductor = conductorInput ? conductorInput.value.trim() : "";
 
             if (!marca || !modelo || !tipo || !capacidad || !placa) {
-                mostrarToastVehiculo("Completa los campos obligatorios del vehículo.", "error");
+                Toast.warning("Completa los campos obligatorios del vehículo.");
                 return;
             }
 
@@ -472,7 +472,7 @@ function initModalFormularioVehiculo() {
                     vehiculoSeleccionado.imagenes[0] = imagenPrincipal;
                 }
 
-                mostrarToastVehiculo("Vehículo actualizado correctamente.", "success");
+                Toast.success("Vehículo actualizado correctamente.");
             } else {
                 const nuevoVehiculo = {
                     id: Date.now(),
@@ -493,7 +493,7 @@ function initModalFormularioVehiculo() {
                 };
 
                 vehiculosData.unshift(nuevoVehiculo);
-                mostrarToastVehiculo("Vehículo agregado correctamente.", "success");
+                Toast.success("Vehículo agregado correctamente.");
             }
 
             renderVehiculos(vehiculosData);
@@ -582,87 +582,43 @@ function actualizarDashboardVehiculos() {
     if (mantenimientoEl) mantenimientoEl.textContent = mantenimiento;
 }
 
+/* =========================================================
+   TOAST (usa sistema global)
+   ========================================================= */
 function mostrarToastVehiculo(mensaje, tipo = "info") {
-    const toastContent = document.getElementById("vehiculosToastContent");
-    const toastMessage = document.getElementById("vehiculosToastMessage");
-
-    if (!toastContent || !toastMessage) return;
-
-    toastMessage.textContent = mensaje;
-    toastContent.classList.remove("success", "error", "info", "show");
-    toastContent.classList.add(tipo);
-
-    setTimeout(() => {
-        toastContent.classList.add("show");
-    }, 10);
-
-    setTimeout(() => {
-        toastContent.classList.remove("show");
-    }, 3000);
-}
-
-function abrirConfirmacionEliminarVehiculo() {
-    const modalConfirmacion = document.getElementById("modalConfirmacionVehiculo");
-    const texto = document.getElementById("confirmacionVehiculoTexto");
-
-    if (!modalConfirmacion || !vehiculoPendienteEliminar) return;
-
-    if (texto) {
-        texto.textContent = `¿Estás seguro de que deseas eliminar el vehículo ${vehiculoPendienteEliminar.marca} ${vehiculoPendienteEliminar.modelo}?`;
-    }
-
-    modalConfirmacion.style.display = "flex";
-    initConfirmacionEliminarVehiculo();
-}
-
-function cerrarConfirmacionEliminarVehiculo() {
-    const modalConfirmacion = document.getElementById("modalConfirmacionVehiculo");
-    if (modalConfirmacion) {
-        modalConfirmacion.style.display = "none";
+    if (typeof Toast !== "undefined") {
+        Toast.show(mensaje, tipo);
     }
 }
 
-function initConfirmacionEliminarVehiculo() {
-    const modalConfirmacion = document.getElementById("modalConfirmacionVehiculo");
-    const btnCancelar = document.getElementById("btnCancelarEliminarVehiculo");
-    const btnConfirmar = document.getElementById("btnConfirmarEliminarVehiculo");
+/* =========================================================
+   CONFIRMACIÓN ELIMINAR (usa Toast.confirm global)
+   ========================================================= */
+async function abrirConfirmacionEliminarVehiculo() {
+    if (!vehiculoPendienteEliminar) return;
 
-    if (btnCancelar) {
-        btnCancelar.onclick = () => {
-            vehiculoPendienteEliminar = null;
-            cerrarConfirmacionEliminarVehiculo();
-        };
+    const confirmado = await Toast.confirm(
+        `¿Estás seguro de que deseas eliminar el vehículo ${vehiculoPendienteEliminar.marca} ${vehiculoPendienteEliminar.modelo}? Esta acción no se puede deshacer.`
+    );
+
+    if (!confirmado) {
+        vehiculoPendienteEliminar = null;
+        return;
     }
 
-    if (btnConfirmar) {
-        btnConfirmar.onclick = () => {
-            if (!vehiculoPendienteEliminar) return;
+    vehiculosData = vehiculosData.filter(v => v.id !== vehiculoPendienteEliminar.id);
 
-            vehiculosData = vehiculosData.filter(v => v.id !== vehiculoPendienteEliminar.id);
-
-            const modalDetalle = document.getElementById("modalDetalleVehiculo");
-            if (modalDetalle) {
-                modalDetalle.style.display = "none";
-            }
-
-            vehiculoSeleccionado = null;
-            vehiculoPendienteEliminar = null;
-            imagenActualIndex = 0;
-
-            renderVehiculos(vehiculosData);
-            aplicarFiltrosVehiculos();
-            actualizarDashboardVehiculos();
-            cerrarConfirmacionEliminarVehiculo();
-            mostrarToastVehiculo("Vehículo eliminado correctamente.", "success");
-        };
+    const modalDetalle = document.getElementById("modalDetalleVehiculo");
+    if (modalDetalle) {
+        modalDetalle.style.display = "none";
     }
 
-    if (modalConfirmacion) {
-        modalConfirmacion.onclick = (e) => {
-            if (e.target === modalConfirmacion) {
-                vehiculoPendienteEliminar = null;
-                cerrarConfirmacionEliminarVehiculo();
-            }
-        };
-    }
+    vehiculoSeleccionado = null;
+    vehiculoPendienteEliminar = null;
+    imagenActualIndex = 0;
+
+    renderVehiculos(vehiculosData);
+    aplicarFiltrosVehiculos();
+    actualizarDashboardVehiculos();
+    Toast.success("Vehículo eliminado correctamente.");
 }

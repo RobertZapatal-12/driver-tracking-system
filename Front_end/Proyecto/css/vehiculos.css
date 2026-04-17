@@ -3,13 +3,13 @@
    ========================================================= */
 
 :root {
-    --vehiculo-bg: #f8f9fb;
-    --vehiculo-card-bg: #ffffff;
-    --vehiculo-text: #1f2937;
-    --vehiculo-muted: #6b7280;
-    --vehiculo-border: #e5e7eb;
-    --vehiculo-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
-    --vehiculo-shadow-hover: 0 20px 45px rgba(15, 23, 42, 0.16);
+    --vehiculo-bg: var(--bg-main, #f8fafc);
+    --vehiculo-card-bg: var(--bg-surface, #ffffff);
+    --vehiculo-text: var(--text-primary, #1f2937);
+    --vehiculo-muted: var(--text-secondary, #6b7280);
+    --vehiculo-border: var(--border-color, #e5e7eb);
+    --vehiculo-shadow: var(--shadow-soft, 0 12px 30px rgba(15, 23, 42, 0.08));
+    --vehiculo-shadow-hover: var(--shadow-hover, 0 20px 45px rgba(15, 23, 42, 0.16));
 
     --estado-disponible-bg: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
     --estado-disponible-text: #065f46;

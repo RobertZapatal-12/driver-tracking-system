@@ -1,45 +1,43 @@
-<div class="sidebar-header">
-    <h4><i class="bi bi-truck text-primary"></i> TransFleet</h4>
-</div>
-<ul class="nav flex-column mt-3">
+<ul class="nav saas-nav-list">
     <li class="nav-item">
         <a class="nav-link" href="#" onclick="cargarPagina('dashboard')">
-            <i class="bi bi-speedometer2"></i> Dashboard
+            <i class="bi bi-grid-1x2-fill"></i> Dashboard
         </a>
     </li>
     <li class="nav-item">
-        <a class="nav-link" href="#" onclick="cargarPagina('vehiculos')">
-            <i class="bi bi-car-front"></i> Vehículos
-        </a>
-    </li>
-    <li class="nav-item">
-        <a class="nav-link" href="#" onclick="cargarPagina('conductores')">
-            <i class="bi bi-people"></i> Conductores
-        </a>
-    </li>
-    <li class="nav-item">
-        <a class="nav-link" href="#" onclick="cargarPagina('clientes')">
-            <i class="bi bi-person-circle"></i> Clientes
+        <a class="nav-link" href="#" onclick="cargarPagina('mapa')">
+            <i class="bi bi-geo-alt-fill"></i> Centro de Control
         </a>
     </li>
     <li class="nav-item">
         <a class="nav-link" href="#" onclick="cargarPagina('rutas')">
-            <i class="bi bi-geo-alt"></i> Rutas
+            <i class="bi bi-clipboard-check-fill"></i> Gestión de Servicios
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="#" onclick="cargarPagina('vehiculos')">
+            <i class="bi bi-truck"></i> Gestión de Flota
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="#" onclick="cargarPagina('conductores')">
+            <i class="bi bi-person-badge-fill"></i> Gestión de Personal
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="#" onclick="cargarPagina('clientes')">
+            <i class="bi bi-briefcase-fill"></i> Cartera de Clientes
         </a>
     </li>
     <li class="nav-item">
         <a class="nav-link" href="#" onclick="cargarPagina('solicitudes')">
-            <i class="bi bi-clipboard-check"></i> Solicitudes
+            <i class="bi bi-journal-text"></i> Solicitudes Web
         </a>
     </li>
-    <li class="nav-item">
-    <a class="nav-link" href="#" onclick="cargarPagina('mapa')">
-        <i class="bi bi-map"></i> Rastreo de Viaje
-    </a>
-    </li>
-    <li class="nav-item mt-4 pt-3 border-top" style="border-top: 1px solid #334155 !important;">
-        <a class="nav-link" href="#" onclick="logoutUser(); return false;" style="color: #ef4444;">
-            <i class="bi bi-box-arrow-right"></i> Cerrar Sesión
+    <!-- Push logout to top/right or maintain as last item -->
+    <li class="nav-item ms-md-auto">
+        <a class="nav-link text-danger logout-btn" href="#" onclick="logoutUser(); return false;">
+            <i class="bi bi-box-arrow-right"></i> Salir del Sistema
         </a>
     </li>
 </ul>
