@@ -87,6 +87,27 @@ async function cargarRutas() {
         console.error("Error cargando rutas:", error);
         Toast.error("No se pudieron cargar las rutas.");
     }
+
+    // Call fetch to populate the options!
+    cargarVehiculosRutas();
+}
+
+async function cargarVehiculosRutas() {
+    try {
+        const response = await CONFIG.fetchAuth("/vehicles/");
+        if (response.ok) {
+            const vehiculos = await response.json();
+            const select = document.getElementById("vehicle_id");
+            if (select) {
+                select.innerHTML = '<option value="">Selecciona un vehículo</option>';
+                vehiculos.forEach(v => {
+                    select.innerHTML += `<option value="${v.vehicle_id}">${v.marca} ${v.modelo} - ${v.plate_number}</option>`;
+                });
+            }
+        }
+    } catch (error) {
+        console.error("Error cargando vehículos para rutas:", error);
+    }
 }
 
 async function guardarRuta() {

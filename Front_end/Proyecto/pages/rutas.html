@@ -55,10 +55,12 @@
 
             <div class="row g-3">
                 <div class="col-md-12">
-                    <label class="form-label small fw-bold text-muted">Vehículo Asignado (ID)</label>
+                    <label class="form-label small fw-bold text-muted">Vehículo Asignado</label>
                     <div class="input-group">
                         <span class="input-group-text bg-light border-end-0"><i class="bi bi-truck"></i></span>
-                        <input type="number" id="vehicle_id" class="form-control" placeholder="Ej: 102" required>
+                        <select id="vehicle_id" class="form-select" required>
+                            <option value="">Cargando vehículos...</option>
+                        </select>
                     </div>
                 </div>
 

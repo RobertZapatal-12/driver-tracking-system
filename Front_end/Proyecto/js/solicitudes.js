@@ -150,23 +150,19 @@ function renderTablaSolicitudes(solicitudes) {
             `;
         }
 
-        // Botón EDITAR: solo si está pendiente
-        if (estado === "pendiente") {
-            accionesHTML += `
-                <button class="btn btn-sm btn-light border me-1" onclick='abrirModalEditarSolicitud(${JSON.stringify(s)})' title="Editar">
-                    <i class="bi bi-pencil"></i>
-                </button>
-            `;
-        }
+        // Botón EDITAR: visible siempre (o según rol, aquí siempre por facilidad)
+        accionesHTML += `
+            <button class="btn btn-sm btn-light border me-1" onclick="abrirModalEditarSolicitud(${s.request_id})" title="Editar">
+                <i class="bi bi-pencil pe-none"></i>
+            </button>
+        `;
 
-        // Botón ELIMINAR: solo si está pendiente
-        if (estado === "pendiente") {
-            accionesHTML += `
-                <button class="btn btn-sm btn-light border text-danger" onclick="eliminarSolicitud(${s.request_id})" title="Eliminar">
-                    <i class="bi bi-trash"></i>
-                </button>
-            `;
-        }
+        // Botón ELIMINAR: visible siempre
+        accionesHTML += `
+            <button class="btn btn-sm btn-light border text-danger" onclick="eliminarSolicitud(${s.request_id})" title="Eliminar">
+                <i class="bi bi-trash pe-none"></i>
+            </button>
+        `;
 
         // Operador asignado
         let operadorHTML = "";
@@ -569,7 +565,10 @@ function initSolicitudModals() {
     }
 }
 
-window.abrirModalEditarSolicitud = function (s) {
+window.abrirModalEditarSolicitud = function (id) {
+    const s = todasLasSolicitudes.find(sol => sol.request_id === id);
+    if (!s) return;
+
     const modal = document.getElementById("modalSolicitud");
     const form = document.getElementById("form-solicitud");
     document.getElementById("tituloModalSolicitud").innerText = "Editar Solicitud";

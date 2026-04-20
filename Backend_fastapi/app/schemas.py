@@ -105,7 +105,7 @@ class DriverResponse(DriverBase):
 # =========================
 
 class VehicleBase(BaseModel):
-    driver_id: int
+    driver_id: Optional[int] = None
     plate_number: str
     modelo: str
     marca: str
