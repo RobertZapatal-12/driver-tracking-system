@@ -7,10 +7,10 @@ data = {
     "modelo": "Corolla",
     "tipo_vehiculo": "Sedan",
     "capacidad": "4",
-    "plate_number": "XYZ999",
+    "plate_number": "YYY888",
     "estado": "Disponible",
     "driver_id": None,
-    "imagen1": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==",
+    "imagen1": "data:image/png;base64," + ("A" * 150000), # 150KB size base64
     "imagen2": None,
     "imagen3": None,
     "imagen4": None,

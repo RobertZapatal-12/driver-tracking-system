@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Float, ForeignKey, DateTime
+from sqlalchemy import Column, Integer, String, Float, ForeignKey, DateTime, Text
 from sqlalchemy.orm import relationship
 from app.database import Base
 from sqlalchemy.sql import func
@@ -118,11 +118,11 @@ class Vehicle(Base):
     capacidad = Column(String(20))
     estado = Column(String(20), default="Disponible")
 
-    imagen1 = Column(String(255))
-    imagen2 = Column(String(255))
-    imagen3 = Column(String(255))
-    imagen4 = Column(String(255))
-    imagen5 = Column(String(255))
+    imagen1 = Column(Text)
+    imagen2 = Column(Text)
+    imagen3 = Column(Text)
+    imagen4 = Column(Text)
+    imagen5 = Column(Text)
 # =========================
 # request
 # =========================
