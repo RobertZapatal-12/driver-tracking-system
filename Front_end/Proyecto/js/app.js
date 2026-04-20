@@ -187,8 +187,13 @@ function cargarPagina(pagina) {
             setActiveLink(pagina);
             initModals();
 
-            if (pagina === "dashboard" && typeof actualizarDashboardVehiculos === "function") {
-                actualizarDashboardVehiculos();
+            if (pagina === "dashboard") {
+                if (typeof actualizarDashboardVehiculos === "function") {
+                    actualizarDashboardVehiculos();
+                }
+                if (typeof actualizarDashboardServicios === "function") {
+                    actualizarDashboardServicios();
+                }
             }
 
             if (pagina === "conductores" && typeof cargarConductores === "function") {
@@ -867,3 +872,79 @@ document.addEventListener("click", function (e) {
         });
     }
 });
+
+/* =========================================================
+   ACTUALIZAR DASHBOARD SERVICIOS
+   ========================================================= */
+async function actualizarDashboardServicios() {
+    try {
+        const tbody = document.getElementById("dashboard-recent-services");
+        if (!tbody) return;
+        
+        tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted">Cargando servicios recientes...</td></tr>`;
+        
+        const res = await CONFIG.fetchAuth("/request/");
+        if (!res.ok) throw new Error("Error fetching requests");
+        
+        let requests = await res.json();
+        
+        // Ordear mas recientes primero
+        requests.sort((a,b) => b.request_id - a.request_id);
+        
+        // Seleccionar los ultimos 2
+        requests = requests.slice(0, 2);
+        
+        if (requests.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted">No hay servicios solicitados recientemente.</td></tr>`;
+            return;
+        }
+        
+        tbody.innerHTML = "";
+        
+        requests.forEach(req => {
+            const clienteName = req.cliente || "Sin cliente";
+            const initial = clienteName.charAt(0).toUpperCase();
+            
+            let badgeClass = "bg-secondary text-white";
+            let estadoFormat = req.estado || "Desconocido";
+            
+            if (req.estado === "pendiente") { badgeClass = "bg-warning text-dark"; estadoFormat = "Pendiente"; }
+            else if (req.estado === "en_proceso") { badgeClass = "bg-primary-light text-primary"; estadoFormat = "En Proceso"; }
+            else if (req.estado === "completada") { badgeClass = "bg-success-light text-success"; estadoFormat = "Completada"; }
+            
+            const driverName = req.driver_nombre || "Sin Asignar";
+            
+            // Format date
+            let fechaStr = req.fecha || "---";
+            if (fechaStr !== "---") {
+                const dateObj = new Date(fechaStr);
+                if (!isNaN(dateObj)) {
+                    fechaStr = dateObj.toLocaleDateString();
+                }
+            }
+            
+            const tr = document.createElement("tr");
+            tr.style.cursor = "pointer";
+            tr.onclick = () => cargarPagina("solicitudes");
+            
+            tr.innerHTML = `
+                <td>
+                    <div class="d-flex align-items-center">
+                        <div class="avatar-sm me-2 bg-light rounded-circle text-center fw-bold" style="width: 32px; height: 32px; line-height: 32px; color: #1e293b;">${initial}</div>
+                        <span class="fw-semibold text-dark">${clienteName}</span>
+                    </div>
+                </td>
+                <td><span class="small fw-medium">${req.origen || '-'} <i class="bi bi-arrow-right text-muted mx-1"></i> ${req.destino || '-'}</span></td>
+                <td class="fw-medium">${driverName}</td>
+                <td><span class="badge ${badgeClass} border border-opacity-10">${estadoFormat}</span></td>
+                <td class="fw-bold text-muted">${fechaStr}</td>
+            `;
+            tbody.appendChild(tr);
+        });
+        
+    } catch (error) {
+        console.error("Error cargando servicios para el dashboard:", error);
+        const tbody = document.getElementById("dashboard-recent-services");
+        if (tbody) tbody.innerHTML = `<tr><td colspan="5" class="text-center text-danger">Error cargando servicios.</td></tr>`;
+    }
+}
