@@ -48,6 +48,11 @@ async function fetchVehiculos() {
                     estado: v.estado,
                     placa: v.plate_number,
                     tipo: v.tipo_vehiculo,
+                    imagen1: v.imagen1,
+                    imagen2: v.imagen2,
+                    imagen3: v.imagen3,
+                    imagen4: v.imagen4,
+                    imagen5: v.imagen5,
                     imagenes: [
                         v.imagen1 || "https://images.unsplash.com/photo-1541899481282-d53bffe3c35d?auto=format&fit=crop&w=1200&q=80",
                         v.imagen2, v.imagen3, v.imagen4, v.imagen5
@@ -448,6 +453,15 @@ function actualizarGaleriaVehiculo() {
    MODAL FORMULARIO VEHÍCULO
    ========================================================= */
 
+function getBase64(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = error => reject(error);
+    });
+}
+
 function initModalFormularioVehiculo() {
     const btnNuevoVehiculo = document.querySelector(".btn-open-modal-vehiculo");
     const modalFormulario = document.getElementById("modalFormularioVehiculo");
@@ -508,7 +522,7 @@ function initModalFormularioVehiculo() {
             const capacidad = capacidadInput ? capacidadInput.value : "0";
             const placa = placaInput ? placaInput.value.trim() : "";
             const estado = estadoInput ? estadoInput.value : "Disponible";
-            const driver_id = conductorInput ? parseInt(conductorInput.value) : 0;
+            const driver_id = (conductorInput && conductorInput.value) ? parseInt(conductorInput.value) : null;
 
             if (!marca || !modelo || !tipo || !capacidad || !placa) {
                 Toast.warning("Completa los campos obligatorios del vehículo.");
@@ -518,11 +532,22 @@ function initModalFormularioVehiculo() {
             let imagenPrincipal = null;
             let img2 = null, img3 = null, img4 = null, img5 = null;
 
-            if (imagenInput && imagenInput.files && imagenInput.files[0]) imagenPrincipal = URL.createObjectURL(imagenInput.files[0]);
-            if (img2Input && img2Input.files && img2Input.files[0]) img2 = URL.createObjectURL(img2Input.files[0]);
-            if (img3Input && img3Input.files && img3Input.files[0]) img3 = URL.createObjectURL(img3Input.files[0]);
-            if (img4Input && img4Input.files && img4Input.files[0]) img4 = URL.createObjectURL(img4Input.files[0]);
-            if (img5Input && img5Input.files && img5Input.files[0]) img5 = URL.createObjectURL(img5Input.files[0]);
+            const esEdicion = vehiculoSeleccionado && document.getElementById("tituloModalVehiculo")?.textContent.includes("Editar");
+
+            if (imagenInput && imagenInput.files && imagenInput.files[0]) imagenPrincipal = await getBase64(imagenInput.files[0]);
+            else if (esEdicion) imagenPrincipal = vehiculoSeleccionado.imagen1 || null;
+
+            if (img2Input && img2Input.files && img2Input.files[0]) img2 = await getBase64(img2Input.files[0]);
+            else if (esEdicion) img2 = vehiculoSeleccionado.imagen2 || null;
+
+            if (img3Input && img3Input.files && img3Input.files[0]) img3 = await getBase64(img3Input.files[0]);
+            else if (esEdicion) img3 = vehiculoSeleccionado.imagen3 || null;
+
+            if (img4Input && img4Input.files && img4Input.files[0]) img4 = await getBase64(img4Input.files[0]);
+            else if (esEdicion) img4 = vehiculoSeleccionado.imagen4 || null;
+
+            if (img5Input && img5Input.files && img5Input.files[0]) img5 = await getBase64(img5Input.files[0]);
+            else if (esEdicion) img5 = vehiculoSeleccionado.imagen5 || null;
 
             const payload = {
                 marca: marca,
@@ -539,7 +564,7 @@ function initModalFormularioVehiculo() {
                 imagen5: img5
             };
 
-            const esEdicion = vehiculoSeleccionado && document.getElementById("tituloModalVehiculo")?.textContent.includes("Editar");
+
             
             try {
                 if (esEdicion) {
