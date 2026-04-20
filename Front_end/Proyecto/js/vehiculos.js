@@ -1,84 +1,69 @@
-let vehiculosData = [
-    {
-        id: 1,
-        marca: "Toyota",
-        modelo: "Corolla",
-        capacidad: 4,
-        conductor: "Juan Pérez",
-        estado: "Disponible",
-        placa: "A123BC",
-        tipo: "Sedan",
-        imagenes: [
-            "https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1200&q=80",
-            "https://images.unsplash.com/photo-1494976388531-d1058494cdd8?auto=format&fit=crop&w=1200&q=80",
-            "https://images.unsplash.com/photo-1541899481282-d53bffe3c35d?auto=format&fit=crop&w=1200&q=80",
-            "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&w=1200&q=80",
-            "https://images.unsplash.com/photo-1502877338535-766e1452684a?auto=format&fit=crop&w=1200&q=80"
-        ]
-    },
-    {
-        id: 2,
-        marca: "Hyundai",
-        modelo: "Staria",
-        capacidad: 10,
-        conductor: "María Gómez",
-        estado: "En ruta",
-        placa: "B456DE",
-        tipo: "Minibus",
-        imagenes: [
-            "https://images.unsplash.com/photo-1494976388531-d1058494cdd8?auto=format&fit=crop&w=1200&q=80",
-            "https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1200&q=80",
-            "https://images.unsplash.com/photo-1541899481282-d53bffe3c35d?auto=format&fit=crop&w=1200&q=80",
-            "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&w=1200&q=80",
-            "https://images.unsplash.com/photo-1502877338535-766e1452684a?auto=format&fit=crop&w=1200&q=80"
-        ]
-    },
-    {
-        id: 3,
-        marca: "Chevrolet",
-        modelo: "Suburban",
-        capacidad: 7,
-        conductor: "Carlos Ramírez",
-        estado: "Mantenimiento",
-        placa: "C789FG",
-        tipo: "SUV",
-        imagenes: [
-            "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&w=1200&q=80",
-            "https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1200&q=80",
-            "https://images.unsplash.com/photo-1494976388531-d1058494cdd8?auto=format&fit=crop&w=1200&q=80",
-            "https://images.unsplash.com/photo-1541899481282-d53bffe3c35d?auto=format&fit=crop&w=1200&q=80",
-            "https://images.unsplash.com/photo-1502877338535-766e1452684a?auto=format&fit=crop&w=1200&q=80"
-        ]
-    },
-    {
-        id: 4,
-        marca: "Kia",
-        modelo: "Carnival",
-        capacidad: 8,
-        conductor: "Ana López",
-        estado: "Disponible",
-        placa: "D321HI",
-        tipo: "Camioneta",
-        imagenes: [
-            "https://images.unsplash.com/photo-1502877338535-766e1452684a?auto=format&fit=crop&w=1200&q=80",
-            "https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1200&q=80",
-            "https://images.unsplash.com/photo-1494976388531-d1058494cdd8?auto=format&fit=crop&w=1200&q=80",
-            "https://images.unsplash.com/photo-1541899481282-d53bffe3c35d?auto=format&fit=crop&w=1200&q=80",
-            "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&w=1200&q=80"
-        ]
-    }
-];
+let vehiculosData = [];
+let conductoresData = [];
 
 let vehiculoSeleccionado = null;
 let imagenActualIndex = 0;
 let vehiculoPendienteEliminar = null;
 
-function initVehiculosModule() {
-    renderVehiculos(vehiculosData);
+async function initVehiculosModule() {
+    await cargarConductoresVehiculos();
+    await fetchVehiculos();
     initPanelFiltrosVehiculos();
     initModalDetalleVehiculo();
     initModalFormularioVehiculo();
-    actualizarDashboardVehiculos();
+}
+
+async function cargarConductoresVehiculos() {
+    try {
+        const response = await CONFIG.fetchAuth("/drivers/");
+        if (response.ok) {
+            conductoresData = await response.json();
+            const select = document.getElementById("conductorVehiculo");
+            if (select) {
+                select.innerHTML = '<option value="">Selecciona un conductor</option>';
+                conductoresData.forEach(c => {
+                    select.innerHTML += `<option value="${c.driver_id}">${c.nombre}</option>`;
+                });
+            }
+        }
+    } catch (error) {
+        console.error("Error cargando conductores", error);
+    }
+}
+
+async function fetchVehiculos() {
+    try {
+        const response = await CONFIG.fetchAuth("/vehicles/");
+        if (response.ok) {
+            const data = await response.json();
+            vehiculosData = data.map(v => {
+                const conductor = conductoresData.find(c => c.driver_id === v.driver_id);
+                return {
+                    id: v.vehicle_id,
+                    marca: v.marca,
+                    modelo: v.modelo,
+                    capacidad: parseInt(v.capacidad) || 4,
+                    conductor: conductor ? conductor.nombre : "",
+                    driver_id: v.driver_id,
+                    estado: v.estado,
+                    placa: v.plate_number,
+                    tipo: v.tipo_vehiculo,
+                    imagenes: [
+                        v.imagen1 || "https://images.unsplash.com/photo-1541899481282-d53bffe3c35d?auto=format&fit=crop&w=1200&q=80",
+                        v.imagen2, v.imagen3, v.imagen4, v.imagen5
+                    ].filter(img => img)
+                };
+            });
+            renderVehiculos(vehiculosData);
+            actualizarDashboardVehiculos();
+            aplicarFiltrosVehiculos();
+        }
+    } catch (error) {
+        console.error("Error cargando vehículos", error);
+        if (typeof Toast !== "undefined") {
+            Toast.error("No se pudieron cargar los vehículos.");
+        }
+    }
 }
 
 let vistaFlotaActual = 'grid';
@@ -501,7 +486,7 @@ function initModalFormularioVehiculo() {
     }
 
     if (form) {
-        form.addEventListener("submit", (e) => {
+        form.addEventListener("submit", async (e) => {
             e.preventDefault();
 
             const marcaInput = document.getElementById("marcaVehiculo");
@@ -512,69 +497,84 @@ function initModalFormularioVehiculo() {
             const estadoInput = document.getElementById("estadoVehiculoFormulario");
             const conductorInput = document.getElementById("conductorVehiculo");
             const imagenInput = document.getElementById("imagenPrincipalVehiculo");
+            const img2Input = document.getElementById("imagenVehiculo2");
+            const img3Input = document.getElementById("imagenVehiculo3");
+            const img4Input = document.getElementById("imagenVehiculo4");
+            const img5Input = document.getElementById("imagenVehiculo5");
 
             const marca = marcaInput ? marcaInput.value.trim() : "";
             const modelo = modeloInput ? modeloInput.value.trim() : "";
             const tipo = tipoInput ? tipoInput.value : "";
-            const capacidad = capacidadInput ? parseInt(capacidadInput.value) : 0;
+            const capacidad = capacidadInput ? capacidadInput.value : "0";
             const placa = placaInput ? placaInput.value.trim() : "";
             const estado = estadoInput ? estadoInput.value : "Disponible";
-            const conductor = conductorInput ? conductorInput.value.trim() : "";
+            const driver_id = conductorInput ? parseInt(conductorInput.value) : 0;
 
             if (!marca || !modelo || !tipo || !capacidad || !placa) {
                 Toast.warning("Completa los campos obligatorios del vehículo.");
                 return;
             }
 
-            let imagenPrincipal = "https://via.placeholder.com/800x500?text=Vehiculo";
+            let imagenPrincipal = null;
+            let img2 = null, img3 = null, img4 = null, img5 = null;
 
-            if (imagenInput && imagenInput.files && imagenInput.files[0]) {
-                imagenPrincipal = URL.createObjectURL(imagenInput.files[0]);
-            }
+            if (imagenInput && imagenInput.files && imagenInput.files[0]) imagenPrincipal = URL.createObjectURL(imagenInput.files[0]);
+            if (img2Input && img2Input.files && img2Input.files[0]) img2 = URL.createObjectURL(img2Input.files[0]);
+            if (img3Input && img3Input.files && img3Input.files[0]) img3 = URL.createObjectURL(img3Input.files[0]);
+            if (img4Input && img4Input.files && img4Input.files[0]) img4 = URL.createObjectURL(img4Input.files[0]);
+            if (img5Input && img5Input.files && img5Input.files[0]) img5 = URL.createObjectURL(img5Input.files[0]);
 
-            if (vehiculoSeleccionado && document.getElementById("tituloModalVehiculo")?.textContent.includes("Editar")) {
-                vehiculoSeleccionado.marca = marca;
-                vehiculoSeleccionado.modelo = modelo;
-                vehiculoSeleccionado.tipo = tipo;
-                vehiculoSeleccionado.capacidad = capacidad;
-                vehiculoSeleccionado.placa = placa;
-                vehiculoSeleccionado.estado = estado;
-                vehiculoSeleccionado.conductor = conductor;
+            const payload = {
+                marca: marca,
+                modelo: modelo,
+                tipo_vehiculo: tipo,
+                capacidad: capacidad.toString(),
+                plate_number: placa,
+                estado: estado,
+                driver_id: driver_id,
+                imagen1: imagenPrincipal,
+                imagen2: img2,
+                imagen3: img3,
+                imagen4: img4,
+                imagen5: img5
+            };
 
-                if (imagenInput && imagenInput.files && imagenInput.files[0]) {
-                    vehiculoSeleccionado.imagenes[0] = imagenPrincipal;
+            const esEdicion = vehiculoSeleccionado && document.getElementById("tituloModalVehiculo")?.textContent.includes("Editar");
+            
+            try {
+                if (esEdicion) {
+                    const response = await CONFIG.fetchAuth(`/vehicles/${vehiculoSeleccionado.id}`, {
+                        method: "PUT",
+                        body: JSON.stringify(payload)
+                    });
+                    
+                    if (response.ok) {
+                        Toast.success("Vehículo actualizado correctamente.");
+                        await fetchVehiculos();
+                        modalFormulario.style.display = "none";
+                        form.reset();
+                    } else {
+                        Toast.error("Error al actualizar vehículo");
+                    }
+                } else {
+                    const response = await CONFIG.fetchAuth("/vehicles/", {
+                        method: "POST",
+                        body: JSON.stringify(payload)
+                    });
+
+                    if (response.ok) {
+                        Toast.success("Vehículo agregado correctamente.");
+                        await fetchVehiculos();
+                        modalFormulario.style.display = "none";
+                        form.reset();
+                    } else {
+                        Toast.error("Error al crear vehículo");
+                    }
                 }
-
-                Toast.success("Vehículo actualizado correctamente.");
-            } else {
-                const nuevoVehiculo = {
-                    id: Date.now(),
-                    marca,
-                    modelo,
-                    tipo,
-                    capacidad,
-                    conductor,
-                    estado,
-                    placa,
-                    imagenes: [
-                        imagenPrincipal,
-                        imagenPrincipal,
-                        imagenPrincipal,
-                        imagenPrincipal,
-                        imagenPrincipal
-                    ]
-                };
-
-                vehiculosData.unshift(nuevoVehiculo);
-                Toast.success("Vehículo agregado correctamente.");
+            } catch (error) {
+                console.error("Error guardando vehículo:", error);
+                Toast.error("Hubo un error al guardar vehículo.");
             }
-
-            renderVehiculos(vehiculosData);
-            aplicarFiltrosVehiculos();
-            actualizarDashboardVehiculos();
-
-            modalFormulario.style.display = "none";
-            form.reset();
         });
     }
 }
@@ -633,7 +633,7 @@ function abrirFormularioVehiculoEdicion() {
     if (capacidadInput) capacidadInput.value = vehiculoSeleccionado.capacidad || "";
     if (placaInput) placaInput.value = vehiculoSeleccionado.placa || "";
     if (estadoInput) estadoInput.value = vehiculoSeleccionado.estado || "Disponible";
-    if (conductorInput) conductorInput.value = vehiculoSeleccionado.conductor || "";
+    if (conductorInput) conductorInput.value = vehiculoSeleccionado.driver_id || "";
 
     modalFormulario.style.display = "flex";
 }
@@ -679,19 +679,32 @@ async function abrirConfirmacionEliminarVehiculo() {
         return;
     }
 
-    vehiculosData = vehiculosData.filter(v => v.id !== vehiculoPendienteEliminar.id);
+    try {
+        const response = await CONFIG.fetchAuth(`/vehicles/${vehiculoPendienteEliminar.id}`, {
+            method: "DELETE"
+        });
 
-    const modalDetalle = document.getElementById("modalDetalleVehiculo");
-    if (modalDetalle) {
-        modalDetalle.style.display = "none";
+        if (response.ok) {
+            vehiculosData = vehiculosData.filter(v => v.id !== vehiculoPendienteEliminar.id);
+
+            const modalDetalle = document.getElementById("modalDetalleVehiculo");
+            if (modalDetalle) {
+                modalDetalle.style.display = "none";
+            }
+
+            vehiculoSeleccionado = null;
+            vehiculoPendienteEliminar = null;
+            imagenActualIndex = 0;
+
+            renderVehiculos(vehiculosData);
+            aplicarFiltrosVehiculos();
+            actualizarDashboardVehiculos();
+            Toast.success("Vehículo eliminado correctamente.");
+        } else {
+            Toast.error("No se pudo eliminar el vehículo.");
+        }
+    } catch (error) {
+        console.error(error);
+        Toast.error("Error el tratar de eliminar el vehículo.");
     }
-
-    vehiculoSeleccionado = null;
-    vehiculoPendienteEliminar = null;
-    imagenActualIndex = 0;
-
-    renderVehiculos(vehiculosData);
-    aplicarFiltrosVehiculos();
-    actualizarDashboardVehiculos();
-    Toast.success("Vehículo eliminado correctamente.");
 }

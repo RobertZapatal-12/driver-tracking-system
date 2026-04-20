@@ -26,7 +26,7 @@ class Client(Base):
 
     client_id = Column(Integer, primary_key=True, index=True)
     nombre = Column(String)
-    email = Column(String, unique=True)
+    email = Column(String(255), unique=True)
     telefono = Column(String)
     cedula = Column(String)
     direccion = Column(String)
