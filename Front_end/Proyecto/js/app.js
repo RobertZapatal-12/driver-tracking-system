@@ -70,7 +70,90 @@ document.addEventListener("DOMContentLoaded", () => {
         });
 
     cargarPagina("dashboard");
+    
+    // Inicializar Configuración del Dropdown
+    setTimeout(initSettingsDropdown, 500);
 });
+
+/* =========================================================
+   CONFIGURA EL SETTINGS DROPDOWN (TUERCA)
+   ========================================================= */
+function initSettingsDropdown() {
+    // Modo Oscuro
+    const toggleDarkMode = document.getElementById("toggleDarkMode");
+    if (toggleDarkMode) {
+        toggleDarkMode.checked = localStorage.getItem("tf_dark_mode") === "true";
+        if (toggleDarkMode.checked) document.body.classList.add("dark-mode");
+        
+        toggleDarkMode.addEventListener("change", (e) => {
+            const isDark = e.target.checked;
+            localStorage.setItem("tf_dark_mode", isDark);
+            if (isDark) {
+                document.body.classList.add("dark-mode");
+            } else {
+                document.body.classList.remove("dark-mode");
+            }
+        });
+    } else {
+        // Applica el local storage si el dropdown no está visible en el momento
+        const isDark = localStorage.getItem("tf_dark_mode") === "true";
+        if (isDark) document.body.classList.add("dark-mode");
+    }
+
+    // Estilo Mapa
+    const mapStyleSelector = document.getElementById("mapStyleSelector");
+    if (mapStyleSelector) {
+        const savedStyle = localStorage.getItem("tf_map_style") || "voyager";
+        mapStyleSelector.value = savedStyle;
+        
+        mapStyleSelector.addEventListener("change", (e) => {
+            const style = e.target.value;
+            localStorage.setItem("tf_map_style", style);
+            actualizarEstiloMapaGeneral(style);
+        });
+    }
+
+    // Auto Refresh
+    const toggleAutoRefresh = document.getElementById("toggleAutoRefresh");
+    if (toggleAutoRefresh) {
+        toggleAutoRefresh.checked = localStorage.getItem("tf_auto_refresh") !== "false"; // Default true
+        toggleAutoRefresh.addEventListener("change", (e) => {
+            localStorage.setItem("tf_auto_refresh", e.target.checked);
+            if(e.target.checked && window.location.hash === "#mapa" || document.getElementById("map")) {
+                iniciarPollingMapa();
+            } else {
+                detenerPollingMapa();
+            }
+        });
+    }
+
+    // Sonidos
+    const toggleSounds = document.getElementById("toggleSounds");
+    if (toggleSounds) {
+        toggleSounds.checked = localStorage.getItem("tf_sounds") !== "false"; // Default true
+        toggleSounds.addEventListener("change", (e) => {
+            localStorage.setItem("tf_sounds", e.target.checked);
+        });
+    }
+}
+
+function playNotificationSound() {
+    if (localStorage.getItem("tf_sounds") !== "false") {
+        // Simple Web Audio API beep for demonstration if no mp3 is found
+        try {
+            const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            oscillator.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            oscillator.type = 'sine';
+            oscillator.frequency.value = 520;
+            gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
+            oscillator.start();
+            oscillator.stop(audioCtx.currentTime + 0.1);
+        } catch(e) { console.log("Sound disabled or not supported", e); }
+    }
+}
 
 /* =========================================================
    NAVEGACIÓN DINÁMICA ENTRE PÁGINAS
@@ -388,7 +471,7 @@ function renderDriverCard(d) {
 
     card.innerHTML = `
         <div class="driver-actions-container">
-            <button class="btn-tuerca" onclick="event.stopPropagation(); toggleMenu(this)">⚙️</button>
+            <button class="btn-tuerca" onclick="event.stopPropagation(); toggleMenu(this)"><i class="bi bi-gear"></i></button>
             <div class="dropdown-menu-custom">
                 <button onclick="editarDriver(${d.driver_id})">✏️ Editar</button>
                 <button class="text-danger" onclick="confirmarEliminacion(${d.driver_id})">🗑️ Eliminar</button>
@@ -535,8 +618,15 @@ function initMapa() {
         zoomControl: false        // Quitamos controles nativos para usar los nuestros
     });
 
-    // Cambiar a CartoDB Voyager (Muestra POIs, tiendas y centros comerciales con detalle)
-    L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png", {
+    let layerUrl = "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png";
+    const mapStyle = localStorage.getItem("tf_map_style");
+    if(mapStyle === "dark") {
+        layerUrl = "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png";
+    } else if(mapStyle === "satellite") {
+        layerUrl = "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}";
+    }
+
+    L.tileLayer(layerUrl, {
         attribution: "© OpenStreetMap © CARTO",
         subdomains: "abcd",
         maxZoom: 20
@@ -545,11 +635,38 @@ function initMapa() {
     cargarTodosLosConductores();
 }
 
+function actualizarEstiloMapaGeneral(style) {
+    if (!mapaGlobal) return;
+    
+    // Remove all tile layers
+    mapaGlobal.eachLayer((layer) => {
+        if (layer instanceof L.TileLayer) {
+            mapaGlobal.removeLayer(layer);
+        }
+    });
+
+    let layerUrl = "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png";
+    if(style === "dark") {
+        layerUrl = "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png";
+    } else if(style === "satellite") {
+        layerUrl = "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}";
+    }
+
+    L.tileLayer(layerUrl, {
+        attribution: "© OpenStreetMap © CARTO",
+        subdomains: "abcd",
+        maxZoom: 20
+    }).addTo(mapaGlobal);
+}
+
 /* =========================================================
    POLLING DEL MAPA (solo cuando está visible)
    ========================================================= */
 function iniciarPollingMapa() {
     detenerPollingMapa();
+
+    const autoRef = localStorage.getItem("tf_auto_refresh") !== "false";
+    if (!autoRef) return; // Salir si el toggle está apagado
 
     mapPollingInterval = setInterval(() => {
         const input = document.getElementById("codigoViaje");

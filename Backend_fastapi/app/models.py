@@ -145,11 +145,7 @@ class Request(Base):
     driver_id = Column(Integer, nullable=True)
     notas_operador = Column(String, nullable=True)
 
-<<<<<<< HEAD
-    inicio = Column(DateTime)
-    fin = Column(DateTime)
-    estado = Column(String)
-
+    operador = relationship("User", foreign_keys=[user_id])
 
 # =========================
 # DRIVER TRIPS (App Móvil)
@@ -171,6 +167,3 @@ class DriverTrip(Base):
     lon_fin = Column(Float, nullable=True)
 
     driver = relationship("Driver")
-=======
-    operador = relationship("User", foreign_keys=[user_id])
->>>>>>> 65badea53a8c6090f6d46bc961a15cd61f2b496e

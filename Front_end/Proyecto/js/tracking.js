@@ -33,11 +33,18 @@ function initTrackingMap() {
         popupAnchor:[0, -40]
     });
 
+    const boundsDR = L.latLngBounds(
+        L.latLng(17.47, -72.0), // Suroeste
+        L.latLng(19.95, -68.32) // Noreste
+    );
+
     trackingMap = L.map("tracking-map", {
         center:   [18.4861, -69.9312],
         zoom:     11,
         minZoom:  8,
         maxZoom:  18,
+        maxBounds: boundsDR,
+        maxBoundsViscosity: 1.0,
         zoomControl: false // Los controles los ponemos nosotros como en Centro de Control
     });
 

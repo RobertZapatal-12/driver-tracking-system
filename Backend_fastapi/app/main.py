@@ -2,12 +2,8 @@ from pathlib import Path
 from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-<<<<<<< HEAD
-from app.routers import drivers, users, locations, vehicles, trips, trips2, clients, driver_trips
-=======
 from fastapi.responses import RedirectResponse
-from app.routers import drivers, users, locations, vehicles, trips, trips2, clients
->>>>>>> 65badea53a8c6090f6d46bc961a15cd61f2b496e
+from app.routers import drivers, users, locations, vehicles, trips, trips2, clients, driver_trips
 from app import schemas, models
 from sqlalchemy.orm import Session
 from app.database import get_db

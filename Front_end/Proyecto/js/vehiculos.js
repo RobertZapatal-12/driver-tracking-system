@@ -81,16 +81,23 @@ function initVehiculosModule() {
     actualizarDashboardVehiculos();
 }
 
-function renderVehiculos(lista) {
-    const contenedor = document.getElementById("listaVehiculos");
-    if (!contenedor) return;
+let vistaFlotaActual = 'grid';
 
-    contenedor.innerHTML = "";
+window.cambiarVistaFlota = function(vista) {
+    vistaFlotaActual = vista;
+    aplicarFiltrosVehiculos();
+};
+
+function renderVehiculos(lista) {
+    const contenedorBase = document.getElementById("contenedorVehiculos");
+    if (!contenedorBase) return;
+
+    contenedorBase.innerHTML = "";
 
     if (!lista || lista.length === 0) {
-        contenedor.innerHTML = `
-            <div class="col-12">
-                <div class="alert alert-light border text-center py-4">
+        contenedorBase.innerHTML = `
+            <div class="col-12 mt-4 text-center">
+                <div class="alert alert-light border py-4">
                     <strong>No se encontraron vehículos.</strong><br>
                     Ajusta los filtros o agrega nuevas unidades.
                 </div>
@@ -99,41 +106,107 @@ function renderVehiculos(lista) {
         return;
     }
 
-    lista.forEach((vehiculo) => {
-        const card = document.createElement("article");
-        card.className = "vehiculo-card";
-        card.setAttribute("tabindex", "0");
-        card.dataset.id = vehiculo.id;
+    if (vistaFlotaActual === 'grid') {
+        const rowGrid = document.createElement("div");
+        rowGrid.className = "row g-4";
 
-        card.innerHTML = `
-            <div class="vehiculo-card-media">
-                <img
-                    src="${vehiculo.imagenes[0]}"
-                    alt="${vehiculo.marca} ${vehiculo.modelo}"
-                    class="vehiculo-card-img"
-                >
-            </div>
+        lista.forEach((vehiculo) => {
+            const wrap = document.createElement("div");
+            wrap.className = "col-12 col-md-6 col-lg-4 col-xl-3";
 
-            <div class="vehiculo-card-body">
-                <h4 class="vehiculo-card-titulo">${vehiculo.marca} ${vehiculo.modelo}</h4>
-                <p class="vehiculo-card-capacidad">Capacidad: ${vehiculo.capacidad} personas</p>
-            </div>
+            const card = document.createElement("article");
+            card.className = "card h-100 border-0 rounded-4 shadow-sm vehiculo-card";
+            card.setAttribute("tabindex", "0");
+            card.dataset.id = vehiculo.id;
 
-            <div class="vehiculo-card-estado ${obtenerClaseEstadoCard(vehiculo.estado)}">
-                ${vehiculo.estado}
-            </div>
-        `;
+            card.innerHTML = `
+                <div class="vehiculo-card-media">
+                    <img src="${vehiculo.imagenes[0]}" alt="${vehiculo.marca} ${vehiculo.modelo}" class="vehiculo-card-img">
+                </div>
+                <div class="vehiculo-card-body">
+                    <h4 class="vehiculo-card-titulo">${vehiculo.marca} ${vehiculo.modelo}</h4>
+                    <p class="vehiculo-card-capacidad">Capacidad: ${vehiculo.capacidad} personas</p>
+                </div>
+                <div class="vehiculo-card-estado ${obtenerClaseEstadoCard(vehiculo.estado)}">
+                    ${vehiculo.estado}
+                </div>
+            `;
 
-        card.addEventListener("click", () => abrirDetalleVehiculo(vehiculo.id));
-        card.addEventListener("keypress", (e) => {
-            if (e.key === "Enter" || e.key === " ") {
-                e.preventDefault();
-                abrirDetalleVehiculo(vehiculo.id);
-            }
+            card.addEventListener("click", () => abrirDetalleVehiculo(vehiculo.id));
+            card.addEventListener("keypress", (e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    abrirDetalleVehiculo(vehiculo.id);
+                }
+            });
+
+            wrap.appendChild(card);
+            rowGrid.appendChild(wrap);
         });
 
-        contenedor.appendChild(card);
-    });
+        contenedorBase.appendChild(rowGrid);
+
+    } else {
+        // Table View
+        const divWrapper = document.createElement("div");
+        divWrapper.className = "glass-panel p-4";
+
+        const tableResponsive = document.createElement("div");
+        tableResponsive.className = "table-responsive";
+
+        const table = document.createElement("table");
+        table.className = "table table-hover align-middle mb-0";
+
+        table.innerHTML = `
+            <thead class="text-muted small">
+                <tr>
+                    <th>VEHÍCULO</th>
+                    <th>PLACA</th>
+                    <th>TIPO / CAPACIDAD</th>
+                    <th>CONDUCTOR ASIGNADO</th>
+                    <th>ESTADO</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        `;
+
+        const tbody = table.querySelector("tbody");
+
+        lista.forEach((vehiculo) => {
+            const tr = document.createElement("tr");
+            tr.style.cursor = "pointer";
+            
+            let colorClase = "";
+            let bgClase = "";
+            if (vehiculo.estado === "Disponible") {
+                colorClase = "text-success"; bgClase = "bg-success-light";
+            } else if (vehiculo.estado === "En ruta") {
+                colorClase = "text-primary"; bgClase = "bg-primary-light";
+            } else {
+                colorClase = "text-danger"; bgClase = "bg-danger-light";
+            }
+
+            tr.innerHTML = `
+                <td>
+                    <div class="d-flex align-items-center">
+                        <img src="${vehiculo.imagenes[0]}" class="rounded-3 me-3" style="width: 50px; height: 50px; object-fit: cover;">
+                        <span class="fw-bold text-reset">${vehiculo.marca} ${vehiculo.modelo}</span>
+                    </div>
+                </td>
+                <td class="text-reset"><strong>${vehiculo.placa}</strong></td>
+                <td class="text-muted">${vehiculo.tipo} • ${vehiculo.capacidad} Pers.</td>
+                <td class="text-reset">${vehiculo.conductor || '<span class="text-muted fst-italic">Sin asignar</span>'}</td>
+                <td><span class="badge ${bgClase} ${colorClase}" style="background: var(--bg-surface); border: 1px solid currentColor;">${vehiculo.estado}</span></td>
+            `;
+
+            tr.addEventListener("click", () => abrirDetalleVehiculo(vehiculo.id));
+            tbody.appendChild(tr);
+        });
+
+        tableResponsive.appendChild(table);
+        divWrapper.appendChild(tableResponsive);
+        contenedorBase.appendChild(divWrapper);
+    }
 }
 
 function obtenerClaseEstadoCard(estado) {

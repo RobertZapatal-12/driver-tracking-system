@@ -38,6 +38,57 @@
                         <input type="text" placeholder="Buscar rutas, conductores...">
                     </div>
                     <button class="action-btn"><i class="bi bi-bell"></i></button>
+
+                    <!-- SETTINGS DROPDOWN -->
+                    <div class="dropdown">
+                        <button class="action-btn" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Configuraciones">
+                            <i class="bi bi-gear"></i>
+                        </button>
+                        <div class="dropdown-menu dropdown-menu-end shadow-lg border-0 tf-settings-dropdown" style="width: 280px; border-radius: 16px; padding: 16px;">
+                            
+                            <!-- PREFERENCIAS VISUALES -->
+                            <h6 class="dropdown-header fw-bold px-2 py-1 text-primary text-uppercase" style="font-size: 0.72rem; letter-spacing: 1px;">Apariencia</h6>
+                            <div class="dropdown-item px-2 py-2 d-flex justify-content-between align-items-center" style="border-radius: 8px;">
+                                <span class="d-flex align-items-center" style="font-size: 0.9rem; font-weight: 500;"><i class="bi bi-moon-stars text-muted me-2"></i>Modo Oscuro</span>
+                                <div class="form-check form-switch m-0 fs-5">
+                                    <input class="form-check-input" type="checkbox" id="toggleDarkMode">
+                                </div>
+                            </div>
+                            
+                            <!-- PREFERENCIAS MAPA -->
+                            <h6 class="dropdown-header fw-bold px-2 py-1 text-primary text-uppercase mt-3" style="font-size: 0.72rem; letter-spacing: 1px;">Mapas</h6>
+                            <div class="dropdown-item px-2 py-2 d-flex justify-content-between align-items-center" style="border-radius: 8px;">
+                                <span class="d-flex align-items-center" style="font-size: 0.9rem; font-weight: 500;"><i class="bi bi-map text-muted me-2"></i>Estilo Mapa</span>
+                                <select class="form-select form-select-sm w-auto" id="mapStyleSelector" style="min-width: 90px; border-radius: 8px; font-weight: 500; font-size: 0.8rem; border-color: var(--tf-border);">
+                                    <option value="voyager">Claro</option>
+                                    <option value="dark">Oscuro</option>
+                                </select>
+                            </div>
+
+                            <!-- PREFERENCIAS OPERATIVAS -->
+                            <h6 class="dropdown-header fw-bold px-2 py-1 text-primary text-uppercase mt-3" style="font-size: 0.72rem; letter-spacing: 1px;">Operativo</h6>
+                            <div class="dropdown-item px-2 py-2 d-flex justify-content-between align-items-center" style="border-radius: 8px;">
+                                <span class="d-flex align-items-center" style="font-size: 0.9rem; font-weight: 500;"><i class="bi bi-arrow-repeat text-muted me-2"></i>Auto-refresco</span>
+                                <div class="form-check form-switch m-0 fs-5">
+                                    <input class="form-check-input" type="checkbox" id="toggleAutoRefresh" checked>
+                                </div>
+                            </div>
+                            <div class="dropdown-item px-2 py-2 d-flex justify-content-between align-items-center" style="border-radius: 8px;">
+                                <span class="d-flex align-items-center" style="font-size: 0.9rem; font-weight: 500;"><i class="bi bi-volume-up text-muted me-2"></i>Sonidos</span>
+                                <div class="form-check form-switch m-0 fs-5">
+                                    <input class="form-check-input" type="checkbox" id="toggleSounds" checked>
+                                </div>
+                            </div>
+
+                            <hr class="dropdown-divider my-3 border-opacity-25">
+                            
+                            <!-- LOGOUT -->
+                            <a class="dropdown-item px-2 py-2 text-danger d-flex align-items-center" href="#" onclick="logoutUser(); return false;" style="font-weight: 600; font-size: 0.9rem; border-radius: 8px;">
+                                <i class="bi bi-box-arrow-right me-2"></i> Cerrar Sesión
+                            </a>
+                        </div>
+                    </div>
+
                     <div class="user-profile">
                         <div class="avatar"><i class="bi bi-person"></i></div>
                         <span class="user-name">Admin Usuario</span>

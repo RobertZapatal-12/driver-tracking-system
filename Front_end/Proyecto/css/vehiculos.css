@@ -2,7 +2,7 @@
    MÓDULO VEHÍCULOS
    ========================================================= */
 
-:root {
+body {
     --vehiculo-bg: var(--bg-main, #f8fafc);
     --vehiculo-card-bg: var(--bg-surface, #ffffff);
     --vehiculo-text: var(--text-primary, #1f2937);
@@ -96,7 +96,7 @@
 
 .vehiculos-filtros-panel {
     width: 300px;
-    background: #ffffff;
+    background: var(--vehiculo-card-bg);
     border: 1px solid var(--vehiculo-border);
     border-radius: 20px;
     box-shadow: var(--vehiculo-shadow);
@@ -238,7 +238,7 @@
     align-items: center;
     padding: 24px 20px 8px;
     min-height: 190px;
-    background: linear-gradient(180deg, #ffffff 0%, #fafafa 100%);
+    background: var(--vehiculo-bg);
 }
 
 .vehiculo-card-img {
@@ -344,7 +344,7 @@
     max-height: 150vh;
     overflow-y: auto;
     margin: 0;
-    background: #ffffff;
+    background: var(--vehiculo-card-bg);
     border-radius: 28px;
     padding: 28px;
     position: relative;
@@ -356,7 +356,7 @@
     top: 20px;
     right: 24px;
     border: none;
-    background: #f3f4f6;
+    background: var(--vehiculo-bg);
     color: var(--vehiculo-text);
     width: 44px;
     height: 44px;
@@ -548,7 +548,7 @@
     top: calc(100% + 10px);
     right: 0;
     min-width: 170px;
-    background: #fff;
+    background: var(--vehiculo-card-bg);
     border: 1px solid var(--vehiculo-border);
     border-radius: 16px;
     box-shadow: 0 18px 34px rgba(15, 23, 42, 0.14);
@@ -588,7 +588,7 @@
 }
 
 .vehiculo-dato-item {
-    background: #f9fafb;
+    background: var(--vehiculo-bg);
     border: 1px solid var(--vehiculo-border);
     border-radius: 18px;
     padding: 18px 20px;
@@ -702,7 +702,7 @@
     width: min(820px, 96vw);
     max-height: 92vh;
     overflow-y: auto;
-    background: #ffffff;
+    background: var(--vehiculo-card-bg);
     border-radius: 26px;
     padding: 0;
     box-shadow: 0 26px 55px rgba(15, 23, 42, 0.22);
@@ -773,7 +773,7 @@
 }
 
 .vehiculo-form-section {
-    background: #fbfcfe;
+    background: var(--vehiculo-bg);
     border: 1px solid var(--vehiculo-border);
     border-radius: 20px;
     padding: 18px 18px 6px;
