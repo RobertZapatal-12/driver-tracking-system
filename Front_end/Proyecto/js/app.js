@@ -484,8 +484,8 @@ function renderDriverCard(d) {
         </div>
 
         <div class="driver-header">
-            <div class="driver-avatar-square">
-                <img src="${d.imagen || "https://via.placeholder.com/150"}" alt="${d.nombre}">
+            <div class="driver-avatar-square" onclick="event.stopPropagation(); verImagenConductor('${d.imagen || "https://via.placeholder.com/150"}')">
+                <img src="${d.imagen || "https://via.placeholder.com/150"}" alt="${d.nombre}" style="cursor: pointer;">
             </div>
 
             <div class="driver-main-info">
@@ -623,7 +623,7 @@ function initMapa() {
         zoomControl: false        // Quitamos controles nativos para usar los nuestros
     });
 
-    let layerUrl = "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png";
+    let layerUrl = "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png";
     const mapStyle = localStorage.getItem("tf_map_style");
     if(mapStyle === "dark") {
         layerUrl = "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png";
@@ -632,8 +632,7 @@ function initMapa() {
     }
 
     L.tileLayer(layerUrl, {
-        attribution: "© OpenStreetMap © CARTO",
-        subdomains: "abcd",
+        attribution: "© OpenStreetMap contributors",
         maxZoom: 20
     }).addTo(mapaGlobal);
 
@@ -650,7 +649,7 @@ function actualizarEstiloMapaGeneral(style) {
         }
     });
 
-    let layerUrl = "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png";
+    let layerUrl = "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png";
     if(style === "dark") {
         layerUrl = "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png";
     } else if(style === "satellite") {
@@ -658,8 +657,7 @@ function actualizarEstiloMapaGeneral(style) {
     }
 
     L.tileLayer(layerUrl, {
-        attribution: "© OpenStreetMap © CARTO",
-        subdomains: "abcd",
+        attribution: "© OpenStreetMap",
         maxZoom: 20
     }).addTo(mapaGlobal);
 }
@@ -888,11 +886,11 @@ async function actualizarDashboardServicios() {
         
         let requests = await res.json();
         
-        // Ordear mas recientes primero
+        // Ordenar más recientes primero
         requests.sort((a,b) => b.request_id - a.request_id);
         
-        // Seleccionar los ultimos 2
-        requests = requests.slice(0, 2);
+        // Seleccionar los últimos 5 según solicitud del usuario
+        requests = requests.slice(0, 5);
         
         if (requests.length === 0) {
             tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted">No hay servicios solicitados recientemente.</td></tr>`;
@@ -931,11 +929,11 @@ async function actualizarDashboardServicios() {
                 <td>
                     <div class="d-flex align-items-center">
                         <div class="avatar-sm me-2 bg-light rounded-circle text-center fw-bold" style="width: 32px; height: 32px; line-height: 32px; color: #1e293b;">${initial}</div>
-                        <span class="fw-semibold text-dark">${clienteName}</span>
+                        <span class="fw-semibold text-dark mode-fluid">${clienteName}</span>
                     </div>
                 </td>
-                <td><span class="small fw-medium">${req.origen || '-'} <i class="bi bi-arrow-right text-muted mx-1"></i> ${req.destino || '-'}</span></td>
-                <td class="fw-medium">${driverName}</td>
+                <td><span class="small fw-medium text-dark mode-fluid">${req.origen || '-'} <i class="bi bi-arrow-right text-muted mx-1"></i> ${req.destino || '-'}</span></td>
+                <td class="fw-medium text-dark mode-fluid">${driverName}</td>
                 <td><span class="badge ${badgeClass} border border-opacity-10">${estadoFormat}</span></td>
                 <td class="fw-bold text-muted">${fechaStr}</td>
             `;
@@ -948,3 +946,21 @@ async function actualizarDashboardServicios() {
         if (tbody) tbody.innerHTML = `<tr><td colspan="5" class="text-center text-danger">Error cargando servicios.</td></tr>`;
     }
 }
+
+/* =========================================================
+   VISOR DE IMÁGENES (FULLSCREEN)
+   ========================================================= */
+window.verImagenConductor = function(src) {
+    let viewer = document.getElementById("imageViewer");
+    if (!viewer) {
+        viewer = document.createElement("div");
+        viewer.id = "imageViewer";
+        viewer.className = "image-viewer-overlay";
+        viewer.onclick = () => viewer.classList.remove("active");
+        viewer.innerHTML = `<img src="" class="image-viewer-content" id="imageViewerImg">`;
+        document.body.appendChild(viewer);
+    }
+    
+    document.getElementById("imageViewerImg").src = src;
+    viewer.classList.add("active");
+};

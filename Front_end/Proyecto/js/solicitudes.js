@@ -7,6 +7,14 @@ let filtroActual = "todas";
 let todasLasSolicitudes = [];
 let solicitudEnTrabajo = null; // solicitud que el operador está gestionando
 
+// Variables para el mapa del modal
+let modalMap = null;
+let routingControl = null;
+let originMarker = null;
+let destinationMarker = null;
+let originCoords = null;
+let destinationCoords = null;
+
 function getBaseUrl() {
     return typeof CONFIG !== 'undefined' && CONFIG.API_URL ? CONFIG.API_URL : 'http://127.0.0.1:8000';
 }
@@ -323,6 +331,37 @@ async function cargarConductoresSelect() {
 }
 
 /**
+ * Carga clientes desde la API para el formulario de solicitudes
+ */
+async function cargarClientesSelect() {
+    const select = document.getElementById("solicitud-cliente");
+    if (!select) return;
+
+    select.innerHTML = '<option value="">Cargando...</option>';
+
+    try {
+        const response = await fetch(`${getBaseUrl()}/clients/`, {
+            method: 'GET',
+            headers: getHeaders()
+        });
+
+        if (response.ok) {
+            const clients = await response.json();
+            select.innerHTML = '<option value="">Seleccione un cliente...</option>';
+            clients.forEach(c => {
+                const opt = document.createElement("option");
+                opt.value = c.nombre; // Usamos el nombre como valor para compatibilidad con el backend actual
+                opt.textContent = c.nombre;
+                select.appendChild(opt);
+            });
+        }
+    } catch (e) {
+        console.error("Error cargando clientes:", e);
+        select.innerHTML = '<option value="">Error al cargar clientes</option>';
+    }
+}
+
+/**
  * Abre el panel de trabajo para una solicitud en proceso
  */
 window.abrirPanelTrabajo = async function (requestId) {
@@ -521,7 +560,14 @@ function initSolicitudModals() {
             validSolicitudId = null;
             document.getElementById("tituloModalSolicitud").innerText = "Nueva Solicitud de Viaje";
             if (form) form.reset();
+            cargarClientesSelect(); // Cargamos los clientes reales
             modal.style.display = "flex";
+            
+            // Inicializar el mapa después de mostrar el modal
+            setTimeout(() => {
+                initModalMap();
+                resetMapMarkers();
+            }, 300);
         });
     }
 
@@ -575,7 +621,12 @@ window.abrirModalEditarSolicitud = function (id) {
 
     if (form) {
         validSolicitudId = s.request_id;
-        document.getElementById("solicitud-cliente").value = s.cliente;
+        
+        // Cargar clientes y luego asignar el valor
+        cargarClientesSelect().then(() => {
+            document.getElementById("solicitud-cliente").value = s.cliente;
+        });
+
         document.getElementById("solicitud-fecha").value = s.fecha;
         document.getElementById("solicitud-origen").value = s.origen;
         document.getElementById("solicitud-destino").value = s.destino;
@@ -656,6 +707,286 @@ async function submitSolicitud(e) {
 }
 
 /* =========================================================
+   AUTOCOMPLETE - BÚSQUEDA DE PUNTOS DE REFERENCIA
+   ========================================================= */
+
+function setupAutocompleteLocations(inputId, resultsId) {
+    const input = document.getElementById(inputId);
+    const results = document.getElementById(resultsId);
+    let debounceTimer;
+
+    if (!input || !results) return;
+
+    input.addEventListener("input", () => {
+        clearTimeout(debounceTimer);
+        const query = input.value.trim();
+
+        if (query.length < 3) {
+            results.classList.remove("active");
+            return;
+        }
+
+        debounceTimer = setTimeout(async () => {
+            // Usamos Photon API (basado en OSM) restringido a RD para velocidad
+            // bbox=[-72.0, 17.5, -68.3, 20.0] aprox para Rep. Dom.
+            const url = `https://photon.komoot.io/api/?q=${encodeURIComponent(query)}&bbox=-72,17.4,-68.3,20&limit=5`;
+            
+            try {
+                const res = await fetch(url);
+                const data = await res.json();
+                renderAutocompleteResults(data.features, results, input, inputId);
+            } catch (err) {
+                console.error("Error fetching suggestions:", err);
+            }
+        }, 300);
+    });
+
+    // Cerrar lista al hacer click fuera
+    document.addEventListener("click", (e) => {
+        if (!input.contains(e.target) && !results.contains(e.target)) {
+            results.classList.remove("active");
+        }
+    });
+}
+
+function renderAutocompleteResults(features, container, input, inputId) {
+    if (!features || features.length === 0) {
+        container.classList.remove("active");
+        return;
+    }
+
+    container.innerHTML = "";
+    container.classList.add("active");
+
+    features.forEach(f => {
+        const props = f.properties;
+        const name = props.name || props.street || "Punto de referencia";
+        const city = props.city || props.state || "RD";
+        const country = props.country || "República Dominicana";
+        const address = `${city}, ${country}`;
+
+        const item = document.createElement("div");
+        item.className = "autocomplete-item";
+        item.innerHTML = `
+            <i class="bi bi-geo-alt-fill"></i>
+            <div class="poi-info">
+                <span class="poi-name">${name}</span>
+                <span class="poi-address">${address}</span>
+            </div>
+        `;
+
+        item.onclick = () => {
+            input.value = name;
+            container.classList.remove("active");
+            
+            // Si tenemos coordenadas de Photon, actualizar mapa
+            if (f.geometry && f.geometry.coordinates) {
+                const coords = {
+                    lat: f.geometry.coordinates[1],
+                    lng: f.geometry.coordinates[0]
+                };
+                
+                if (inputId === "solicitud-origen") {
+                    originCoords = coords;
+                    updateOriginMarker(coords);
+                } else {
+                    destinationCoords = coords;
+                    updateDestinationMarker(coords);
+                }
+                
+                if (originCoords && destinationCoords) {
+                    calculateOptimalRoute();
+                    fitMapToRoute();
+                } else {
+                    modalMap.setView(coords, 16);
+                }
+            }
+        };
+
+        container.appendChild(item);
+    });
+}
+
+/* =========================================================
+   LÓGICA DEL MAPA DEL MODAL
+   ========================================================= */
+
+function initModalMap() {
+    const mapDiv = document.getElementById("modal-map-solicitud");
+    if (!mapDiv) return;
+
+    if (modalMap) {
+        modalMap.remove();
+        modalMap = null;
+    }
+
+    const boundsDR = L.latLngBounds(
+        L.latLng(17.47, -72.0),
+        L.latLng(19.95, -68.32)
+    );
+
+    modalMap = L.map("modal-map-solicitud", {
+        center: [18.4861, -69.9312],
+        zoom: 12,
+        minZoom: 8,
+        maxBounds: boundsDR,
+        maxBoundsViscosity: 1.0,
+        zoomControl: true
+    });
+
+    const isDark = document.body.classList.contains("dark-mode");
+    // Usar la capa estándar de OpenStreetMap que tiene más detalle de POIs (Megacentro, etc.)
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        attribution: "© OpenStreetMap contributors",
+        maxZoom: 20
+    }).addTo(modalMap);
+
+    modalMap.on("click", (e) => {
+        handleModalMapClick(e.latlng);
+    });
+}
+
+function resetMapMarkers() {
+    originCoords = null;
+    destinationCoords = null;
+    if (originMarker) modalMap.removeLayer(originMarker);
+    if (destinationMarker) modalMap.removeLayer(destinationMarker);
+    if (routingControl) modalMap.removeControl(routingControl);
+    originMarker = null;
+    destinationMarker = null;
+    routingControl = null;
+}
+
+function handleModalMapClick(latlng) {
+    if (!originCoords) {
+        originCoords = latlng;
+        updateOriginMarker(latlng);
+        reverseGeocode(latlng, "solicitud-origen");
+        modalMap.setView(latlng, 16);
+    } else if (!destinationCoords) {
+        destinationCoords = latlng;
+        updateDestinationMarker(latlng);
+        reverseGeocode(latlng, "solicitud-destino");
+        calculateOptimalRoute();
+    } else {
+        resetMapMarkers();
+        originCoords = latlng;
+        updateOriginMarker(latlng);
+        reverseGeocode(latlng, "solicitud-origen");
+        modalMap.setView(latlng, 16);
+    }
+}
+
+function updateOriginMarker(coords) {
+    if (originMarker) modalMap.removeLayer(originMarker);
+    originMarker = L.marker(coords, {
+        icon: L.divIcon({
+            className: "custom-div-icon",
+            html: "<div style='background-color:#3b82f6; width:12px; height:12px; border-radius:50%; border:2px solid white;'></div>",
+            iconSize: [12, 12],
+            iconAnchor: [6, 6]
+        })
+    }).addTo(modalMap).bindPopup("<b>Origen</b>").openPopup();
+}
+
+function updateDestinationMarker(coords) {
+    if (destinationMarker) modalMap.removeLayer(destinationMarker);
+    destinationMarker = L.marker(coords, {
+        icon: L.divIcon({
+            className: "custom-div-icon",
+            html: "<div style='background-color:#ef4444; width:12px; height:12px; border-radius:50%; border:2px solid white;'></div>",
+            iconSize: [12, 12],
+            iconAnchor: [6, 6]
+        })
+    }).addTo(modalMap).bindPopup("<b>Destino</b>").openPopup();
+}
+
+async function calculateOptimalRoute() {
+    if (!originCoords || !destinationCoords) return;
+
+    if (routingControl) {
+        modalMap.removeControl(routingControl);
+    }
+
+    routingControl = L.Routing.control({
+        waypoints: [
+            L.latLng(originCoords.lat, originCoords.lng),
+            L.latLng(destinationCoords.lat, destinationCoords.lng)
+        ],
+        router: L.Routing.osrmv1({
+            serviceUrl: 'https://router.project-osrm.org/route/v1'
+        }),
+        lineOptions: {
+            styles: [{ color: '#3b82f6', opacity: 0.8, weight: 6 }]
+        },
+        addWaypoints: false,
+        draggableWaypoints: false,
+        show: false,
+        createMarker: function() { return null; }
+    }).addTo(modalMap);
+}
+
+function fitMapToRoute() {
+    if (originCoords && destinationCoords) {
+        const group = new L.featureGroup([L.marker(originCoords), L.marker(destinationCoords)]);
+        modalMap.fitBounds(group.getBounds(), { padding: [50, 50] });
+    }
+}
+
+async function reverseGeocode(latlng, inputId) {
+    const input = document.getElementById(inputId);
+    if (!input) return;
+
+    try {
+        const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latlng.lat}&lon=${latlng.lng}&zoom=18&addressdetails=1`);
+        const data = await response.json();
+        
+        // Priorizar el nombre del lugar (Megacentro, etc) si existe
+        let displayName = data.name;
+        
+        if (!displayName) {
+            // Si no tiene nombre el punto, usar calle o lo más cercano
+            displayName = data.address.road || data.address.suburb || data.address.city || "Punto seleccionado";
+            if (data.address.house_number && data.address.road) {
+                displayName = data.address.house_number + " " + data.address.road;
+            }
+        }
+        
+        input.value = displayName;
+    } catch (err) {
+        console.error("Geocoding error", err);
+    }
+}
+
+window.clearSolicitudField = function(type) {
+    if (type === 'origen') {
+        originCoords = null;
+        if (originMarker) modalMap.removeLayer(originMarker);
+        originMarker = null;
+        document.getElementById("solicitud-origen").value = "";
+    } else {
+        destinationCoords = null;
+        if (destinationMarker) modalMap.removeLayer(destinationMarker);
+        destinationMarker = null;
+        document.getElementById("solicitud-destino").value = "";
+    }
+
+    if (routingControl) {
+        modalMap.removeControl(routingControl);
+        routingControl = null;
+    }
+
+    // Si queda un punto, centrar mapa en él. Si no, restaurar vista inicial.
+    if (originCoords) {
+        modalMap.setView(originCoords, 16);
+    } else if (destinationCoords) {
+        modalMap.setView(destinationCoords, 16);
+    } else {
+        modalMap.setView([18.4861, -69.9312], 12);
+    }
+};
+
+/* =========================================================
    INICIALIZACIÓN
    ========================================================= */
 
@@ -663,4 +994,8 @@ function initSolicitudes() {
     initFiltros();
     initSolicitudModals();
     cargarSolicitudes();
+    
+    // Inicializar autocompletados
+    setupAutocompleteLocations("solicitud-origen", "results-origen");
+    setupAutocompleteLocations("solicitud-destino", "results-destino");
 }

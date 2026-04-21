@@ -678,6 +678,54 @@ function actualizarDashboardVehiculos() {
     if (disponiblesEl) disponiblesEl.textContent = disponibles;
     if (enRutaEl) enRutaEl.textContent = enRuta;
     if (mantenimientoEl) mantenimientoEl.textContent = mantenimiento;
+
+    // Renderizar lista de estados reales
+    const fleetStateContainer = document.getElementById("dashboard-fleet-state");
+    if (fleetStateContainer) {
+        if (vehiculosData.length === 0) {
+            fleetStateContainer.innerHTML = '<div class="text-center py-4 text-muted">No hay vehículos registrados</div>';
+            return;
+        }
+
+        fleetStateContainer.innerHTML = "";
+        // Mostrar los primeros 4 vehículos con su estado real
+        vehiculosData.slice(0, 4).forEach(v => {
+            let badgeClass = "bg-secondary";
+            let iconClass = "bi-question-circle";
+            let colorClass = "text-secondary";
+
+            if (v.estado === "Disponible") {
+                badgeClass = "bg-success";
+                iconClass = "bi-check-circle-fill";
+                colorClass = "text-success";
+            } else if (v.estado === "En ruta") {
+                badgeClass = "bg-primary";
+                iconClass = "bi-clock-history";
+                colorClass = "text-primary";
+            } else if (v.estado === "Mantenimiento") {
+                badgeClass = "bg-danger";
+                iconClass = "bi-tools";
+                colorClass = "text-danger";
+            }
+
+            const item = document.createElement("div");
+            item.className = "fleet-status-item mb-3 p-3 rounded-4";
+            item.style.cssText = "background: rgba(var(--bg-main-rgb, 248, 250, 252), 0.5); border: 1px solid var(--border-color); cursor: pointer;";
+            item.onclick = () => cargarPagina('vehiculos');
+
+            item.innerHTML = `
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <span class="badge ${badgeClass} mb-2">${v.estado}</span>
+                        <h6 class="mb-0 fw-bold text-dark mode-fluid">${v.marca} ${v.modelo}</h6>
+                        <small class="text-muted">Placa: ${v.placa}</small>
+                    </div>
+                    <i class="bi ${iconClass} ${colorClass} fs-5"></i>
+                </div>
+            `;
+            fleetStateContainer.appendChild(item);
+        });
+    }
 }
 
 /* =========================================================

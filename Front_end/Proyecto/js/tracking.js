@@ -48,9 +48,8 @@ function initTrackingMap() {
         zoomControl: false // Los controles los ponemos nosotros como en Centro de Control
     });
 
-    L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png", {
-        attribution: "© OpenStreetMap © CARTO",
-        subdomains:  "abcd",
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        attribution: "© OpenStreetMap contributors",
         maxZoom:     19
     }).addTo(trackingMap);
 }

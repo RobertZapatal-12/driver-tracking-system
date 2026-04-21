@@ -76,20 +76,40 @@
             <div class="row g-3">
                 <div class="col-md-6">
                     <label class="form-label fw-semibold small">Cliente / Solicitante</label>
-                    <input type="text" id="solicitud-cliente" class="form-control" placeholder="Nombre de cliente o empresa" required>
+                    <select id="solicitud-cliente" class="form-select" required>
+                        <option value="">Cargando clientes...</option>
+                    </select>
                 </div>
                 <div class="col-md-6">
                     <label class="form-label fw-semibold small">Fecha</label>
                     <input type="date" id="solicitud-fecha" class="form-control" required>
                 </div>
-                <div class="col-md-6">
+                <div class="col-md-6 autocomplete-container">
                     <label class="form-label fw-semibold small">Origen</label>
-                    <input type="text" id="solicitud-origen" class="form-control" placeholder="Lugar de partida" required>
+                    <div class="input-with-clear">
+                        <input type="text" id="solicitud-origen" class="form-control" placeholder="Lugar de partida" required autocomplete="off">
+                        <button type="button" class="btn-clear-field" onclick="clearSolicitudField('origen')"><i class="bi bi-x"></i></button>
+                    </div>
+                    <div id="results-origen" class="autocomplete-results"></div>
                 </div>
-                <div class="col-md-6">
+                <div class="col-md-6 autocomplete-container">
                     <label class="form-label fw-semibold small">Destino</label>
-                    <input type="text" id="solicitud-destino" class="form-control" placeholder="Lugar de llegada" required>
+                    <div class="input-with-clear">
+                        <input type="text" id="solicitud-destino" class="form-control" placeholder="Lugar de llegada" required autocomplete="off">
+                        <button type="button" class="btn-clear-field" onclick="clearSolicitudField('destino')"><i class="bi bi-x"></i></button>
+                    </div>
+                    <div id="results-destino" class="autocomplete-results"></div>
                 </div>
+
+                <div class="col-12 mt-2">
+                    <div class="modal-map-container">
+                        <div id="modal-map-solicitud"></div>
+                        <div class="map-hint">
+                            <i class="bi bi-info-circle me-1"></i> Haz clic en el mapa para marcar <b>Origen</b> (primero) y <b>Destino</b> (después).
+                        </div>
+                    </div>
+                </div>
+
                 <div class="col-md-12">
                     <label class="form-label fw-semibold small">Descripción</label>
                     <textarea id="solicitud-descripcion" class="form-control" rows="2" placeholder="Detalles o requerimientos..." required></textarea>
