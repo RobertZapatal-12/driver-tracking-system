@@ -171,48 +171,130 @@ async function rastrearServicio() {
     setStatus("info", "bi-arrow-repeat", "Consultando tu servicio…");
 
     try {
-        const url = `${TRACK_API_BASE}/locations/latest`;
+        // Nueva lógica: Buscar por código hexadecimal
+        const url = `${TRACK_API_BASE}/locations/track/${codigo}`;
         const response = await fetch(url, {
             credentials: "omit",
             headers: { "Accept": "application/json" }
         });
 
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
-
         const data = await response.json();
 
-        if (!Array.isArray(data) || data.length === 0) {
-            setStatus("warning", "bi-geo-alt", "No hay unidades activas en este momento.");
-            return;
-        }
-
-        const servicio = data.find(d => String(d.driver_id) === String(codigo));
-
-        if (!servicio) {
-            setStatus("error", "bi-search", `Código <strong>#${codigo}</strong> no encontrado.`);
-            return;
-        }
-
-        const lat = Number(servicio.latitud);
-        const lng = Number(servicio.longitud);
-
-        if (isNaN(lat) || isNaN(lng)) {
-            setStatus("warning", "bi-geo", `Servicio #${codigo} encontrado, pero sin GPS aún.`);
+        if (data.error) {
+            if (data.status === "programado") {
+                setStatus("warning", "bi-clock-history", data.error);
+            } else {
+                setStatus("error", "bi-search", data.error);
+            }
             return;
         }
 
         // ¡Éxito!
         clearStatus();
         showMapMode(codigo);
-        updateDriverOverlay(servicio);
         
-        setTimeout(() => placeMarker(lat, lng, servicio.nombre || "Conductor"), 400);
+        // Actualizar overlay con info del conductor si existe
+        if (data.conductor) {
+            updateDriverOverlay({
+                nombre: data.conductor.nombre,
+                driver_id: data.request_id, // Usamos request_id como ID visual
+                velocidad: data.conductor.velocidad
+            });
+        }
+        
+        setTimeout(() => placeTrackingMarkers(data), 400);
 
     } catch (err) {
         console.error("[TransFleet] Error:", err);
         setStatus("error", "bi-wifi-off", `Error al conectar: ${err.message}`);
     } finally {
         if (btn) btn.classList.remove("loading");
+    }
+}
+
+let originMarker = null;
+let destinationMarker = null;
+let routingControl = null;
+
+function placeTrackingMarkers(data) {
+    if (!trackingMap) return;
+
+    // Limpiar anteriores
+    if (originMarker) trackingMap.removeLayer(originMarker);
+    if (destinationMarker) trackingMap.removeLayer(destinationMarker);
+    if (trackingMarker) trackingMap.removeLayer(trackingMarker);
+    if (routingControl) {
+        try { trackingMap.removeControl(routingControl); } catch(e){}
+    }
+
+    const bounds = L.latLngBounds();
+
+    // 1. Origen
+    if (data.origen && data.origen.lat) {
+        originMarker = L.marker([data.origen.lat, data.origen.lng], {
+            icon: L.divIcon({ 
+                className: 'custom-div-icon', 
+                html: '<div style="background:#3b82f6; width:12px; height:12px; border-radius:50%; border:2px solid white;"></div>', 
+                iconSize: [12,12],
+                iconAnchor: [6,6]
+            })
+        }).addTo(trackingMap).bindPopup(`<b>Origen:</b> ${data.origen.nombre}`);
+        bounds.extend([data.origen.lat, data.origen.lng]);
+    }
+
+    // 2. Destino
+    if (data.destino && data.destino.lat) {
+        destinationMarker = L.marker([data.destino.lat, data.destino.lng], {
+            icon: L.divIcon({ 
+                className: 'custom-div-icon', 
+                html: '<div style="background:#ef4444; width:12px; height:12px; border-radius:50%; border:2px solid white;"></div>', 
+                iconSize: [12,12],
+                iconAnchor: [6,6]
+            })
+        }).addTo(trackingMap).bindPopup(`<b>Destino:</b> ${data.destino.nombre}`);
+        bounds.extend([data.destino.lat, data.destino.lng]);
+    }
+
+    // 3. Conductor (Ubicación real)
+    if (data.conductor && data.conductor.lat) {
+        trackingMarker = L.marker([data.conductor.lat, data.conductor.lng], { icon: trackCarIcon })
+            .addTo(trackingMap)
+            .bindPopup(`<b>${data.conductor.nombre}</b><br>${data.conductor.velocidad} km/h`);
+        bounds.extend([data.conductor.lat, data.conductor.lng]);
+
+        // 4. Ruteo dinámico según estado
+        let targetPoint = null;
+        let routeColor = '#3b82f6';
+
+        if (data.sub_estado === "con_cliente") {
+            // Fase 2: Al destino
+            targetPoint = L.latLng(data.destino.lat, data.destino.lng);
+            routeColor = '#10b981'; // Verde
+        } else {
+            // Fase 1: Al origen (buscando cliente)
+            targetPoint = L.latLng(data.origen.lat, data.origen.lng);
+            routeColor = '#3b82f6'; // Azul
+        }
+
+        if (targetPoint) {
+            routingControl = L.Routing.control({
+                waypoints: [
+                    L.latLng(data.conductor.lat, data.conductor.lng),
+                    targetPoint
+                ],
+                show: false,
+                addWaypoints: false,
+                draggableWaypoints: false,
+                createMarker: () => null,
+                lineOptions: { styles: [{ color: routeColor, opacity: 0.7, weight: 8 }] }
+            }).addTo(trackingMap);
+        }
+    }
+
+    if (!bounds.isValid()) {
+        trackingMap.setView([18.4861, -69.9312], 12);
+    } else {
+        trackingMap.fitBounds(bounds, { padding: [80, 80] });
     }
 }
 

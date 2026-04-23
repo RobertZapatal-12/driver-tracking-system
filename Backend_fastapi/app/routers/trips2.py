@@ -2,6 +2,8 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app import models, schemas
+import secrets
+from datetime import datetime
 
 # Se crea un router para manejar todas las rutas relacionadas con los request
 router = APIRouter(
@@ -22,11 +24,17 @@ def _enrich_request(req, db):
         "descripcion": req.descripcion,
         "tipo_vehiculo": req.tipo_vehiculo,
         "estado": req.estado,
+        "sub_estado": req.sub_estado,
         "prioridad": req.prioridad,
         "user_id": req.user_id,
         "vehicle_id": req.vehicle_id,
         "driver_id": req.driver_id,
         "notas_operador": req.notas_operador,
+        "tracking_code": req.tracking_code,
+        "lat_origen": req.lat_origen,
+        "lon_origen": req.lon_origen,
+        "lat_destino": req.lat_destino,
+        "lon_destino": req.lon_destino,
         "operador_nombre": None,
         "driver_nombre": None,
         "vehicle_info": None,
@@ -169,6 +177,10 @@ def actualizar_request(request_id: int, data: schemas.RequestOperadorUpdate, db:
         request.prioridad = data.prioridad
     if data.tipo_vehiculo is not None:
         request.tipo_vehiculo = data.tipo_vehiculo
+    if data.estado is not None:
+        request.estado = data.estado
+    if data.sub_estado is not None:
+        request.sub_estado = data.sub_estado
     if data.notas_operador is not None:
         request.notas_operador = data.notas_operador
 
@@ -181,14 +193,43 @@ def actualizar_request(request_id: int, data: schemas.RequestOperadorUpdate, db:
             raise HTTPException(status_code=404, detail="Vehículo no encontrado")
         request.vehicle_id = data.vehicle_id
 
-    # Asignar conductor
+    # Asignar conductor (con validación de conflicto)
     if data.driver_id is not None:
+        # 1. Verificar si el conductor ya tiene un viaje 'en_proceso'
+        busy_driver = db.query(models.Request).filter(
+            models.Request.driver_id == data.driver_id,
+            models.Request.estado == "en_proceso",
+            models.Request.request_id != request_id
+        ).first()
+        
+        if busy_driver:
+            raise HTTPException(
+                status_code=400, 
+                detail=f"El conductor ya está asignado a otro viaje en proceso (ID: {busy_driver.request_id})"
+            )
+
         driver = db.query(models.Driver).filter(
             models.Driver.driver_id == data.driver_id
         ).first()
         if not driver:
             raise HTTPException(status_code=404, detail="Conductor no encontrado")
+        
         request.driver_id = data.driver_id
+        
+        # Al asignar conductor, el viaje pasa a estar 'buscando_cliente' por defecto
+        if request.sub_estado == "pendiente":
+            request.sub_estado = "buscando_cliente"
+
+        # Generar código de seguimiento si no tiene uno
+        if not request.tracking_code:
+            request.tracking_code = secrets.token_hex(4).upper()
+            print(f"DEBUG: Generado código {request.tracking_code} para solicitud {request_id}")
+
+    # Actualizar coordenadas si vienen en la data (pueden venir del modal de mapa)
+    if data.lat_origen is not None: request.lat_origen = data.lat_origen
+    if data.lon_origen is not None: request.lon_origen = data.lon_origen
+    if data.lat_destino is not None: request.lat_destino = data.lat_destino
+    if data.lon_destino is not None: request.lon_destino = data.lon_destino
 
     db.commit()
     db.refresh(request)

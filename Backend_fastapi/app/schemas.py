@@ -200,11 +200,17 @@ class RequestBase(BaseModel):
     descripcion: str
     tipo_vehiculo: str
     estado: str = "pendiente"
+    sub_estado: Optional[str] = "pendiente"
     prioridad: str
     user_id: Optional[int] = None
     vehicle_id: Optional[int] = None
     driver_id: Optional[int] = None
     notas_operador: Optional[str] = None
+    tracking_code: Optional[str] = None
+    lat_origen: Optional[float] = None
+    lon_origen: Optional[float] = None
+    lat_destino: Optional[float] = None
+    lon_destino: Optional[float] = None
 
 
 class RequestCreate(BaseModel):
@@ -242,9 +248,15 @@ class RequestOperadorUpdate(BaseModel):
     descripcion: Optional[str] = None
     prioridad: Optional[str] = None
     tipo_vehiculo: Optional[str] = None
+    estado: Optional[str] = None
+    sub_estado: Optional[str] = None
     vehicle_id: Optional[int] = None
     driver_id: Optional[int] = None
     notas_operador: Optional[str] = None
+    lat_origen: Optional[float] = None
+    lon_origen: Optional[float] = None
+    lat_destino: Optional[float] = None
+    lon_destino: Optional[float] = None
 
 
 # =========================
@@ -253,6 +265,7 @@ class RequestOperadorUpdate(BaseModel):
 
 class DriverTripCreate(BaseModel):
     driver_id: int
+    request_id: Optional[int] = None
     lat_inicio: float
     lon_inicio: float
 
@@ -265,6 +278,7 @@ class DriverTripEnd(BaseModel):
 class DriverTripResponse(BaseModel):
     trip_id: int
     driver_id: int
+    request_id: Optional[int] = None
     estado: str
     inicio: datetime
     fin: Optional[datetime] = None

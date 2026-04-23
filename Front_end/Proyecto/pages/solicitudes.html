@@ -38,6 +38,7 @@
                     <thead class="table-light">
                         <tr>
                             <th>ID</th>
+                            <th>Código</th>
                             <th>Cliente</th>
                             <th>Fecha</th>
                             <th>Ruta</th>
@@ -49,7 +50,7 @@
                     </thead>
                     <tbody id="listaSolicitudesBody">
                         <tr>
-                            <td colspan="8" class="text-center py-4">
+                            <td colspan="9" class="text-center py-4">
                                 <div class="spinner-border text-primary spinner-border-sm" role="status"></div>
                                 <span class="ms-2 text-muted">Cargando solicitudes...</span>
                             </td>
@@ -81,8 +82,11 @@
                     </select>
                 </div>
                 <div class="col-md-6">
-                    <label class="form-label fw-semibold small">Fecha</label>
-                    <input type="date" id="solicitud-fecha" class="form-control" required>
+                    <label class="form-label fw-semibold small">Fecha y Hora</label>
+                    <div class="d-flex gap-2">
+                        <input type="date" id="solicitud-fecha" class="form-control" required>
+                        <input type="time" id="solicitud-hora" class="form-control" required>
+                    </div>
                 </div>
                 <div class="col-md-6 autocomplete-container">
                     <label class="form-label fw-semibold small">Origen</label>

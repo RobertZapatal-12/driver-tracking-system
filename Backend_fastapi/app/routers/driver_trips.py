@@ -32,6 +32,7 @@ def start_trip(trip: schemas.DriverTripCreate, db: Session = Depends(get_db)):
 
     new_trip = models.DriverTrip(
         driver_id=trip.driver_id,
+        request_id=trip.request_id,
         lat_inicio=trip.lat_inicio,
         lon_inicio=trip.lon_inicio,
         estado="En curso",
@@ -61,6 +62,12 @@ def end_trip(
     trip.lat_fin = end_data.lat_fin
     trip.lon_fin = end_data.lon_fin
     trip.estado = "Completado"
+
+    # Sincronizar con la tabla Request
+    if trip.request_id:
+        request = db.query(models.Request).filter(models.Request.request_id == trip.request_id).first()
+        if request:
+            request.estado = "completada"
 
     db.commit()
     db.refresh(trip)

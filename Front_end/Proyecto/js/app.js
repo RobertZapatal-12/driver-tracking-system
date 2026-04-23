@@ -579,10 +579,10 @@ function resetDriverForm() {
    ICONO PERSONALIZADO DE CARRO
    ========================================================= */
 const carIcon = L.icon({
-    iconUrl: "https://cdn-icons-png.flaticon.com/512/743/743922.png",
-    iconSize: [40, 40],
-    iconAnchor: [20, 40],
-    popupAnchor: [0, -35]
+    iconUrl: "https://cdn-icons-png.flaticon.com/512/2555/2555013.png", // Icono de camión profesional
+    iconSize: [45, 45],
+    iconAnchor: [22, 22],
+    popupAnchor: [0, -20]
 });
 
 /* =========================================================
@@ -749,8 +749,8 @@ async function buscarUbicacion() {
     try {
         const codigo = document.getElementById("codigoViaje").value.trim();
 
-        if (codigo === "" || isNaN(codigo)) {
-            Toast.warning("Introduce un driver_id válido. Ej: 6");
+        if (codigo === "") {
+            Toast.warning("Introduce un ID de conductor o Código de servicio.");
             return;
         }
 
@@ -766,7 +766,8 @@ async function actualizarChoferSeleccionado() {
     if (!driverIdSeleccionado) return;
 
     try {
-        const response = await CONFIG.fetchAuth("/locations/latest");
+        // Usamos el endpoint inteligente que soporta ID numérico y Hexagonal
+        const response = await CONFIG.fetchAuth(`/locations/track/${driverIdSeleccionado}?isAdmin=true`);
 
         if (!response.ok) {
             throw new Error(`Error HTTP ${response.status}`);
@@ -774,18 +775,12 @@ async function actualizarChoferSeleccionado() {
 
         const data = await response.json();
 
-        if (!Array.isArray(data) || data.length === 0) {
+        if (data.error) {
+            Toast.warning(data.error);
             return;
         }
 
-        const chofer = data.find(d => String(d.driver_id) === String(driverIdSeleccionado));
-
-        if (!chofer) {
-            Toast.warning("No se encontró ese conductor en las ubicaciones activas.");
-            return;
-        }
-
-        mostrarChofer(chofer);
+        mostrarChofer(data);
     } catch (error) {
         console.error("Error actualizando chofer seleccionado:", error);
     }
@@ -797,29 +792,107 @@ async function actualizarChoferSeleccionado() {
 /* =========================================================
    MOSTRAR CHOFER EN EL MAPA
    ========================================================= */
+let originMarkerGlobal = null;
+let destinationMarkerGlobal = null;
+let routingControlGlobal = null;
+
 function mostrarChofer(data) {
     if (!mapaGlobal) {
         console.error("Mapa no inicializado.");
         return;
     }
 
-    const lat = data.latitud;
-    const lng = data.longitud;
+    // Limpiar capas previas de ruteo
+    if (routingControlGlobal) {
+        try { mapaGlobal.removeControl(routingControlGlobal); } catch(e){}
+        routingControlGlobal = null;
+    }
+    if (originMarkerGlobal) { mapaGlobal.removeLayer(originMarkerGlobal); originMarkerGlobal = null; }
+    if (destinationMarkerGlobal) { mapaGlobal.removeLayer(destinationMarkerGlobal); destinationMarkerGlobal = null; }
+
+    // El backend puede devolver {conductor: {...}} o el objeto directo
+    const c = data.conductor || data;
+    const lat = c.lat || c.latitud;
+    const lng = c.lng || c.longitud;
+
+    if (!lat || !lng) {
+        Toast.warning("Este conductor no tiene GPS activo.");
+        return;
+    }
 
     if (marcadorChofer) {
         mapaGlobal.removeLayer(marcadorChofer);
     }
 
-    mapaGlobal.flyTo([lat, lng], 16);
+    mapaGlobal.flyTo([lat, lng], 15);
 
     marcadorChofer = L.marker([lat, lng], { icon: carIcon }).addTo(mapaGlobal)
         .bindPopup(`
             <div style="font-family: 'Inter', sans-serif;">
-                <b style="color: var(--accent-primary);">${data.nombre}</b><br>
-                <small class="text-muted">ID Conductor: ${data.driver_id}</small>
+                <b style="color: var(--accent-primary);">${c.nombre}</b><br>
+                <small class="text-muted">Estado: ${data.estado || 'Activo'}</small>
             </div>
         `)
         .openPopup();
+
+    // Trazar ruta dinámica según fase del servicio
+    if (data.origen && data.origen.lat && data.destino && data.destino.lat) {
+        
+        let targetPoint = null;
+        let routeColor = '#3b82f6'; // Azul por defecto
+
+        if (data.sub_estado === "buscando_cliente") {
+            // Fase 1: Ir a buscar al cliente
+            targetPoint = L.latLng(data.origen.lat, data.origen.lng);
+            routeColor = '#3b82f6'; 
+
+            // Marcador Origen (Punto Azul)
+            originMarkerGlobal = L.circleMarker([data.origen.lat, data.origen.lng], {
+                radius: 10, color: '#3b82f6', fillColor: '#3b82f6', fillOpacity: 0.9, weight: 3
+            }).addTo(mapaGlobal).bindPopup(`<b>Origen:</b> ${data.origen.nombre}<br><span class="badge bg-primary">Recogida Pendiente</span>`);
+            
+            // Destino se muestra tenue
+            destinationMarkerGlobal = L.circleMarker([data.destino.lat, data.destino.lng], {
+                radius: 8, color: '#ef4444', fillColor: '#ef4444', fillOpacity: 0.3
+            }).addTo(mapaGlobal).bindPopup(`<b>Destino Final:</b> ${data.destino.nombre}`);
+
+        } else if (data.sub_estado === "con_cliente") {
+            // Fase 2: Ya tiene al cliente, ir al destino
+            targetPoint = L.latLng(data.destino.lat, data.destino.lng);
+            routeColor = '#10b981'; // Verde (Con cliente)
+
+            // Marcador Destino (Punto Rojo)
+            destinationMarkerGlobal = L.circleMarker([data.destino.lat, data.destino.lng], {
+                radius: 10, color: '#ef4444', fillColor: '#ef4444', fillOpacity: 0.9, weight: 3
+            }).addTo(mapaGlobal).bindPopup(`<b>Destino:</b> ${data.destino.nombre}<br><span class="badge bg-success">En camino</span>`);
+        }
+
+        if (targetPoint) {
+            console.log("Trazando ruta a:", targetPoint);
+            routingControlGlobal = L.Routing.control({
+                waypoints: [
+                    L.latLng(lat, lng),
+                    targetPoint
+                ],
+                router: L.Routing.osrmv1({
+                    serviceUrl: `https://router.project-osrm.org/route/v1`
+                }),
+                lineOptions: { 
+                    styles: [{ color: routeColor, opacity: 0.8, weight: 8 }],
+                    extendToWaypoints: true,
+                    missingRouteTolerance: 10
+                },
+                show: false,
+                addWaypoints: false,
+                draggableWaypoints: false,
+                createMarker: () => null
+            }).on('routingerror', function(e) {
+                console.error("Error de ruteo:", e);
+                // Fallback: Línea recta si falla OSRM
+                L.polyline([L.latLng(lat, lng), targetPoint], {color: routeColor, weight: 5, dashArray: '10, 10'}).addTo(mapaGlobal);
+            }).addTo(mapaGlobal);
+        }
+    }
 
     // Actualizar Panel de Información Flotante
     const infoPanel = document.getElementById("map-info-panel");
@@ -829,20 +902,18 @@ function mostrarChofer(data) {
     const driverStatus = document.getElementById("map-driver-status");
 
     if (infoPanel && driverName) {
-        infoPanel.style.display = "block";
-        driverName.textContent = data.nombre;
-        driverMeta.textContent = `ID: ${data.driver_id} • Velocidad: ${data.velocidad || '0'} km/h • Lat: ${lat.toFixed(4)}`;
+        infoPanel.style.display = "flex";
+        driverName.textContent = c.nombre;
+        driverMeta.textContent = `Código: ${data.codigo || '—'} • Velocidad: ${c.velocidad || '0'} km/h`;
         
-        // Imagen del conductor o inicial si no hay imagen
         if (driverImg) {
-            driverImg.src = data.imagen || `https://ui-avatars.com/api/?name=${encodeURIComponent(data.nombre)}&background=3b82f6&color=fff&bold=true`;
+            driverImg.src = c.imagen || `https://ui-avatars.com/api/?name=${encodeURIComponent(c.nombre)}&background=3b82f6&color=fff&bold=true`;
         }
 
-        // Estilo del badge
         if (driverStatus) {
-            driverStatus.textContent = "Activo en Mapa";
-            driverStatus.style.background = "#dcfce7";
-            driverStatus.style.color = "#15803d";
+            driverStatus.textContent = data.estado === "completada" ? "Completado" : "En Ruta";
+            driverStatus.style.background = data.estado === "completada" ? "#dcfce7" : "#e0f2fe";
+            driverStatus.style.color = data.estado === "completada" ? "#15803d" : "#0369a1";
         }
     }
 }

@@ -139,11 +139,18 @@ class Request(Base):
     descripcion = Column(String)
     tipo_vehiculo = Column(String)
     estado = Column(String, default="pendiente")
+    sub_estado = Column(String, default="pendiente") # "pendiente" | "buscando_cliente" | "con_cliente" | "completada"
     prioridad = Column(String)
     user_id = Column(Integer, ForeignKey("users.user_id"), nullable=True)
     vehicle_id = Column(Integer, nullable=True)
     driver_id = Column(Integer, nullable=True)
     notas_operador = Column(String, nullable=True)
+    tracking_code = Column(String, unique=True, nullable=True)
+    lat_origen = Column(Float, nullable=True)
+    lon_origen = Column(Float, nullable=True)
+    lat_destino = Column(Float, nullable=True)
+    lon_destino = Column(Float, nullable=True)
+    registrado_en = Column(DateTime, server_default=func.now())
 
     operador = relationship("User", foreign_keys=[user_id])
 
@@ -156,6 +163,7 @@ class DriverTrip(Base):
 
     trip_id = Column(Integer, primary_key=True, index=True)
     driver_id = Column(Integer, ForeignKey("drivers.driver_id"))
+    request_id = Column(Integer, ForeignKey("request.request_id"), nullable=True)
 
     estado = Column(String, default="En curso")       # "En curso" | "Completado"
     inicio = Column(DateTime, server_default=func.now())

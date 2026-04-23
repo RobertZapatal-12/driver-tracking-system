@@ -190,8 +190,11 @@ function renderTablaSolicitudes(solicitudes) {
         }
 
         const tr = document.createElement("tr");
+        const trackingCodeHTML = s.tracking_code ? `<code class="bg-light px-2 py-1 rounded text-primary fw-bold" style="font-size:0.8rem;">${s.tracking_code}</code>` : `<span class="text-muted small">Asignación pendiente</span>`;
+        
         tr.innerHTML = `
             <td>#${s.request_id}</td>
+            <td>${trackingCodeHTML}</td>
             <td class="fw-bold">${s.cliente}</td>
             <td>${s.fecha}</td>
             <td>${s.origen} <i class="bi bi-arrow-right mx-1 text-muted"></i> ${s.destino}</td>
@@ -451,7 +454,11 @@ async function guardarTrabajoOperador(e) {
         descripcion: document.getElementById("op-descripcion").value,
         prioridad: document.getElementById("op-prioridad").value,
         tipo_vehiculo: document.getElementById("op-tipo-vehiculo").value,
-        notas_operador: document.getElementById("op-notas").value
+        notas_operador: document.getElementById("op-notas").value,
+        lat_origen: originCoords ? originCoords.lat : null,
+        lon_origen: originCoords ? originCoords.lng : null,
+        lat_destino: destinationCoords ? destinationCoords.lat : null,
+        lon_destino: destinationCoords ? destinationCoords.lng : null
     };
 
     // Solo incluir vehicle_id y driver_id si tienen valor
@@ -627,7 +634,14 @@ window.abrirModalEditarSolicitud = function (id) {
             document.getElementById("solicitud-cliente").value = s.cliente;
         });
 
-        document.getElementById("solicitud-fecha").value = s.fecha;
+        if (s.fecha && s.fecha.includes(" ")) {
+            const parts = s.fecha.split(" ");
+            document.getElementById("solicitud-fecha").value = parts[0];
+            document.getElementById("solicitud-hora").value = parts[1];
+        } else {
+            document.getElementById("solicitud-fecha").value = s.fecha || "";
+            document.getElementById("solicitud-hora").value = "";
+        }
         document.getElementById("solicitud-origen").value = s.origen;
         document.getElementById("solicitud-destino").value = s.destino;
         document.getElementById("solicitud-descripcion").value = s.descripcion;
@@ -666,9 +680,12 @@ window.eliminarSolicitud = async function (id) {
 async function submitSolicitud(e) {
     e.preventDefault();
 
+    const fechaVal = document.getElementById('solicitud-fecha').value;
+    const horaVal = document.getElementById('solicitud-hora').value;
+    
     const data = {
         cliente: document.getElementById('solicitud-cliente').value,
-        fecha: document.getElementById('solicitud-fecha').value,
+        fecha: `${fechaVal} ${horaVal}`.trim(),
         origen: document.getElementById('solicitud-origen').value,
         destino: document.getElementById('solicitud-destino').value,
         descripcion: document.getElementById('solicitud-descripcion').value,
