@@ -22,7 +22,6 @@
                         <th>CONDUCTOR</th>
                         <th>RUTA (ORIGEN - DESTINO)</th>
                         <th>FECHA / HORA</th>
-                        <th>PRECIO</th>
                         <th>ESTADO</th>
                         <th class="text-end pe-4">GESTIÓN</th>
                     </tr>
@@ -30,7 +29,7 @@
                 <tbody id="routes-table-body" class="small">
                     <!-- Data cargada por JS -->
                     <tr>
-                        <td colspan="8" class="text-center py-5 text-muted">
+                        <td colspan="7" class="text-center py-5 text-muted">
                             <div class="spinner-border spinner-border-sm me-2" role="status"></div>
                             Sincronizando con el centro de despacho...
                         </td>
@@ -43,15 +42,20 @@
 
 <!-- Modal de Despacho Moderno -->
 <div class="modal-overlay">
-    <div class="modal-card" style="max-width: 550px;">
+    <div class="modal-card" style="max-width: 680px; max-height: 90vh; overflow-y: auto;">
         <div class="d-flex justify-content-between align-items-center mb-3">
             <h5 class="fw-bold mb-0" id="routeModalTitle">Generar Orden de Servicio</h5>
             <button class="btn-close btn-close-modal" style="font-size: 0.8rem;"></button>
         </div>
-        <p class="text-muted small mb-4">Complete los datos de la carga y asigne los recursos necesarios.</p>
+        <p class="text-muted small mb-4">Complete los datos de la ruta. Busque las ubicaciones para activar la navegación en la app del conductor.</p>
         
         <form id="routeForm">
             <input type="hidden" id="route_id">
+            <!-- Coordenadas capturadas por el autocompletado -->
+            <input type="hidden" id="ruta-lat-origen">
+            <input type="hidden" id="ruta-lon-origen">
+            <input type="hidden" id="ruta-lat-destino">
+            <input type="hidden" id="ruta-lon-destino">
 
             <div class="row g-3">
                 <div class="col-md-12">
@@ -64,35 +68,62 @@
                     </div>
                 </div>
 
+                <!-- Origen con Autocomplete -->
                 <div class="col-md-6">
-                    <label class="form-label small fw-bold text-muted">Punto de Origen</label>
+                    <label class="form-label small fw-bold text-muted">
+                        Punto de Origen
+                        <span id="ruta-origen-coord-badge" class="badge bg-success ms-2 d-none">
+                            <i class="bi bi-geo-fill me-1"></i>Ubicado
+                        </span>
+                    </label>
                     <div class="input-group">
                         <span class="input-group-text bg-light border-end-0"><i class="bi bi-geo-alt"></i></span>
-                        <input type="text" id="origen" class="form-control" placeholder="Ciudad / Almacén" required>
+                        <input type="text" id="origen" class="form-control" placeholder="Buscar dirección de origen..." required autocomplete="off">
                     </div>
+                    <div id="ruta-origen-results" class="autocomplete-dropdown"></div>
                 </div>
 
+                <!-- Destino con Autocomplete -->
                 <div class="col-md-6">
-                    <label class="form-label small fw-bold text-muted">Punto de Destino</label>
+                    <label class="form-label small fw-bold text-muted">
+                        Punto de Destino
+                        <span id="ruta-destino-coord-badge" class="badge bg-danger ms-2 d-none">
+                            <i class="bi bi-flag-fill me-1"></i>Ubicado
+                        </span>
+                    </label>
                     <div class="input-group">
                         <span class="input-group-text bg-light border-end-0"><i class="bi bi-flag"></i></span>
-                        <input type="text" id="destino" class="form-control" placeholder="Dirección Entrega" required>
+                        <input type="text" id="destino" class="form-control" placeholder="Buscar dirección de destino..." required autocomplete="off">
                     </div>
+                    <div id="ruta-destino-results" class="autocomplete-dropdown"></div>
                 </div>
 
+                <!-- Mapa Interactivo -->
                 <div class="col-md-12">
-                    <label class="form-label small fw-bold text-muted">Precio del Servicio (RD$)</label>
-                    <div class="input-group">
-                        <span class="input-group-text bg-light border-end-0">RD$</span>
-                        <input type="number" id="service_price" class="form-control" placeholder="0.00">
+                    <label class="form-label small fw-bold text-muted">
+                        <i class="bi bi-map me-1"></i>Vista Previa de la Ruta
+                        <span class="text-muted fw-normal">(Selecciona los puntos en el mapa o búscalos arriba)</span>
+                    </label>
+                    <div id="ruta-modal-map" style="height: 280px; border-radius: 12px; border: 1px solid #e2e8f0; overflow: hidden; background: #f8fafc;"></div>
+                    <div class="d-flex gap-2 mt-2">
+                        <button type="button" class="btn btn-sm btn-outline-secondary" id="ruta-btn-set-origen">
+                            <i class="bi bi-geo-alt me-1"></i>Fijar Origen en mapa
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outline-danger" id="ruta-btn-set-destino">
+                            <i class="bi bi-flag me-1"></i>Fijar Destino en mapa
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outline-primary ms-auto" id="ruta-btn-calcular">
+                            <i class="bi bi-arrow-left-right me-1"></i>Calcular Ruta
+                        </button>
                     </div>
-                    <div class="form-text small">Valor facturado al cliente por este desplazamiento.</div>
                 </div>
             </div>
 
             <div class="mt-4 pt-3 border-top d-flex justify-content-end gap-2">
                 <button type="button" class="btn btn-light px-4 btn-close-modal">Cancelar</button>
-                <button type="button" class="btn btn-primary px-4" id="routeSubmitBtn" onclick="guardarRuta()">Publicar Servicio</button>
+                <button type="button" class="btn btn-primary px-4" id="routeSubmitBtn" onclick="guardarRuta()">
+                    <i class="bi bi-send-check me-2"></i>Publicar Servicio
+                </button>
             </div>
         </form>
     </div>
@@ -111,4 +142,40 @@
         padding: 15px 10px;
         color: #1e293b;
     }
+
+    /* ── Autocomplete Dropdown ── */
+    .autocomplete-dropdown {
+        position: absolute;
+        z-index: 9999;
+        background: #fff;
+        border: 1px solid #e2e8f0;
+        border-radius: 10px;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+        width: calc(100% - 2px);
+        max-height: 220px;
+        overflow-y: auto;
+        display: none;
+        margin-top: 2px;
+    }
+    .autocomplete-dropdown.active {
+        display: block;
+    }
+    .autocomplete-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        padding: 10px 14px;
+        cursor: pointer;
+        border-bottom: 1px solid #f1f5f9;
+        transition: background 0.15s;
+    }
+    .autocomplete-item:last-child { border-bottom: none; }
+    .autocomplete-item:hover { background: #f0f7ff; }
+    .autocomplete-item i { color: #3b82f6; margin-top: 2px; flex-shrink: 0; }
+    .poi-info { display: flex; flex-direction: column; }
+    .poi-name { font-size: 13px; font-weight: 600; color: #0f172a; }
+    .poi-address { font-size: 11px; color: #94a3b8; }
+    
+    /* Badge de coordenadas capturadas */
+    .col-md-6 { position: relative; }
 </style>

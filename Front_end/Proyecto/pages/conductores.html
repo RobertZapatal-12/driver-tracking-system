@@ -167,9 +167,72 @@
             </div>
 
             <!-- =================================================
+                 ACCESO A LA APP MÓVIL
+                 Solo el administrador puede definir o cambiar estas
+                 credenciales. El conductor las usa para iniciar sesión
+                 en la aplicación móvil.
+                 ================================================= -->
+            <div class="border rounded-3 p-3 mb-3" style="background:#f8faff; border-color:#c7d7f5 !important;">
+                <div class="d-flex align-items-center gap-2 mb-2">
+                    <i class="bi bi-phone-fill text-primary"></i>
+                    <span class="fw-bold small text-primary">Acceso a la App Móvil</span>
+                    <span class="badge bg-primary-subtle text-primary ms-auto" style="font-size:0.7rem;">Solo Admin</span>
+                </div>
+                <p class="text-muted small mb-3" style="font-size:0.78rem;">
+                    Define el correo y contraseña que usará el conductor para iniciar sesión en la app.
+                    Si no se completan, el conductor no podrá acceder a la aplicación.
+                </p>
+
+                <div class="row">
+                    <div class="col-md-6 mb-2">
+                        <label class="form-label small fw-bold">Correo electrónico</label>
+                        <input
+                            type="email"
+                            id="emailC"
+                            class="form-control"
+                            placeholder="ej: conductor@empresa.com"
+                            autocomplete="off"
+                        >
+                    </div>
+                    <div class="col-md-6 mb-2">
+                        <label class="form-label small fw-bold">Contraseña de la App</label>
+                        <div class="input-group">
+                            <input
+                                type="password"
+                                id="passwordC"
+                                class="form-control"
+                                placeholder="Nueva contraseña"
+                                autocomplete="new-password"
+                            >
+                            <button
+                                type="button"
+                                class="btn btn-outline-secondary"
+                                id="togglePasswordC"
+                                tabindex="-1"
+                                title="Mostrar / ocultar contraseña"
+                            >
+                                <i class="bi bi-eye" id="eyeIcon"></i>
+                            </button>
+                        </div>
+                        <div id="passwordHint" class="text-muted" style="font-size:0.73rem; margin-top:3px;">
+                            Deja en blanco para no cambiar la contraseña actual.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Badge de estado de acceso (solo en modo edición) -->
+                <div id="driver-access-status" class="d-none mt-2">
+                    <span id="access-badge-ok"  class="badge d-none" style="background:#dcfce7;color:#166534;font-size:0.75rem;">
+                        <i class="bi bi-check-circle-fill me-1"></i>Con acceso a la App
+                    </span>
+                    <span id="access-badge-no" class="badge d-none" style="background:#fee2e2;color:#991b1b;font-size:0.75rem;">
+                        <i class="bi bi-x-circle-fill me-1"></i>Sin acceso a la App
+                    </span>
+                </div>
+            </div>
+
+            <!-- =================================================
                  BOTONES DEL MODAL
-                 - Cancelar
-                 - Guardar
                  ================================================= -->
             <div class="d-flex justify-content-end gap-2">
                 <button type="button" class="btn btn-light btn-close-modal">
@@ -183,3 +246,18 @@
         </form>
     </div>
 </div>
+
+<script>
+// Toggle show/hide contraseña en modal conductor
+document.getElementById('togglePasswordC')?.addEventListener('click', function () {
+    const input = document.getElementById('passwordC');
+    const icon  = document.getElementById('eyeIcon');
+    if (input.type === 'password') {
+        input.type = 'text';
+        icon.className = 'bi bi-eye-slash';
+    } else {
+        input.type = 'password';
+        icon.className = 'bi bi-eye';
+    }
+});
+</script>

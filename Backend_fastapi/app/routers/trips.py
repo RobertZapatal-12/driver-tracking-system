@@ -96,6 +96,10 @@ def create_route(route: schemas.RouteCreate, db: Session = Depends(get_db)):
         driver_id=vehicle.driver_id,
         origen=route.origen,
         destino=route.destino,
+        lat_origen=route.lat_origen,
+        lon_origen=route.lon_origen,
+        lat_destino=route.lat_destino,
+        lon_destino=route.lon_destino,
         estado="Pendiente"
     )
 
@@ -110,6 +114,10 @@ def create_route(route: schemas.RouteCreate, db: Session = Depends(get_db)):
         "driver_id": new_route.driver_id,
         "origen": new_route.origen,
         "destino": new_route.destino,
+        "lat_origen": new_route.lat_origen,
+        "lon_origen": new_route.lon_origen,
+        "lat_destino": new_route.lat_destino,
+        "lon_destino": new_route.lon_destino,
         "fecha": new_route.fecha,
         "estado": new_route.estado,
         "driver_nombre": driver.nombre
@@ -143,11 +151,17 @@ def update_route(route_id: int, route_data: schemas.RouteCreate, db: Session = D
     if not driver:
         raise HTTPException(status_code=404, detail="Conductor no encontrado")
 
-    route.user_id = route_data.user_id
+    route.user_id    = route_data.user_id
     route.vehicle_id = route_data.vehicle_id
-    route.driver_id = vehicle.driver_id
-    route.origen = route_data.origen
-    route.destino = route_data.destino
+    route.driver_id  = vehicle.driver_id
+    route.origen     = route_data.origen
+    route.destino    = route_data.destino
+
+    # ── Actualizar coordenadas si se proveen ─────────────
+    if route_data.lat_origen  is not None: route.lat_origen  = route_data.lat_origen
+    if route_data.lon_origen  is not None: route.lon_origen  = route_data.lon_origen
+    if route_data.lat_destino is not None: route.lat_destino = route_data.lat_destino
+    if route_data.lon_destino is not None: route.lon_destino = route_data.lon_destino
 
     db.commit()
     db.refresh(route)

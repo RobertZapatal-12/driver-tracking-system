@@ -412,6 +412,8 @@ function initModals() {
             e.preventDefault();
 
             const nombre = document.getElementById("nombreC").value;
+            const emailVal    = document.getElementById("emailC")?.value.trim() || "";
+            const passwordVal = document.getElementById("passwordC")?.value.trim() || "";
 
             const data = {
                 nombre: nombre,
@@ -423,7 +425,10 @@ function initModals() {
                 descripcion: document.getElementById("descripcionC").value || "Sin información.",
                 imagen:
                     window.driverAppData.foto ||
-                    `https://ui-avatars.com/api/?name=${encodeURIComponent(nombre)}&background=random&shape=square`
+                    `https://ui-avatars.com/api/?name=${encodeURIComponent(nombre)}&background=random&shape=square`,
+                // Credenciales de acceso a la app móvil (solo admin)
+                email:    emailVal    || null,
+                password: passwordVal || null,
             };
 
             try {
@@ -450,7 +455,8 @@ function initModals() {
                 }
             } catch (error) {
                 console.error("Error al conectar con la API:", error);
-                Toast.error("No se pudo guardar. Revisa que el servidor esté encendido.");
+                const msg = error.message || "No se pudo guardar. Revisa que el servidor esté encendido.";
+                Toast.error(msg);
             }
         };
     }
@@ -474,6 +480,12 @@ function renderDriverCard(d) {
 
     const statusClass = d.estado === "Activo" ? "bg-status-activo" : "bg-status-inactivo";
 
+    // Badge de acceso a la app móvil
+    const tieneAcceso = d.email_usuario;
+    const appBadge = tieneAcceso
+        ? `<span class="badge ms-2" style="background:#dcfce7;color:#166534;font-size:0.7rem;"><i class="bi bi-phone-fill me-1"></i>${d.email_usuario}</span>`
+        : `<span class="badge ms-2" style="background:#fee2e2;color:#991b1b;font-size:0.7rem;"><i class="bi bi-phone me-1"></i>Sin acceso a la App</span>`;
+
     card.innerHTML = `
         <div class="driver-actions-container">
             <button class="btn-tuerca" onclick="event.stopPropagation(); toggleMenu(this)"><i class="bi bi-gear"></i></button>
@@ -484,14 +496,14 @@ function renderDriverCard(d) {
         </div>
 
         <div class="driver-header">
-            <div class="driver-avatar-square" onclick="event.stopPropagation(); verImagenConductor('${d.imagen || "https://via.placeholder.com/150"}')">
+            <div class="driver-avatar-square" onclick="event.stopPropagation(); verImagenConductor('${d.imagen || "https://via.placeholder.com/150"}')"> 
                 <img src="${d.imagen || "https://via.placeholder.com/150"}" alt="${d.nombre}" style="cursor: pointer;">
             </div>
 
             <div class="driver-main-info">
                 <div class="info-item">
                     <span class="label">Nombre</span>
-                    <span class="value">${d.nombre}</span>
+                    <span class="value">${d.nombre} ${appBadge}</span>
                 </div>
 
                 <div class="info-item">
@@ -571,6 +583,17 @@ function resetDriverForm() {
         btnGuardar.classList.remove("btn-warning");
         btnGuardar.classList.add("btn-primary");
     }
+
+    // Limpiar campos de acceso app
+    const emailEl    = document.getElementById("emailC");
+    const passwordEl = document.getElementById("passwordC");
+    if (emailEl)    emailEl.value    = "";
+    if (passwordEl) passwordEl.value = "";
+
+    // Ocultar badges de acceso
+    document.getElementById("driver-access-status")?.classList.add("d-none");
+    document.getElementById("access-badge-ok")?.classList.add("d-none");
+    document.getElementById("access-badge-no")?.classList.add("d-none");
 
     window.driverAppData.foto = "";
 }

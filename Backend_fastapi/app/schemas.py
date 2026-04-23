@@ -90,11 +90,15 @@ class DriverBase(BaseModel):
 
 
 class DriverCreate(DriverBase):
-    pass
+    # Campos opcionales para crear/actualizar credenciales de acceso a la app móvil
+    email: Optional[str] = None
+    password: Optional[str] = None
 
 
 class DriverResponse(DriverBase):
     driver_id: int
+    user_id: Optional[int] = None
+    email_usuario: Optional[str] = None   # Email del usuario vinculado (para el frontend)
 
     class Config:
         from_attributes = True

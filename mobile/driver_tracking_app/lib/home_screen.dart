@@ -8,6 +8,8 @@ import 'package:http/http.dart' as http;
 import 'map_screen.dart';
 import 'notification_service.dart';
 import 'trip_service.dart';
+import 'auth_service.dart';
+import 'login_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   final int driverId;
@@ -163,6 +165,150 @@ class _HomeScreenState extends State<HomeScreen> {
       _activeNavRoute = route;
       _selectedIndex = 2; // Ir a pestaña Mapa
     });
+  }
+
+  // ────────────────────────────────────────────────────────
+  // Diálogo de detalle de viaje (antes de aceptar)
+  // ────────────────────────────────────────────────────────
+  void _showTripDetailDialog(Map<String, dynamic> route) {
+    final routeId = route['route_id'];
+    final origen  = route['origen']  ?? 'Sin especificar';
+    final destino = route['destino'] ?? 'Sin especificar';
+    final hasCoords = route['lat_destino'] != null && route['lon_destino'] != null;
+
+    String fechaStr = '';
+    final fecha = route['fecha'] ?? '';
+    if (fecha is String && fecha.isNotEmpty) {
+      try {
+        fechaStr = _formatDateTime(DateTime.parse(fecha));
+      } catch (_) {
+        fechaStr = fecha;
+      }
+    }
+
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        contentPadding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: const Color(0xFF1E3A8A).withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.assignment_rounded,
+                  color: Color(0xFF1E3A8A), size: 22),
+            ),
+            const SizedBox(width: 10),
+            const Expanded(
+              child: Text('Detalles del Viaje',
+                  style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold)),
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const SizedBox(height: 4),
+            // ID del viaje
+            _detailRow(Icons.tag_rounded, 'ID de Ruta', '#$routeId', const Color(0xFF64748B)),
+            const Divider(height: 16),
+            // Origen
+            _detailRow(Icons.circle, 'Origen', origen, const Color(0xFF16A34A)),
+            const SizedBox(height: 8),
+            // Destino
+            _detailRow(Icons.location_on_rounded, 'Destino', destino, const Color(0xFFDC2626)),
+            const Divider(height: 16),
+            // Fecha
+            if (fechaStr.isNotEmpty)
+              _detailRow(Icons.access_time_rounded, 'Asignado', fechaStr, const Color(0xFF7C3AED)),
+            // Navegación disponible
+            const SizedBox(height: 8),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: hasCoords
+                    ? const Color(0xFFDCFCE7)
+                    : const Color(0xFFFEF3C7),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    hasCoords ? Icons.map_rounded : Icons.map_outlined,
+                    color: hasCoords
+                        ? const Color(0xFF16A34A)
+                        : const Color(0xFFD97706),
+                    size: 16,
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      hasCoords
+                          ? 'Navegación GPS disponible 🗺️'
+                          : 'Sin coordenadas (solo texto)',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: hasCoords
+                            ? const Color(0xFF16A34A)
+                            : const Color(0xFFD97706),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 8),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancelar',
+                style: TextStyle(color: Colors.grey)),
+          ),
+          ElevatedButton.icon(
+            onPressed: () async {
+              Navigator.pop(context);
+              await _updateStatus(routeId, 'Aceptado');
+            },
+            icon: const Icon(Icons.check_rounded, size: 18),
+            label: const Text('Aceptar Viaje'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF1E3A8A),
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10)),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _detailRow(IconData icon, String label, String value, Color color) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(icon, color: color, size: 16),
+        const SizedBox(width: 8),
+        Text('$label: ', style: const TextStyle(fontSize: 13, color: Colors.grey)),
+        Expanded(
+          child: Text(
+            value,
+            style: const TextStyle(
+                fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF0F172A)),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+      ],
+    );
   }
 
   // ────────────────────────────────────────────────────────
@@ -384,6 +530,53 @@ class _HomeScreenState extends State<HomeScreen> {
     super.dispose();
   }
 
+  Future<void> _logout(BuildContext context) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (_) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+        title: const Row(
+          children: [
+            Icon(Icons.logout_rounded, color: Color(0xFFDC2626)),
+            SizedBox(width: 10),
+            Text('Cerrar sesión'),
+          ],
+        ),
+        content: const Text(
+          '¿Estás seguro que deseas cerrar sesión? Si el tracking está activo, se detendrá.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancelar', style: TextStyle(color: Colors.grey)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFDC2626),
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            ),
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Salir'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm == true) {
+      if (isTracking) {
+        await stopTracking();
+      }
+      final auth = AuthService();
+      await auth.logout();
+      if (!mounted) return;
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const LoginScreen()),
+      );
+    }
+  }
+
   // ────────────────────────────────────────────────────────
   // Build
   // ────────────────────────────────────────────────────────
@@ -418,7 +611,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         icon: const Icon(Icons.refresh_rounded),
                       ),
                     ]
-                  : _selectedIndex == 3
+                      : _selectedIndex == 3
                       ? [
                           IconButton(
                             onPressed: () {
@@ -436,7 +629,15 @@ class _HomeScreenState extends State<HomeScreen> {
                                 : 'Ver todo el historial',
                           ),
                         ]
-                      : null,
+                      : _selectedIndex == 0
+                          ? [
+                              IconButton(
+                                onPressed: () => _logout(context),
+                                icon: const Icon(Icons.logout_rounded),
+                                tooltip: 'Cerrar sesión',
+                              ),
+                            ]
+                          : null,
             )
           : null,
       body: IndexedStack(
@@ -937,9 +1138,9 @@ class _HomeScreenState extends State<HomeScreen> {
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton.icon(
-                      onPressed: () => _updateStatus(routeId, 'Aceptado'),
-                      icon: const Icon(Icons.check_rounded, size: 18),
-                      label: const Text('Aceptar Viaje'),
+                      onPressed: () => _showTripDetailDialog(route),
+                      icon: const Icon(Icons.info_outline_rounded, size: 18),
+                      label: const Text('Ver Detalles y Aceptar'),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF1E3A8A),
                         foregroundColor: Colors.white,

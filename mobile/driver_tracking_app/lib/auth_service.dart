@@ -32,10 +32,15 @@ class AuthService {
         final token = data['token'];
         final user = data['user'];
 
+        // Solo permitir acceso si tiene un driver_id asignado
+        if (user['driver_id'] == null || user['driver_id'] == 0) {
+          throw Exception('Acceso denegado: Esta cuenta no tiene un perfil de conductor asignado.');
+        }
+
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString('authToken', token);
         await prefs.setInt('userId', user['id']);
-        await prefs.setInt('driverId', user['driver_id'] ?? 0);
+        await prefs.setInt('driverId', user['driver_id']);
         await prefs.setString('userEmail', user['email'] ?? '');
         await prefs.setString('userName', user['name'] ?? '');
         await prefs.setString('userRole', user['role'] ?? '');
@@ -52,7 +57,7 @@ class AuthService {
 
       throw Exception(data['detail'] ?? 'Credenciales inválidas');
     } catch (e) {
-      throw Exception('Error de login: $e');
+      throw Exception(e.toString().replaceAll('Exception: ', ''));
     }
   }
 

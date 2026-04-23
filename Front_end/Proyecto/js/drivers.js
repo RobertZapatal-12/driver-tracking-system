@@ -261,6 +261,27 @@ async function editarDriver(id) {
         document.getElementById("estadoC").value = d.estado || "";
         document.getElementById("descripcionC").value = d.descripcion || "";
 
+        // Campos de acceso a la app
+        const emailEl = document.getElementById("emailC");
+        const passwordEl = document.getElementById("passwordC");
+        const accessStatus = document.getElementById("driver-access-status");
+        const accessOk = document.getElementById("access-badge-ok");
+        const accessNo = document.getElementById("access-badge-no");
+
+        if (emailEl) emailEl.value = d.email_usuario || "";
+        if (passwordEl) passwordEl.value = ""; // Nunca mostrar contraseña
+
+        if (accessStatus && accessOk && accessNo) {
+            accessStatus.classList.remove("d-none");
+            if (d.email_usuario) {
+                accessOk.classList.remove("d-none");
+                accessNo.classList.add("d-none");
+            } else {
+                accessOk.classList.add("d-none");
+                accessNo.classList.remove("d-none");
+            }
+        }
+
         window.driverAppData = window.driverAppData || {};
         window.driverAppData.foto = d.imagen || "";
 

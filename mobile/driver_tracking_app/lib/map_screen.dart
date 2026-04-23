@@ -72,7 +72,23 @@ class _MapScreenState extends State<MapScreen> {
     // Si se pasó una ruta activa nueva, iniciar navegación
     if (widget.activeRoute != null &&
         widget.activeRoute != oldWidget.activeRoute) {
-      _startNavigationFromRoute(widget.activeRoute!);
+      _waitAndStartNavigation(widget.activeRoute!);
+    }
+  }
+
+  /// Espera a que el GPS esté disponible antes de iniciar la navegación.
+  /// Reintenta hasta 10 veces con 300ms de espera entre intentos (~3s total).
+  Future<void> _waitAndStartNavigation(Map<String, dynamic> route,
+      {int attempts = 0}) async {
+    if (!mounted) return;
+    if (_currentPosition != null) {
+      _startNavigationFromRoute(route);
+    } else if (attempts < 10) {
+      await Future.delayed(const Duration(milliseconds: 300));
+      _waitAndStartNavigation(route, attempts: attempts + 1);
+    } else {
+      // Último intento: iniciar de todas formas (manejará null internamente)
+      _startNavigationFromRoute(route);
     }
   }
 
