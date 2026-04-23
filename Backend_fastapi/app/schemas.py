@@ -87,6 +87,7 @@ class DriverBase(BaseModel):
     estado: str
     imagen: Optional[str] = None
     descripcion: Optional[str] = None
+    vencimiento_licencia: Optional[str] = None
 
 
 class DriverCreate(DriverBase):
@@ -121,6 +122,7 @@ class VehicleBase(BaseModel):
     imagen3: Optional[str] = None
     imagen4: Optional[str] = None
     imagen5: Optional[str] = None
+    vencimiento_seguro: Optional[str] = None
 
 
 class VehicleCreate(VehicleBase):

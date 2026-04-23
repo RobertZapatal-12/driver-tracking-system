@@ -48,6 +48,85 @@ function logoutUser() {
 }
 
 /* =========================================================
+   MENÚ DE SELECCIÓN DE ALERTAS (DASHBOARD)
+   ========================================================= */
+function mostrarMenuAlertas() {
+    // Si no hay alertas, navegar a conductores directamente por defecto
+    const kpi = document.getElementById("kpi-alertas-criticas");
+    if (kpi && kpi.textContent === "0") {
+        cargarPagina('conductores');
+        return;
+    }
+
+    const overlay = document.createElement("div");
+    overlay.id = "alert-selection-overlay";
+    overlay.style.cssText = `
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(8px);
+        z-index: 99999; display: flex; align-items: center; justify-content: center;
+        animation: fadeIn 0.3s ease;
+    `;
+
+    const dialog = document.createElement("div");
+    dialog.style.cssText = `
+        background: var(--bg-surface, white); border-radius: 24px; padding: 40px;
+        max-width: 500px; width: 90%; text-align: center;
+        box-shadow: 0 25px 70px rgba(0,0,0,0.3);
+        border: 1px solid var(--border-color);
+        transform: scale(0.9); animation: bounceIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    `;
+
+    dialog.innerHTML = `
+        <div style="width: 64px; height: 64px; margin: 0 auto 20px; border-radius: 20px; background: #fee2e2; display: flex; align-items: center; justify-content: center;">
+            <i class="bi bi-bell-fill" style="font-size: 28px; color: #ef4444;"></i>
+        </div>
+        <h4 style="margin: 0 0 12px; font-weight: 800; color: var(--text-primary); font-size: 1.4rem;">Centro de Alertas</h4>
+        <p style="margin: 0 0 32px; color: var(--text-secondary); font-size: 1rem; line-height: 1.5;">Selecciona qué tipo de vencimientos deseas revisar:</p>
+        
+        <div style="display: grid; gap: 16px;">
+            <button id="alert-goto-drivers" class="btn-alert-choice" style="display: flex; align-items: center; gap: 16px; padding: 18px; border-radius: 16px; border: 1px solid var(--border-color); background: var(--bg-main); cursor: pointer; text-align: left; transition: 0.2s;">
+                <div style="width: 44px; height: 44px; border-radius: 12px; background: #eff6ff; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                    <i class="bi bi-person-badge-fill" style="color: #3b82f6; font-size: 1.2rem;"></i>
+                </div>
+                <div>
+                    <div style="font-weight: 700; color: var(--text-primary);">Licencias de Conducir</div>
+                    <div style="font-size: 0.8rem; color: var(--text-secondary);">Ver chóferes con licencia vencida</div>
+                </div>
+            </button>
+
+            <button id="alert-goto-vehicles" class="btn-alert-choice" style="display: flex; align-items: center; gap: 16px; padding: 18px; border-radius: 16px; border: 1px solid var(--border-color); background: var(--bg-main); cursor: pointer; text-align: left; transition: 0.2s;">
+                <div style="width: 44px; height: 44px; border-radius: 12px; background: #f0fdf4; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                    <i class="bi bi-shield-check" style="color: #10b981; font-size: 1.2rem;"></i>
+                </div>
+                <div>
+                    <div style="font-weight: 700; color: var(--text-primary);">Seguros de Vehículos</div>
+                    <div style="font-size: 0.8rem; color: var(--text-secondary);">Ver flota con seguro próximo a vencer</div>
+                </div>
+            </button>
+        </div>
+
+        <button id="alert-cancel" style="margin-top: 24px; padding: 10px 20px; background: none; border: none; color: var(--text-secondary); font-weight: 600; cursor: pointer; font-size: 0.9rem;">Cerrar ventana</button>
+    `;
+
+    overlay.appendChild(dialog);
+    document.body.appendChild(overlay);
+
+    // Eventos
+    dialog.querySelector("#alert-goto-drivers").onclick = () => {
+        overlay.remove();
+        cargarPagina('conductores', { filter: 'alertas' });
+    };
+
+    dialog.querySelector("#alert-goto-vehicles").onclick = () => {
+        overlay.remove();
+        cargarPagina('vehiculos', { filter: 'alertas' });
+    };
+
+    dialog.querySelector("#alert-cancel").onclick = () => overlay.remove();
+    overlay.onclick = (e) => { if(e.target === overlay) overlay.remove(); };
+}
+
+/* =========================================================
    INICIO DE LA APLICACIÓN
    ========================================================= */
 document.addEventListener("DOMContentLoaded", () => {
@@ -158,12 +237,17 @@ function playNotificationSound() {
 /* =========================================================
    NAVEGACIÓN DINÁMICA ENTRE PÁGINAS
    ========================================================= */
-function cargarPagina(pagina) {
+let filtroDriversActual = null; // Para filtros específicos (ej: alertas desde el dashboard)
+
+function cargarPagina(pagina, opciones = {}) {
     const contenedor = document.getElementById("contenido");
     const titulo = document.getElementById("page-title");
 
     // Detener polling del mapa al cambiar de página
     detenerPollingMapa();
+
+    // Establecer filtros si vienen en opciones
+    filtroDriversActual = opciones.filter || null;
 
     fetch(`pages/${pagina}.html`)
         .then(res => res.text())
@@ -198,6 +282,9 @@ function cargarPagina(pagina) {
 
             if (pagina === "conductores" && typeof cargarConductores === "function") {
                 cargarConductores();
+                if (typeof inicializarEventosConductores === "function") {
+                    inicializarEventosConductores();
+                }
             }
 
             if (pagina === "vehiculos" && typeof initVehiculosModule === "function") {
@@ -423,6 +510,7 @@ function initModals() {
                 tipo_licencia: document.getElementById("tipoLicenciaC").value,
                 estado: document.getElementById("estadoC").value,
                 descripcion: document.getElementById("descripcionC").value || "Sin información.",
+                vencimiento_licencia: document.getElementById("vencimientoLicenciaC")?.value || null,
                 imagen:
                     window.driverAppData.foto ||
                     `https://ui-avatars.com/api/?name=${encodeURIComponent(nombre)}&background=random&shape=square`,
@@ -520,6 +608,30 @@ function renderDriverCard(d) {
                     <span class="label">Licencia</span>
                     <span class="value">${d.numero_licencia} (${d.tipo_licencia})</span>
                 </div>
+
+                <div class="info-item">
+                    <span class="label">Vencimientos</span>
+                    <span class="value">
+                        ${(() => {
+                            const hoy = new Date();
+                            hoy.setHours(0,0,0,0);
+                            let html = "";
+                            
+                            // Licencia
+                            if (d.vencimiento_licencia) {
+                                const f = new Date(d.vencimiento_licencia + "T00:00:00");
+                                const diff = Math.ceil((f - hoy) / (1000 * 60 * 60 * 24));
+                                let badge = "";
+                                if (diff < 0) badge = `<span class="badge bg-danger ms-1">VENCIDA hace ${Math.abs(diff)}d</span>`;
+                                else if (diff <= 30) badge = `<span class="badge bg-warning text-dark ms-1">VENCE EN ${diff}d</span>`;
+                                
+                                html += `<div><small class="text-muted">Lic:</small> ${d.vencimiento_licencia} ${badge}</div>`;
+                            }
+
+                            return html || '<span class="text-muted small">Sin fechas registradas</span>';
+                        })()}
+                    </span>
+                </div>
             </div>
         </div>
 
@@ -589,6 +701,20 @@ function resetDriverForm() {
     const passwordEl = document.getElementById("passwordC");
     if (emailEl)    emailEl.value    = "";
     if (passwordEl) passwordEl.value = "";
+
+    // Limpiar campos de vencimientos
+    const vLicEl = document.getElementById("vencimientoLicenciaC");
+    if (vLicEl) vLicEl.value = "";
+
+    // Cerrar panel de vencimientos y limpiar badges
+    const panel = document.getElementById("panelVencimientos");
+    const chevron = document.getElementById("chevronVencimientos");
+    const badgesBtn = document.getElementById("vencimientoBadges");
+    const badgeLic = document.getElementById("badgeLicencia");
+    if (panel)  { panel.style.display = "none"; }
+    if (chevron){ chevron.style.transform = "rotate(0deg)"; }
+    if (badgesBtn) badgesBtn.innerHTML = "";
+    if (badgeLic)  badgeLic.innerHTML  = "";
 
     // Ocultar badges de acceso
     document.getElementById("driver-access-status")?.classList.add("d-none");
@@ -969,44 +1095,149 @@ document.addEventListener("click", function (e) {
    ACTUALIZAR DASHBOARD SERVICIOS
    ========================================================= */
 async function actualizarDashboardServicios() {
+    // ── KPI: Servicios Hoy ────────────────────────────────
+    try {
+        const resStats = await CONFIG.fetchAuth("/request/stats/hoy");
+        if (resStats.ok) {
+            const stats = await resStats.json();
+            const kpiEl  = document.getElementById("kpi-servicios-hoy");
+            const subEl  = document.getElementById("kpi-servicios-hoy-sub");
+
+            if (kpiEl) kpiEl.textContent = stats.hoy;
+
+            if (subEl) {
+                if (stats.ayer === 0) {
+                    subEl.innerHTML = `<span class="text-muted"><i class="bi bi-dash"></i> Sin datos de ayer</span>`;
+                } else {
+                    const diff = stats.hoy - stats.ayer;
+                    const pct  = Math.round((diff / stats.ayer) * 100);
+                    if (diff > 0) {
+                        subEl.innerHTML = `<span class="text-success"><i class="bi bi-arrow-up"></i> +${pct}% vs ayer</span>`;
+                    } else if (diff < 0) {
+                        subEl.innerHTML = `<span class="text-danger"><i class="bi bi-arrow-down"></i> ${pct}% vs ayer</span>`;
+                    } else {
+                        subEl.innerHTML = `<span class="text-muted"><i class="bi bi-dash"></i> Igual que ayer</span>`;
+                    }
+                }
+            }
+        }
+    } catch (e) {
+        const kpiEl = document.getElementById("kpi-servicios-hoy");
+        if (kpiEl) kpiEl.textContent = "—";
+    }
+
+    // ── KPI: Choferes Activos ─────────────────────────────
+    try {
+        const resChoferes = await CONFIG.fetchAuth("/drivers/stats/activos");
+        if (resChoferes.ok) {
+            const data   = await resChoferes.json();
+            const kpiEl  = document.getElementById("kpi-choferes-activos");
+            const subEl  = document.getElementById("kpi-choferes-activos-sub");
+
+            if (kpiEl) kpiEl.textContent = data.activos;
+            if (subEl) subEl.textContent = `Total plantilla: ${data.total}`;
+        }
+    } catch (e) {
+        const kpiEl = document.getElementById("kpi-choferes-activos");
+        if (kpiEl) kpiEl.textContent = "—";
+    }
+
+    // ── KPI: Alertas Críticas (Vencimientos) ──────────────
+    try {
+        const [resDrivers, resVehicles] = await Promise.all([
+            CONFIG.fetchAuth("/drivers/"),
+            CONFIG.fetchAuth("/vehicles/")
+        ]);
+
+        if (resDrivers.ok && resVehicles.ok) {
+            const drivers = await resDrivers.json();
+            const vehicles = await resVehicles.json();
+            const hoy = new Date();
+            hoy.setHours(0,0,0,0);
+
+            let vencidos = 0;
+            let proximos = 0;
+
+            // Revisar Licencias en Drivers
+            drivers.forEach(d => {
+                const fStr = d.vencimiento_licencia;
+                if (fStr) {
+                    const f = new Date(fStr + "T00:00:00");
+                    const diffDays = Math.ceil((f - hoy) / (1000 * 60 * 60 * 24));
+                    if (diffDays < 0) vencidos++;
+                    else if (diffDays <= 30) proximos++;
+                }
+            });
+
+            // Revisar Seguros en Vehicles
+            vehicles.forEach(v => {
+                const fStr = v.vencimiento_seguro;
+                if (fStr) {
+                    const f = new Date(fStr + "T00:00:00");
+                    const diffDays = Math.ceil((f - hoy) / (1000 * 60 * 60 * 24));
+                    if (diffDays < 0) vencidos++;
+                    else if (diffDays <= 30) proximos++;
+                }
+            });
+
+            const totalAlertas = vencidos + proximos;
+            const kpiEl = document.getElementById("kpi-alertas-criticas");
+            const subEl = document.getElementById("kpi-alertas-criticas-sub");
+
+            if (kpiEl) kpiEl.textContent = totalAlertas;
+            if (subEl) {
+                if (totalAlertas === 0) {
+                    subEl.innerHTML = `<span class="text-success"><i class="bi bi-check-circle-fill me-1"></i>Todo al día</span>`;
+                } else {
+                    let detalle = [];
+                    if (vencidos > 0) detalle.push(`${vencidos} vencidos`);
+                    if (proximos > 0) detalle.push(`${proximos} próximos`);
+                    subEl.innerHTML = `<i class="bi bi-exclamation-triangle-fill me-1"></i>${detalle.join(', ')}`;
+                }
+            }
+        }
+    } catch (e) {
+        console.error("Error cargando alertas de vencimiento:", e);
+    }
+
+    // ── Tabla: Últimos Servicios ──────────────────────────
     try {
         const tbody = document.getElementById("dashboard-recent-services");
         if (!tbody) return;
-        
+
         tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted">Cargando servicios recientes...</td></tr>`;
-        
+
         const res = await CONFIG.fetchAuth("/request/");
         if (!res.ok) throw new Error("Error fetching requests");
-        
+
         let requests = await res.json();
-        
+
         // Ordenar más recientes primero
         requests.sort((a,b) => b.request_id - a.request_id);
-        
-        // Seleccionar los últimos 5 según solicitud del usuario
+
+        // Seleccionar los últimos 5
         requests = requests.slice(0, 5);
-        
+
         if (requests.length === 0) {
             tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted">No hay servicios solicitados recientemente.</td></tr>`;
             return;
         }
-        
+
         tbody.innerHTML = "";
-        
+
         requests.forEach(req => {
             const clienteName = req.cliente || "Sin cliente";
             const initial = clienteName.charAt(0).toUpperCase();
-            
+
             let badgeClass = "bg-secondary text-white";
             let estadoFormat = req.estado || "Desconocido";
-            
+
             if (req.estado === "pendiente") { badgeClass = "bg-warning text-dark"; estadoFormat = "Pendiente"; }
             else if (req.estado === "en_proceso") { badgeClass = "bg-primary-light text-primary"; estadoFormat = "En Proceso"; }
             else if (req.estado === "completada") { badgeClass = "bg-success-light text-success"; estadoFormat = "Completada"; }
-            
+
             const driverName = req.driver_nombre || "Sin Asignar";
-            
-            // Format date
+
             let fechaStr = req.fecha || "---";
             if (fechaStr !== "---") {
                 const dateObj = new Date(fechaStr);
@@ -1014,11 +1245,11 @@ async function actualizarDashboardServicios() {
                     fechaStr = dateObj.toLocaleDateString();
                 }
             }
-            
+
             const tr = document.createElement("tr");
             tr.style.cursor = "pointer";
             tr.onclick = () => cargarPagina("solicitudes");
-            
+
             tr.innerHTML = `
                 <td>
                     <div class="d-flex align-items-center">
@@ -1033,13 +1264,14 @@ async function actualizarDashboardServicios() {
             `;
             tbody.appendChild(tr);
         });
-        
+
     } catch (error) {
         console.error("Error cargando servicios para el dashboard:", error);
         const tbody = document.getElementById("dashboard-recent-services");
         if (tbody) tbody.innerHTML = `<tr><td colspan="5" class="text-center text-danger">Error cargando servicios.</td></tr>`;
     }
 }
+
 
 /* =========================================================
    VISOR DE IMÁGENES (FULLSCREEN)

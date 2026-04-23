@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app import models, schemas
 import secrets
-from datetime import datetime
+from datetime import datetime, date
 
 # Se crea un router para manejar todas las rutas relacionadas con los request
 router = APIRouter(
@@ -98,6 +98,41 @@ def create_request(request: schemas.RequestCreate, db: Session = Depends(get_db)
 def get_requests(db: Session = Depends(get_db)):
     requests = db.query(models.Request).all()
     return [_enrich_request(r, db) for r in requests]
+
+
+# ─── Estadísticas del día: servicios de hoy vs ayer ────────────────────────────
+@router.get("/stats/hoy")
+def get_stats_hoy(db: Session = Depends(get_db)):
+    """Devuelve el total de solicitudes creadas hoy y ayer para comparar en el dashboard."""
+    today = date.today()
+    hoy_str = today.isoformat()          # "YYYY-MM-DD"
+
+    from datetime import timedelta
+    ayer = (today - timedelta(days=1)).isoformat()
+
+    # El campo `fecha` es String en el modelo — filtramos por prefijo de fecha ISO
+    total_hoy = db.query(models.Request).filter(
+        models.Request.fecha.like(f"{hoy_str}%")
+    ).count()
+
+    total_ayer = db.query(models.Request).filter(
+        models.Request.fecha.like(f"{ayer}%")
+    ).count()
+
+    # También contamos usando registrado_en (DateTime) como fallback
+    if total_hoy == 0:
+        from sqlalchemy import func, cast
+        total_hoy = db.query(models.Request).filter(
+            func.date(models.Request.registrado_en) == today
+        ).count()
+        total_ayer = db.query(models.Request).filter(
+            func.date(models.Request.registrado_en) == (today - __import__('datetime').timedelta(days=1))
+        ).count()
+
+    return {
+        "hoy": total_hoy,
+        "ayer": total_ayer,
+    }
 
 
 # Obtener solicitudes pendientes (para operadores)

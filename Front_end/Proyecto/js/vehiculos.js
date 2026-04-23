@@ -53,6 +53,7 @@ async function fetchVehiculos() {
                     imagen3: v.imagen3,
                     imagen4: v.imagen4,
                     imagen5: v.imagen5,
+                    vencimiento_seguro: v.vencimiento_seguro,
                     imagenes: [
                         v.imagen1 || "https://images.unsplash.com/photo-1541899481282-d53bffe3c35d?auto=format&fit=crop&w=1200&q=80",
                         v.imagen2, v.imagen3, v.imagen4, v.imagen5
@@ -274,8 +275,40 @@ function aplicarFiltrosVehiculos() {
             return false;
         });
 
-        return coincideEstado && coincideTipo && coincideCapacidad && coincideMarca && coincideConductor;
+        const coincideBase = coincideEstado && coincideTipo && coincideCapacidad && coincideMarca && coincideConductor;
+
+        // Filtro de Alertas (Dashboard)
+        if (filtroDriversActual === "alertas") {
+            if (!vehiculo.vencimiento_seguro) return false;
+            const hoy = new Date();
+            hoy.setHours(0,0,0,0);
+            const f = new Date(vehiculo.vencimiento_seguro + "T00:00:00");
+            const diff = (f - hoy) / (1000 * 60 * 60 * 24);
+            return coincideBase && diff <= 30;
+        }
+
+        return coincideBase;
     });
+
+    // Mostrar aviso si el filtro de alertas está activo
+    const contenedorBase = document.getElementById("contenedorVehiculos");
+    if (contenedorBase) {
+        let alertBadge = document.getElementById("badgeFiltroAlertasV");
+        if (filtroDriversActual === "alertas") {
+            if (!alertBadge) {
+                alertBadge = document.createElement("div");
+                alertBadge.id = "badgeFiltroAlertasV";
+                alertBadge.className = "alert alert-warning py-2 px-3 mb-4 d-flex justify-content-between align-items-center rounded-3";
+                alertBadge.innerHTML = `
+                    <span class="small"><i class="bi bi-funnel-fill me-2"></i>Filtrando por <strong>Seguros Vencidos o Próximos</strong></span>
+                    <button class="btn btn-sm btn-outline-warning border-0" onclick="filtroDriversActual=null; aplicarFiltrosVehiculos()">Quitar filtro</button>
+                `;
+                contenedorBase.prepend(alertBadge);
+            }
+        } else if (alertBadge) {
+            alertBadge.remove();
+        }
+    }
 
     renderVehiculos(filtrados);
 }
@@ -410,6 +443,11 @@ function abrirDetalleVehiculo(id) {
                 <span class="vehiculo-dato-label">Placa</span>
                 <strong>${vehiculo.placa}</strong>
             </div>
+
+            <div class="vehiculo-dato-item">
+                <span class="vehiculo-dato-label">Seguro (Vence)</span>
+                <strong>${vehiculo.vencimiento_seguro || "No registrada"}</strong>
+            </div>
         `;
     }
 
@@ -509,6 +547,7 @@ function initModalFormularioVehiculo() {
             const capacidadInput = document.getElementById("capacidadVehiculo");
             const placaInput = document.getElementById("placaVehiculo");
             const estadoInput = document.getElementById("estadoVehiculoFormulario");
+            const seguroInput = document.getElementById("vencimientoSeguroV");
             const conductorInput = document.getElementById("conductorVehiculo");
             const imagenInput = document.getElementById("imagenPrincipalVehiculo");
             const img2Input = document.getElementById("imagenVehiculo2");
@@ -522,6 +561,7 @@ function initModalFormularioVehiculo() {
             const capacidad = capacidadInput ? capacidadInput.value : "0";
             const placa = placaInput ? placaInput.value.trim() : "";
             const estado = estadoInput ? estadoInput.value : "Disponible";
+            const vencimiento_seguro = seguroInput ? seguroInput.value : null;
             const driver_id = (conductorInput && conductorInput.value) ? parseInt(conductorInput.value) : null;
 
             if (!marca || !modelo || !tipo || !capacidad || !placa) {
@@ -561,7 +601,8 @@ function initModalFormularioVehiculo() {
                 imagen2: img2,
                 imagen3: img3,
                 imagen4: img4,
-                imagen5: img5
+                imagen5: img5,
+                vencimiento_seguro: vencimiento_seguro
             };
 
 
@@ -659,11 +700,44 @@ function abrirFormularioVehiculoEdicion() {
     if (placaInput) placaInput.value = vehiculoSeleccionado.placa || "";
     if (estadoInput) estadoInput.value = vehiculoSeleccionado.estado || "Disponible";
     if (conductorInput) conductorInput.value = vehiculoSeleccionado.driver_id || "";
+    
+    const seguroInput = document.getElementById("vencimientoSeguroV");
+    if (seguroInput) seguroInput.value = vehiculoSeleccionado.vencimiento_seguro || "";
 
     modalFormulario.style.display = "flex";
 }
 
-function actualizarDashboardVehiculos() {
+async function actualizarDashboardVehiculos() {
+    // Si vehiculosData no está cargado aún (dashboard sin pasar por gestión de flota),
+    // lo obtenemos directamente desde la API.
+    if (vehiculosData.length === 0) {
+        try {
+            const res = await CONFIG.fetchAuth("/vehicles/");
+            if (res.ok) {
+                const raw = await res.json();
+                vehiculosData = raw.map(v => ({
+                    id: v.vehicle_id,
+                    marca: v.marca,
+                    modelo: v.modelo,
+                    capacidad: parseInt(v.capacidad) || 4,
+                    conductor: "",
+                    driver_id: v.driver_id,
+                    estado: v.estado,
+                    placa: v.plate_number,
+                    tipo: v.tipo_vehiculo,
+                    imagen1: v.imagen1,
+                    vencimiento_seguro: v.vencimiento_seguro,
+                    imagenes: [
+                        v.imagen1 || "https://images.unsplash.com/photo-1541899481282-d53bffe3c35d?auto=format&fit=crop&w=1200&q=80",
+                        v.imagen2, v.imagen3, v.imagen4, v.imagen5
+                    ].filter(img => img)
+                }));
+            }
+        } catch (e) {
+            console.error("Error cargando vehículos para el dashboard:", e);
+        }
+    }
+
     const total = vehiculosData.length;
     const disponibles = vehiculosData.filter(v => v.estado === "Disponible").length;
     const enRuta = vehiculosData.filter(v => v.estado === "En ruta").length;

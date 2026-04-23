@@ -131,6 +131,48 @@
             </div>
 
             <!-- =================================================
+                 VENCIMIENTOS DE DOCUMENTOS
+                 Panel colapsable debajo del número de licencia
+                 ================================================= -->
+            <div class="mb-3">
+                <button
+                    type="button"
+                    id="btnToggleVencimientos"
+                    class="btn btn-sm w-100 d-flex align-items-center justify-content-between px-3 py-2"
+                    style="background: #f1f5f9; border: 1px dashed #94a3b8; border-radius: 10px; color: #475569; font-size: 0.85rem;"
+                    onclick="toggleVencimientos()"
+                >
+                    <span><i class="bi bi-calendar-check me-2"></i><strong>Vencimientos de Documentos</strong></span>
+                    <span id="vencimientoBadges" class="d-flex gap-1"></span>
+                    <i class="bi bi-chevron-down" id="chevronVencimientos" style="transition: transform 0.25s;"></i>
+                </button>
+
+                <div id="panelVencimientos" style="display:none; margin-top: 10px;">
+                    <div class="border rounded-3 p-3" style="background:#fffbf0; border-color:#fcd34d !important;">
+                        <p class="text-muted small mb-3" style="font-size:0.78rem;">
+                            <i class="bi bi-info-circle me-1"></i>
+                            Estas fechas se usan para generar <strong>alertas automáticas</strong> de documentos próximos a vencer.
+                        </p>
+                        <div class="row g-3">
+                            <!-- Licencia -->
+                            <div class="col-md-12">
+                                <label class="form-label small fw-bold">
+                                    <i class="bi bi-card-text me-1 text-primary"></i>Venc. Licencia
+                                </label>
+                                <input
+                                    type="date"
+                                    id="vencimientoLicenciaC"
+                                    class="form-control"
+                                    onchange="actualizarBadgesVencimiento()"
+                                >
+                                <div id="badgeLicencia" class="mt-1" style="font-size:0.75rem;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- =================================================
                  TERCERA FILA
                  - Tipo de licencia
                  - Estado
@@ -153,6 +195,7 @@
                     </select>
                 </div>
             </div>
+
 
             <!-- =================================================
                  DESCRIPCIÓN DEL CONDUCTOR
@@ -247,17 +290,4 @@
     </div>
 </div>
 
-<script>
-// Toggle show/hide contraseña en modal conductor
-document.getElementById('togglePasswordC')?.addEventListener('click', function () {
-    const input = document.getElementById('passwordC');
-    const icon  = document.getElementById('eyeIcon');
-    if (input.type === 'password') {
-        input.type = 'text';
-        icon.className = 'bi bi-eye-slash';
-    } else {
-        input.type = 'password';
-        icon.className = 'bi bi-eye';
-    }
-});
-</script>
+

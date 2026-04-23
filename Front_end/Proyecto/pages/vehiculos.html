@@ -154,6 +154,11 @@
                         <span class="vehiculo-dato-label">Placa</span>
                         <strong>A123BC</strong>
                     </div>
+
+                    <div class="vehiculo-dato-item">
+                        <span class="vehiculo-dato-label">Seguro (Vence)</span>
+                        <strong id="vehiculoDetalleSeguro">---</strong>
+                    </div>
                 </div>
 
             </div>
@@ -260,6 +265,17 @@
                             <option value="En ruta">En ruta</option>
                             <option value="Mantenimiento">Mantenimiento</option>
                         </select>
+                    </div>
+
+                    <div class="col-md-12 mb-3">
+                        <label class="form-label small fw-bold">
+                             <i class="bi bi-shield-check me-1 text-success"></i>Vencimiento del Seguro
+                        </label>
+                        <input
+                            type="date"
+                            id="vencimientoSeguroV"
+                            class="form-control"
+                        >
                     </div>
                 </div>
             </div>

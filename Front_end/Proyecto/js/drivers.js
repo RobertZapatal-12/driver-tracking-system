@@ -64,19 +64,57 @@ function aplicarFiltroConductores() {
     const input = document.getElementById("buscadorConductores");
     const texto = input ? input.value.trim().toLowerCase() : "";
 
+    const hoy = new Date();
+    hoy.setHours(0,0,0,0);
+
     conductoresFiltrados = todosLosConductores.filter(driver => {
+        // Filtro de texto (existente)
         const nombre = (String(driver.nombre) || "").toLowerCase();
         const cedula = (String(driver.cedula) || "").toLowerCase();
         const telefono = (String(driver.telefono) || "").toLowerCase();
         const licencia = (String(driver.numero_licencia) || "").toLowerCase();
 
-        return (
+        const coincideTexto = (
             nombre.includes(texto) ||
             cedula.includes(texto) ||
             telefono.includes(texto) ||
             licencia.includes(texto)
         );
+
+        // Filtro de Alertas (Dashboard)
+        if (filtroDriversActual === "alertas") {
+            const fechas = [driver.vencimiento_licencia, driver.vencimiento_seguro];
+            const tieneAlerta = fechas.some(fStr => {
+                if (!fStr) return false;
+                const f = new Date(fStr + "T00:00:00");
+                const diff = (f - hoy) / (1000 * 60 * 60 * 24);
+                return diff <= 30; // Vencido o próximo
+            });
+            return coincideTexto && tieneAlerta;
+        }
+
+        return coincideTexto;
     });
+
+    // Mostrar aviso si el filtro de alertas está activo
+    const buscadorContainer = input?.parentElement;
+    if (buscadorContainer) {
+        let alertBadge = document.getElementById("badgeFiltroAlertas");
+        if (filtroDriversActual === "alertas") {
+            if (!alertBadge) {
+                alertBadge = document.createElement("div");
+                alertBadge.id = "badgeFiltroAlertas";
+                alertBadge.className = "alert alert-warning py-2 px-3 mt-2 d-flex justify-content-between align-items-center";
+                alertBadge.innerHTML = `
+                    <span class="small"><i class="bi bi-funnel-fill me-2"></i>Filtrando por <strong>Documentos Vencidos o Próximos</strong></span>
+                    <button class="btn btn-sm btn-outline-warning border-0" onclick="filtroDriversActual=null; aplicarFiltroConductores()">Quitar filtro</button>
+                `;
+                buscadorContainer.appendChild(alertBadge);
+            }
+        } else if (alertBadge) {
+            alertBadge.remove();
+        }
+    }
 
     renderPaginaConductores();
     renderPaginacionConductores();
@@ -290,6 +328,21 @@ async function editarDriver(id) {
             preview.src = d.imagen || "https://via.placeholder.com/80x80?text=Foto";
         }
 
+        // Cargar fechas de vencimiento
+        const vLicEl = document.getElementById("vencimientoLicenciaC");
+        if (vLicEl) vLicEl.value = d.vencimiento_licencia || "";
+
+        // Abrir panel si ya tiene fechas, y actualizar badges
+        if (d.vencimiento_licencia) {
+            const panel   = document.getElementById("panelVencimientos");
+            const chevron = document.getElementById("chevronVencimientos");
+            if (panel)   panel.style.display = "block";
+            if (chevron) chevron.style.transform = "rotate(180deg)";
+        }
+        if (typeof actualizarBadgesVencimiento === "function") {
+            actualizarBadgesVencimiento();
+        }
+
         const tituloModal = document.getElementById("tituloModalConductor");
         if (tituloModal) {
             tituloModal.textContent = "Editar Conductor";
@@ -311,11 +364,84 @@ async function editarDriver(id) {
             modal.style.display = "flex";
         }
 
+        // Inicializar eventos del modal (como el toggle de password) cada vez que se abre para edición
+        // o asegurar que estén listos.
+        inicializarEventosConductores();
+
     } catch (error) {
         console.error(error);
         Toast.error("No se pudo cargar el conductor para editar");
     }
 }
+
+/* =========================================================
+   INICIALIZAR EVENTOS DE LA PÁGINA/MODAL
+   ========================================================= */
+function inicializarEventosConductores() {
+    // Toggle show/hide contraseña en modal conductor
+    const toggleBtn = document.getElementById('togglePasswordC');
+    if (toggleBtn && !toggleBtn.dataset.init) {
+        toggleBtn.addEventListener('click', function () {
+            const input = document.getElementById('passwordC');
+            const icon  = document.getElementById('eyeIcon');
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.className = 'bi bi-eye-slash';
+            } else {
+                input.type = 'password';
+                icon.className = 'bi bi-eye';
+            }
+        });
+        toggleBtn.dataset.init = "true";
+    }
+}
+
+/* =========================================================
+   FUNCIONES DE VENCIMIENTOS (Expuestas globalmente)
+   ========================================================= */
+window.toggleVencimientos = function() {
+    const panel   = document.getElementById("panelVencimientos");
+    const chevron = document.getElementById("chevronVencimientos");
+    if (!panel) return;
+    
+    const open = panel.style.display !== "none";
+    panel.style.display = open ? "none" : "block";
+    if (chevron) {
+        chevron.style.transform = open ? "rotate(0deg)" : "rotate(180deg)";
+    }
+};
+
+window._estadoFecha = function(valorInput) {
+    if (!valorInput) return { color: "#64748b", bg: "#f1f5f9", icon: "bi-dash-circle", texto: "Sin fecha" };
+    const hoy  = new Date();
+    const fecha = new Date(valorInput + "T00:00:00");
+    const dias  = Math.ceil((fecha - hoy) / (1000 * 60 * 60 * 24));
+
+    if (dias < 0)        return { color: "#dc2626", bg: "#fef2f2", icon: "bi-x-circle-fill",       texto: `Vencido hace ${Math.abs(dias)} días` };
+    if (dias <= 30)      return { color: "#d97706", bg: "#fffbeb", icon: "bi-exclamation-triangle-fill", texto: `Vence en ${dias} días` };
+    return               { color: "#16a34a", bg: "#f0fdf4", icon: "bi-check-circle-fill",          texto: `Vence en ${dias} días` };
+};
+
+window.actualizarBadgesVencimiento = function() {
+    const licVal = document.getElementById("vencimientoLicenciaC")?.value;
+
+    const lic = _estadoFecha(licVal);
+
+    const badgeLic = document.getElementById("badgeLicencia");
+
+    if (badgeLic) badgeLic.innerHTML = `<span style="color:${lic.color};"><i class="bi ${lic.icon} me-1"></i>${lic.texto}</span>`;
+
+    const badgesBtn = document.getElementById("vencimientoBadges");
+    if (badgesBtn) {
+        badgesBtn.innerHTML = "";
+        if (licVal) {
+            const span = document.createElement("span");
+            span.style.cssText = `background:${lic.bg}; color:${lic.color}; border-radius:6px; padding:2px 7px; font-size:0.7rem; font-weight:600;`;
+            span.innerHTML = `<i class="bi bi-card-text me-1"></i>Lic`;
+            badgesBtn.appendChild(span);
+        }
+    }
+};
 
 /* =========================================================
    LIMPIAR MODO EDICIÓN

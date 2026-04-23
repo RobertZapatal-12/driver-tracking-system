@@ -15,17 +15,18 @@ router = APIRouter(
 def _enrich_driver(driver: models.Driver, db: Session) -> dict:
     """Convierte un objeto Driver en dict y adjunta el email del usuario vinculado."""
     data = {
-        "driver_id":      driver.driver_id,
-        "user_id":        driver.user_id,
-        "nombre":         driver.nombre,
-        "telefono":       driver.telefono,
-        "numero_licencia":driver.numero_licencia,
-        "cedula":         driver.cedula,
-        "tipo_licencia":  driver.tipo_licencia,
-        "estado":         driver.estado,
-        "imagen":         driver.imagen,
-        "descripcion":    driver.descripcion,
-        "email_usuario":  None,
+        "driver_id":            driver.driver_id,
+        "user_id":              driver.user_id,
+        "nombre":               driver.nombre,
+        "telefono":             driver.telefono,
+        "numero_licencia":      driver.numero_licencia,
+        "cedula":               driver.cedula,
+        "tipo_licencia":        driver.tipo_licencia,
+        "vencimiento_licencia": driver.vencimiento_licencia,
+        "estado":               driver.estado,
+        "imagen":               driver.imagen,
+        "descripcion":          driver.descripcion,
+        "email_usuario":        None,
     }
     if driver.user_id:
         user = db.query(models.User).filter(models.User.user_id == driver.user_id).first()
@@ -41,6 +42,23 @@ def _enrich_driver(driver: models.Driver, db: Session) -> dict:
 def get_drivers(db: Session = Depends(get_db)):
     drivers = db.query(models.Driver).all()
     return [_enrich_driver(d, db) for d in drivers]
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# GET /drivers/stats/activos — Estadísticas de choferes para el dashboard
+# ─────────────────────────────────────────────────────────────────────────────
+@router.get("/stats/activos")
+def get_stats_activos(db: Session = Depends(get_db)):
+    """Devuelve el total de conductores activos e inactivos."""
+    total = db.query(models.Driver).count()
+    activos = db.query(models.Driver).filter(
+        models.Driver.estado == "Activo"
+    ).count()
+    return {
+        "activos": activos,
+        "total": total,
+        "inactivos": total - activos,
+    }
 
 
 # ─────────────────────────────────────────────────────────────────────────────

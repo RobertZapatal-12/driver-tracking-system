@@ -2,6 +2,7 @@ from sqlalchemy import Column, Integer, String, Float, ForeignKey, DateTime, Tex
 from sqlalchemy.orm import relationship
 from app.database import Base
 from sqlalchemy.sql import func
+
 # =========================
 # USERS
 # =========================
@@ -37,10 +38,6 @@ class Client(Base):
 # DRIVERS
 # =========================
 
-# =========================
-# DRIVERS
-# =========================
-
 class Driver(Base):
     __tablename__ = "drivers"
 
@@ -51,14 +48,13 @@ class Driver(Base):
     telefono = Column(String)
     numero_licencia = Column(String)
     tipo_licencia = Column(String)
+    vencimiento_licencia = Column(String, nullable=True)  # Fecha vencimiento licencia
     cedula = Column(String)
     estado = Column(String)
     imagen = Column(String)
     descripcion = Column(String)
 
     user = relationship("User")    
-    
-
 
 # =========================
 # LOCATIONS
@@ -123,6 +119,8 @@ class Vehicle(Base):
     imagen3 = Column(Text)
     imagen4 = Column(Text)
     imagen5 = Column(Text)
+    vencimiento_seguro = Column(String, nullable=True)  # Fecha vencimiento seguro (Movido desde Driver)
+
 # =========================
 # request
 # =========================
