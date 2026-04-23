@@ -111,6 +111,11 @@ function renderVehiculos(lista) {
             card.dataset.id = vehiculo.id;
 
             card.innerHTML = `
+                <div class="vehiculo-card-actions">
+                    <button class="btn-tuerca-card" onclick="event.stopPropagation(); abrirAccionesRapidas(event, ${vehiculo.id})">
+                        <i class="bi bi-gear-fill"></i>
+                    </button>
+                </div>
                 <div class="vehiculo-card-media">
                     <img src="${vehiculo.imagenes[0]}" alt="${vehiculo.marca} ${vehiculo.modelo}" class="vehiculo-card-img">
                 </div>
@@ -123,7 +128,10 @@ function renderVehiculos(lista) {
                 </div>
             `;
 
-            card.addEventListener("click", () => abrirDetalleVehiculo(vehiculo.id));
+            card.addEventListener("click", (e) => {
+                if (e.target.closest('.btn-tuerca-card')) return;
+                abrirDetalleVehiculo(vehiculo.id);
+            });
             card.addEventListener("keypress", (e) => {
                 if (e.key === "Enter" || e.key === " ") {
                     e.preventDefault();
@@ -328,7 +336,6 @@ function initModalDetalleVehiculo() {
     if (btnCerrarDetalle && modalDetalle) {
         btnCerrarDetalle.addEventListener("click", () => {
             modalDetalle.style.display = "none";
-            cerrarMenuVehiculo();
         });
     }
 
@@ -336,20 +343,6 @@ function initModalDetalleVehiculo() {
         modalDetalle.addEventListener("click", (e) => {
             if (e.target === modalDetalle) {
                 modalDetalle.style.display = "none";
-                cerrarMenuVehiculo();
-            }
-        });
-    }
-
-    if (btnMenuVehiculo && menuOpciones) {
-        btnMenuVehiculo.addEventListener("click", (e) => {
-            e.stopPropagation();
-            menuOpciones.classList.toggle("activo");
-        });
-
-        document.addEventListener("click", (e) => {
-            if (!menuOpciones.contains(e.target) && e.target !== btnMenuVehiculo) {
-                cerrarMenuVehiculo();
             }
         });
     }
@@ -379,23 +372,6 @@ function initModalDetalleVehiculo() {
             }
 
             actualizarGaleriaVehiculo();
-        });
-    }
-
-    const botonesMenu = document.querySelectorAll("#menuVehiculoOpciones button");
-    if (botonesMenu.length >= 2) {
-        botonesMenu[0].addEventListener("click", () => {
-            cerrarMenuVehiculo();
-            abrirFormularioVehiculoEdicion();
-        });
-
-        botonesMenu[1].addEventListener("click", () => {
-            cerrarMenuVehiculo();
-
-            if (!vehiculoSeleccionado) return;
-
-            vehiculoPendienteEliminar = vehiculoSeleccionado;
-            abrirConfirmacionEliminarVehiculo();
         });
     }
 }
@@ -854,4 +830,16 @@ async function abrirConfirmacionEliminarVehiculo() {
         console.error(error);
         Toast.error("Error el tratar de eliminar el vehículo.");
     }
+}
+
+/* =========================================================
+   ACCIONES RÁPIDAS (DESDE LA TARJETA)
+   ========================================================= */
+window.abrirAccionesRapidas = function(event, id) {
+    const vehiculo = vehiculosData.find(v => v.id === id);
+    if (!vehiculo) return;
+    
+    // Seleccionar y abrir edición directamente
+    vehiculoSeleccionado = vehiculo;
+    abrirFormularioVehiculoEdicion();
 }

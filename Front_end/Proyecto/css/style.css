@@ -492,3 +492,59 @@ body.dark-mode .map-hint { background: rgba(30, 41, 59, 0.9); color: var(--text-
 .btn-clear-field { position: absolute; right: 10px; background: none; border: none; color: var(--text-secondary); cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 5px; border-radius: 50%; transition: 0.2s; z-index: 5; }
 .btn-clear-field:hover { background: rgba(0,0,0,0.05); color: #ef4444; }
 body.dark-mode .btn-clear-field:hover { background: rgba(255,255,255,0.05); }
+/* =========================================================
+   ESTILOS DE BOTONES PREMIUM (SOLICITUDES)
+   ========================================================= */
+.btn-gestionar-premium {
+    background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+    color: white !important;
+    border: none;
+    border-radius: 12px;
+    padding: 8px 18px;
+    font-weight: 700;
+    font-size: 0.8rem;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 8px 20px rgba(99, 102, 241, 0.25);
+}
+
+.btn-gestionar-premium:hover {
+    transform: translateY(-3px) scale(1.05);
+    box-shadow: 0 12px 28px rgba(99, 102, 241, 0.4);
+    background: linear-gradient(135deg, #4f46e5 0%, #9333ea 100%);
+}
+
+.btn-gestionar-premium i {
+    font-size: 1.1rem;
+}
+
+.btn-tomar-premium {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: white !important;
+    border: none;
+    border-radius: 12px;
+    padding: 8px 18px;
+    font-weight: 700;
+    font-size: 0.8rem;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 8px 20px rgba(16, 185, 129, 0.25);
+}
+
+.btn-tomar-premium:hover {
+    transform: translateY(-3px) scale(1.05);
+    box-shadow: 0 12px 28px rgba(16, 185, 129, 0.4);
+    background: linear-gradient(135deg, #059669 0%, #047857 100%);
+}
+
+.btn-tomar-premium i {
+    font-size: 1.1rem;
+}

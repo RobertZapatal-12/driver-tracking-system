@@ -143,8 +143,8 @@ function renderTablaSolicitudes(solicitudes) {
         // Botón TOMAR: visible si el usuario es admin/operador y la solicitud está pendiente
         if (canTake && estado === "pendiente") {
             accionesHTML += `
-                <button class="btn btn-sm btn-success border me-1" onclick='tomarSolicitud(${s.request_id})' title="Tomar Solicitud">
-                    <i class="bi bi-hand-index-thumb me-1"></i>Tomar
+                <button class="btn btn-sm btn-tomar-premium shadow-sm me-1" onclick='tomarSolicitud(${s.request_id})' title="Convertirme en responsable">
+                    <i class="bi bi-hand-index-thumb-fill me-1"></i> Tomar Servicio
                 </button>
             `;
         }
@@ -152,8 +152,8 @@ function renderTablaSolicitudes(solicitudes) {
         // Botón GESTIONAR: visible para el operador asignado cuando está en proceso
         if (estado === "en_proceso" && esOperadorAsignado(s)) {
             accionesHTML += `
-                <button class="btn btn-sm btn-primary border me-1" onclick='abrirPanelTrabajo(${s.request_id})' title="Gestionar Solicitud">
-                    <i class="bi bi-pencil-square me-1"></i>Gestionar
+                <button class="btn btn-sm btn-gestionar-premium shadow-sm me-1" onclick='abrirPanelTrabajo(${s.request_id})' title="Abrir panel de gestión">
+                    <i class="bi bi-rocket-takeoff-fill me-1"></i> GESTIONAR
                 </button>
             `;
         }
@@ -203,8 +203,9 @@ function renderTablaSolicitudes(solicitudes) {
                 <span class="badge ${estadoBadgeClass} mb-1">${formatEstado(s.estado)}</span><br>
                 <span class="badge ${prioridadBadgeClass}">Relevancia: ${s.prioridad}</span>
             </td>
+            <td class="fw-bold text-success">$${(s.costo || 0).toLocaleString()}</td>
             <td>${operadorHTML}</td>
-            <td class="text-end">${accionesHTML}</td>
+            <td class="text-center">${accionesHTML}</td>
         `;
         tbody.appendChild(tr);
     });
@@ -426,6 +427,10 @@ window.abrirPanelTrabajo = async function (requestId) {
     // Llenar sección 3: Notas
     document.getElementById("op-notas").value = solicitud.notas_operador || "";
 
+    // Llenar costo
+    const opCosto = document.getElementById("op-costo");
+    if (opCosto) opCosto.value = solicitud.costo || 0;
+
     // Mostrar modal
     modal.style.display = "flex";
 };
@@ -455,6 +460,7 @@ async function guardarTrabajoOperador(e) {
         prioridad: document.getElementById("op-prioridad").value,
         tipo_vehiculo: document.getElementById("op-tipo-vehiculo").value,
         notas_operador: document.getElementById("op-notas").value,
+        costo: parseFloat(document.getElementById("op-costo").value || 0),
         lat_origen: originCoords ? originCoords.lat : null,
         lon_origen: originCoords ? originCoords.lng : null,
         lat_destino: destinationCoords ? destinationCoords.lat : null,
@@ -521,6 +527,8 @@ async function completarDesdePanel() {
 
     const driverVal = document.getElementById("op-driver-id").value;
     if (driverVal) dataActualizar.driver_id = parseInt(driverVal);
+
+    dataActualizar.costo = parseFloat(document.getElementById("op-costo").value || 0);
 
     try {
         // Enviar PATCH para actualizar info
@@ -647,6 +655,7 @@ window.abrirModalEditarSolicitud = function (id) {
         document.getElementById("solicitud-descripcion").value = s.descripcion;
         document.getElementById("solicitud-tipo-vehiculo").value = s.tipo_vehiculo;
         document.getElementById("solicitud-prioridad").value = s.prioridad;
+        document.getElementById("solicitud-costo").value = s.costo || 0;
     }
 
     modal.style.display = "flex";
@@ -690,7 +699,8 @@ async function submitSolicitud(e) {
         destino: document.getElementById('solicitud-destino').value,
         descripcion: document.getElementById('solicitud-descripcion').value,
         tipo_vehiculo: document.getElementById('solicitud-tipo-vehiculo').value,
-        prioridad: document.getElementById('solicitud-prioridad').value
+        prioridad: document.getElementById('solicitud-prioridad').value,
+        costo: parseFloat(document.getElementById('solicitud-costo').value || 0)
     };
 
     try {

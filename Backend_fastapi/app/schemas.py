@@ -217,6 +217,7 @@ class RequestBase(BaseModel):
     lon_origen: Optional[float] = None
     lat_destino: Optional[float] = None
     lon_destino: Optional[float] = None
+    costo: float = 0.0
 
 
 class RequestCreate(BaseModel):
@@ -227,6 +228,7 @@ class RequestCreate(BaseModel):
     descripcion: str
     tipo_vehiculo: str
     prioridad: str
+    costo: float = 0.0
 
 
 class RequestResponse(RequestBase):

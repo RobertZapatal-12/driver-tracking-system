@@ -148,6 +148,7 @@ class Request(Base):
     lon_origen = Column(Float, nullable=True)
     lat_destino = Column(Float, nullable=True)
     lon_destino = Column(Float, nullable=True)
+    costo = Column(Float, default=0.0)  # Costo del viaje
     registrado_en = Column(DateTime, server_default=func.now())
 
     operador = relationship("User", foreign_keys=[user_id])

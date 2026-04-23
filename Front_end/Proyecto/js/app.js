@@ -1126,6 +1126,48 @@ async function actualizarDashboardServicios() {
         if (kpiEl) kpiEl.textContent = "—";
     }
 
+    // ── KPI: Ingresos (Mes) ───────────────────────────────
+    try {
+        const resReq = await CONFIG.fetchAuth("/request/");
+        if (resReq.ok) {
+            const solicitudes = await resReq.json();
+            
+            // Filtrar solo las completadas del mes actual
+            const ahora = new Date();
+            const mesActual = ahora.getMonth();
+            const anioActual = ahora.getFullYear();
+
+            const completadas = solicitudes.filter(s => {
+                const esCompletada = (s.estado || "").toLowerCase() === "completada";
+                if (!esCompletada) return false;
+                
+                // Si el backend envía registrado_en, filtrar por mes (opcional pero recomendado)
+                if (s.registrado_en) {
+                    const fechaReg = new Date(s.registrado_en);
+                    return fechaReg.getMonth() === mesActual && fechaReg.getFullYear() === anioActual;
+                }
+                return true;
+            });
+
+            const totalIngresos = completadas.reduce((acc, s) => acc + (parseFloat(s.costo) || 0), 0);
+            
+            const kpiEl = document.getElementById("kpi-ingresos-mes");
+            const subEl = document.getElementById("kpi-ingresos-mes-sub");
+
+            if (kpiEl) {
+                kpiEl.textContent = `RD$ ${totalIngresos.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+            }
+
+            if (subEl) {
+                subEl.innerHTML = `<span class="text-success fw-bold"><i class="bi bi-graph-up-arrow"></i> ${completadas.length} viajes completados</span>`;
+            }
+        }
+    } catch (e) {
+        console.error("Error calculando ingresos:", e);
+        const kpiEl = document.getElementById("kpi-ingresos-mes");
+        if (kpiEl) kpiEl.textContent = "RD$ —";
+    }
+
     // ── KPI: Choferes Activos ─────────────────────────────
     try {
         const resChoferes = await CONFIG.fetchAuth("/drivers/stats/activos");
