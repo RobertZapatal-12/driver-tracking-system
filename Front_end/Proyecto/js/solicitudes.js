@@ -280,6 +280,18 @@ async function cargarVehiculosSelect() {
 
     select.innerHTML = '<option value="">Cargando...</option>';
 
+    // IDs de vehículos ya asignados a solicitudes activas (en_proceso)
+    // Excluye el vehículo de la solicitud que se está editando ahora mismo
+    const vehiculosOcupados = new Set(
+        todasLasSolicitudes
+            .filter(s =>
+                (s.estado || "").toLowerCase() === 'en_proceso' &&
+                s.vehicle_id &&
+                s.request_id !== (solicitudEnTrabajo?.request_id)
+            )
+            .map(s => s.vehicle_id)
+    );
+
     try {
         const response = await fetch(`${getBaseUrl()}/vehicles/`, {
             method: 'GET',
@@ -290,6 +302,11 @@ async function cargarVehiculosSelect() {
             const vehicles = await response.json();
             select.innerHTML = '<option value="">Sin asignar</option>';
             vehicles.forEach(v => {
+                const estadoLower = (v.estado || "").toLowerCase();
+                // Excluir: Mantenimiento, En ruta, o asignado a otra solicitud activa
+                if (estadoLower === 'mantenimiento') return;
+                if (estadoLower === 'en ruta') return;
+                if (vehiculosOcupados.has(v.vehicle_id)) return;
                 const opt = document.createElement("option");
                 opt.value = v.vehicle_id;
                 opt.textContent = `${v.marca} ${v.modelo} - ${v.plate_number} (${v.estado})`;
@@ -311,6 +328,18 @@ async function cargarConductoresSelect() {
 
     select.innerHTML = '<option value="">Cargando...</option>';
 
+    // IDs de conductores ya asignados a solicitudes activas (en_proceso)
+    // Excluye el conductor de la solicitud que se está editando ahora mismo
+    const conductoresOcupados = new Set(
+        todasLasSolicitudes
+            .filter(s =>
+                (s.estado || "").toLowerCase() === 'en_proceso' &&
+                s.driver_id &&
+                s.request_id !== (solicitudEnTrabajo?.request_id)
+            )
+            .map(s => s.driver_id)
+    );
+
     try {
         const response = await fetch(`${getBaseUrl()}/drivers/`, {
             method: 'GET',
@@ -321,7 +350,10 @@ async function cargarConductoresSelect() {
             const drivers = await response.json();
             select.innerHTML = '<option value="">Sin asignar</option>';
             drivers.forEach(d => {
-                if ((d.estado || "").toLowerCase() === 'desconectado') return;
+                const estadoLower = (d.estado || "").toLowerCase();
+                // Excluir: Inactivos, Desconectados, o asignados a otra solicitud activa
+                if (estadoLower === 'inactivo' || estadoLower === 'desconectado') return;
+                if (conductoresOcupados.has(d.driver_id)) return;
                 const opt = document.createElement("option");
                 opt.value = d.driver_id;
                 opt.textContent = `${d.nombre} - ${d.numero_licencia} (${d.estado})`;

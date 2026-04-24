@@ -509,6 +509,21 @@ function initModals() {
             const emailVal = document.getElementById("emailC")?.value.trim() || "";
             const passwordVal = document.getElementById("passwordC")?.value.trim() || "";
 
+            // Validar fecha de vencimiento de licencia (obligatoria)
+            const vencLicVal = document.getElementById("vencimientoLicenciaC")?.value;
+            if (!vencLicVal) {
+                // Abrir el panel de vencimientos si está cerrado
+                const panel = document.getElementById("panelVencimientos");
+                const chevron = document.getElementById("chevronVencimientos");
+                if (panel && panel.style.display === "none") {
+                    panel.style.display = "block";
+                    if (chevron) chevron.style.transform = "rotate(180deg)";
+                }
+                document.getElementById("vencimientoLicenciaC")?.focus();
+                Toast.warning("La fecha de vencimiento de licencia es obligatoria.");
+                return;
+            }
+
             const data = {
                 nombre: nombre,
                 telefono: document.getElementById("telefonoC").value,

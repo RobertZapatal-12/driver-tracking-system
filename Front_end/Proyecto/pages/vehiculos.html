@@ -9,10 +9,10 @@
     <div class="d-flex flex-wrap gap-2">
         <div class="input-group" style="max-width: 250px;">
             <span class="input-group-text bg-transparent border-end-0 rounded-start-3" style="border-color: var(--border-color);"><i class="bi bi-search text-muted"></i></span>
-            <input type="text" class="form-control border-start-0 rounded-end-3" placeholder="Buscar placa, modelo..." style="border-color: var(--border-color); background-color: var(--bg-main); color: var(--text-primary);">
+            <input type="text" id="buscadorVehiculos" class="form-control border-start-0 rounded-end-3" placeholder="Buscar placa, modelo..." style="border-color: var(--border-color); background-color: var(--bg-main); color: var(--text-primary);" oninput="aplicarFiltrosVehiculos()">
         </div>
         
-        <select class="form-select rounded-3" style="width: 140px; border-color: var(--border-color); background-color: var(--bg-main); color: var(--text-primary);">
+        <select id="filtroEstadoVehiculos" class="form-select rounded-3" style="width: 140px; border-color: var(--border-color); background-color: var(--bg-main); color: var(--text-primary);" onchange="aplicarFiltrosVehiculos()">
             <option value="">Estado</option>
             <option value="Disponible">Disponible</option>
             <option value="En ruta">En ruta</option>
@@ -254,12 +254,13 @@
 
                     <div class="col-md-12 mb-3">
                         <label class="form-label small fw-bold">
-                             <i class="bi bi-shield-check me-1 text-success"></i>Vencimiento del Seguro
+                             <i class="bi bi-shield-check me-1 text-success"></i>Vencimiento del Seguro <span class="text-danger">*</span>
                         </label>
                         <input
                             type="date"
                             id="vencimientoSeguroV"
                             class="form-control"
+                            required
                         >
                     </div>
                 </div>

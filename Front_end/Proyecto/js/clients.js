@@ -51,17 +51,27 @@ async function cargarClientes() {
    ========================================================= */
 function inicializarBuscadorClientes() {
     const input = document.getElementById("buscadorClientes");
-    if (!input) return;
+    const selectEstado = document.getElementById("filtroEstadoCliente");
 
-    input.oninput = () => {
-        paginaActualClientes = 1;
-        aplicarFiltroClientes();
-    };
+    if (input) {
+        input.oninput = () => {
+            paginaActualClientes = 1;
+            aplicarFiltroClientes();
+        };
+    }
+
+    if (selectEstado) {
+        selectEstado.onchange = () => {
+            paginaActualClientes = 1;
+            aplicarFiltroClientes();
+        };
+    }
 }
 
 function aplicarFiltroClientes() {
     const input = document.getElementById("buscadorClientes");
     const texto = input ? input.value.trim().toLowerCase() : "";
+    const estadoFiltro = document.getElementById("filtroEstadoCliente")?.value || "";
 
     clientesFiltrados = todosLosClientes.filter(client => {
         const nombre = (String(client.nombre) || "").toLowerCase();
@@ -69,12 +79,17 @@ function aplicarFiltroClientes() {
         const telefono = (String(client.telefono) || "").toLowerCase();
         const email = (String(client.email) || "").toLowerCase();
 
-        return (
+        const coincideTexto = (
             nombre.includes(texto) ||
             cedula.includes(texto) ||
             telefono.includes(texto) ||
             email.includes(texto)
         );
+
+        // Filtro por estado
+        const coincideEstado = !estadoFiltro || client.estado === estadoFiltro;
+
+        return coincideTexto && coincideEstado;
     });
 
     renderPaginaClientes();

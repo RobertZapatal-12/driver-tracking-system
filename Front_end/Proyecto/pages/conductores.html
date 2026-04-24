@@ -12,13 +12,22 @@
      BUSCADOR DE CONDUCTORES
      - Permite buscar por nombre en tiempo real
      ========================================================= -->
-<div class="mb-3">
-    <input
-        type="text"
-        id="buscadorConductores"
-        class="form-control"
-        placeholder="Buscar por nombre, cédula, teléfono o licencia..."
-    >
+<div class="d-flex flex-wrap gap-2 mb-3 align-items-center">
+    <div class="flex-grow-1">
+        <input
+            type="text"
+            id="buscadorConductores"
+            class="form-control"
+            placeholder="Buscar por nombre, cédula, teléfono o licencia..."
+        >
+    </div>
+    <div>
+        <select id="filtroEstadoConductor" class="form-select" style="min-width: 160px;" onchange="aplicarFiltroConductores()">
+            <option value="">Todos los estados</option>
+            <option value="Activo">Activo</option>
+            <option value="Inactivo">Inactivo</option>
+        </select>
+    </div>
 </div>
 
 <!-- =========================================================
@@ -159,14 +168,14 @@
                 <div id="panelVencimientos" style="display:none; margin-top: 10px;">
                     <div class="border rounded-3 p-3" style="background:#fffbf0; border-color:#fcd34d !important;">
                         <p class="text-muted small mb-3" style="font-size:0.78rem;">
-                            <i class="bi bi-info-circle me-1"></i>
-                            Estas fechas se usan para generar <strong>alertas automáticas</strong> de documentos próximos a vencer.
+                            <i class="bi bi-exclamation-circle-fill me-1 text-warning"></i>
+                            La fecha de vencimiento de licencia es <strong>obligatoria</strong> para registrar al conductor.
                         </p>
                         <div class="row g-3">
                             <!-- Licencia -->
                             <div class="col-md-12">
                                 <label class="form-label small fw-bold">
-                                    <i class="bi bi-card-text me-1 text-primary"></i>Venc. Licencia
+                                    <i class="bi bi-card-text me-1 text-primary"></i>Venc. Licencia <span class="text-danger">*</span>
                                 </label>
                                 <input
                                     type="date"

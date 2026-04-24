@@ -60,6 +60,10 @@ async function fetchVehiculos() {
                     ].filter(img => img)
                 };
             });
+
+            // Verificar y actualizar automáticamente vehículos con seguro vencido
+            await verificarSegurosVencidos(data);
+
             renderVehiculos(vehiculosData);
             actualizarDashboardVehiculos();
             aplicarFiltrosVehiculos();
@@ -69,6 +73,69 @@ async function fetchVehiculos() {
         if (typeof Toast !== "undefined") {
             Toast.error("No se pudieron cargar los vehículos.");
         }
+    }
+}
+
+/* =========================================================
+   AUTO-MANTENIMIENTO: Vehículos con seguro vencido o sin fecha
+   Si la fecha de vencimiento del seguro ya pasó, o si el
+   vehículo no tiene fecha de seguro registrada, y el estado
+   NO es ya "Mantenimiento", se actualiza automáticamente.
+   ========================================================= */
+async function verificarSegurosVencidos(rawData) {
+    const hoy = new Date();
+    hoy.setHours(0, 0, 0, 0);
+
+    const vencidos = rawData.filter(v => {
+        if (v.estado === "Mantenimiento") return false; // ya está en mantenimiento
+        if (!v.vencimiento_seguro) return true;         // sin fecha de seguro → mantenimiento
+        const fechaVenc = new Date(v.vencimiento_seguro + "T00:00:00");
+        return fechaVenc <= hoy; // vencido hoy o antes
+    });
+
+    if (vencidos.length === 0) return;
+
+    let actualizados = 0;
+
+    for (const v of vencidos) {
+        try {
+            // Construir payload completo para el PUT (mantiene todos los campos, solo cambia estado)
+            const payload = {
+                marca: v.marca,
+                modelo: v.modelo,
+                tipo_vehiculo: v.tipo_vehiculo,
+                capacidad: v.capacidad,
+                plate_number: v.plate_number,
+                estado: "Mantenimiento",
+                driver_id: v.driver_id || null,
+                imagen1: v.imagen1 || null,
+                imagen2: v.imagen2 || null,
+                imagen3: v.imagen3 || null,
+                imagen4: v.imagen4 || null,
+                imagen5: v.imagen5 || null,
+                vencimiento_seguro: v.vencimiento_seguro
+            };
+
+            const res = await CONFIG.fetchAuth(`/vehicles/${v.vehicle_id}`, {
+                method: "PUT",
+                body: JSON.stringify(payload)
+            });
+
+            if (res.ok) {
+                // Actualizar el estado en memoria también
+                const local = vehiculosData.find(lv => lv.id === v.vehicle_id);
+                if (local) local.estado = "Mantenimiento";
+                actualizados++;
+            }
+        } catch (err) {
+            console.error(`Error actualizando vehículo ${v.vehicle_id} a Mantenimiento:`, err);
+        }
+    }
+
+    if (actualizados > 0 && typeof Toast !== "undefined") {
+        Toast.warning(
+            `⚠️ ${actualizados} vehículo${actualizados > 1 ? "s" : ""} ${actualizados > 1 ? "fueron puestos" : "fue puesto"} en <strong>Mantenimiento</strong> por seguro vencido o sin registrar.`
+        );
     }
 }
 
@@ -259,6 +326,9 @@ function initPanelFiltrosVehiculos() {
 }
 
 function aplicarFiltrosVehiculos() {
+    const textoBusqueda = (document.getElementById("buscadorVehiculos")?.value || "").trim().toLowerCase();
+    const estadoSelect = (document.getElementById("filtroEstadoVehiculos")?.value || "");
+
     const estados = Array.from(document.querySelectorAll("input[name='estadoVehiculo']:checked")).map(i => i.value);
     const tipos = Array.from(document.querySelectorAll("input[name='tipoVehiculo']:checked")).map(i => i.value);
     const capacidades = Array.from(document.querySelectorAll("input[name='capacidadVehiculo']:checked")).map(i => i.value);
@@ -266,6 +336,18 @@ function aplicarFiltrosVehiculos() {
     const conductores = Array.from(document.querySelectorAll("input[name='conductorVehiculo']:checked")).map(i => i.value);
 
     const filtrados = vehiculosData.filter((vehiculo) => {
+        // Filtro de texto (placa, marca, modelo)
+        if (textoBusqueda) {
+            const hayCoincidencia =
+                (vehiculo.placa || "").toLowerCase().includes(textoBusqueda) ||
+                (vehiculo.marca || "").toLowerCase().includes(textoBusqueda) ||
+                (vehiculo.modelo || "").toLowerCase().includes(textoBusqueda);
+            if (!hayCoincidencia) return false;
+        }
+
+        // Filtro por estado del select de la toolbar
+        if (estadoSelect && vehiculo.estado !== estadoSelect) return false;
+
         const coincideEstado = estados.length === 0 || estados.includes(vehiculo.estado);
         const coincideTipo = tipos.length === 0 || tipos.includes(vehiculo.tipo);
         const coincideMarca = marcas.length === 0 || marcas.includes(vehiculo.marca);
@@ -542,6 +624,13 @@ function initModalFormularioVehiculo() {
 
             if (!marca || !modelo || !tipo || !capacidad || !placa) {
                 Toast.warning("Completa los campos obligatorios del vehículo.");
+                return;
+            }
+
+            if (!vencimiento_seguro) {
+                const seguroEl = document.getElementById("vencimientoSeguroV");
+                if (seguroEl) seguroEl.focus();
+                Toast.warning("La fecha de vencimiento del seguro es obligatoria.");
                 return;
             }
 

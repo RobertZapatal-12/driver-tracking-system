@@ -35,6 +35,9 @@ async function cargarConductores() {
 
         const data = await res.json();
 
+        // Verificar y marcar como Inactivo los conductores con licencia vencida
+        await verificarLicenciasVencidas(data);
+
         todosLosConductores = data;
         paginaActual = 1;
 
@@ -44,6 +47,51 @@ async function cargarConductores() {
     } catch (error) {
         console.error("Error al cargar desde la API:", error);
         Toast.error("No se pudieron cargar los conductores. Verifica la conexión.");
+    }
+}
+
+/* =========================================================
+   AUTO-INACTIVACIÓN: Conductores con licencia vencida
+   Si la fecha de vencimiento de la licencia ya pasó y el
+   conductor NO está ya "Inactivo", se marca automáticamente
+   usando el endpoint PATCH /estado y se notifica al usuario.
+   ========================================================= */
+async function verificarLicenciasVencidas(conductores) {
+    const hoy = new Date();
+    hoy.setHours(0, 0, 0, 0);
+
+    const vencidos = conductores.filter(d => {
+        if (d.estado === "Inactivo") return false;       // ya está inactivo, ignorar
+        if (!d.vencimiento_licencia) return false;       // sin fecha registrada, no aplica
+        const fechaVenc = new Date(d.vencimiento_licencia + "T00:00:00");
+        return fechaVenc < hoy;                          // vencido (estrictamente antes de hoy)
+    });
+
+    if (vencidos.length === 0) return;
+
+    let actualizados = 0;
+
+    for (const d of vencidos) {
+        try {
+            const res = await CONFIG.fetchAuth(`${DRIVERS_ENDPOINT}/${d.driver_id}/estado`, {
+                method: "PATCH",
+                body: JSON.stringify({ estado: "Inactivo" })
+            });
+
+            if (res.ok) {
+                // Actualizar en memoria para que el render refleje el cambio
+                d.estado = "Inactivo";
+                actualizados++;
+            }
+        } catch (err) {
+            console.error(`Error actualizando conductor ${d.driver_id} a Inactivo:`, err);
+        }
+    }
+
+    if (actualizados > 0 && typeof Toast !== "undefined") {
+        Toast.warning(
+            `⚠️ ${actualizados} conductor${actualizados > 1 ? "es" : ""} ${actualizados > 1 ? "fueron marcados" : "fue marcado"} como <strong>Inactivo</strong> por licencia vencida.`
+        );
     }
 }
 
@@ -63,12 +111,13 @@ function inicializarBuscadorConductores() {
 function aplicarFiltroConductores() {
     const input = document.getElementById("buscadorConductores");
     const texto = input ? input.value.trim().toLowerCase() : "";
+    const estadoFiltro = document.getElementById("filtroEstadoConductor")?.value || "";
 
     const hoy = new Date();
     hoy.setHours(0,0,0,0);
 
     conductoresFiltrados = todosLosConductores.filter(driver => {
-        // Filtro de texto (existente)
+        // Filtro de texto
         const nombre = (String(driver.nombre) || "").toLowerCase();
         const cedula = (String(driver.cedula) || "").toLowerCase();
         const telefono = (String(driver.telefono) || "").toLowerCase();
@@ -81,6 +130,9 @@ function aplicarFiltroConductores() {
             licencia.includes(texto)
         );
 
+        // Filtro por estado
+        const coincideEstado = !estadoFiltro || driver.estado === estadoFiltro;
+
         // Filtro de Alertas (Dashboard)
         if (filtroDriversActual === "alertas") {
             const fechas = [driver.vencimiento_licencia, driver.vencimiento_seguro];
@@ -88,12 +140,12 @@ function aplicarFiltroConductores() {
                 if (!fStr) return false;
                 const f = new Date(fStr + "T00:00:00");
                 const diff = (f - hoy) / (1000 * 60 * 60 * 24);
-                return diff <= 30; // Vencido o próximo
+                return diff <= 30;
             });
-            return coincideTexto && tieneAlerta;
+            return coincideTexto && coincideEstado && tieneAlerta;
         }
 
-        return coincideTexto;
+        return coincideTexto && coincideEstado;
     });
 
     // Mostrar aviso si el filtro de alertas está activo
