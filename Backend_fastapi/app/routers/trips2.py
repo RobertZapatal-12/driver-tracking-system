@@ -31,6 +31,7 @@ def _enrich_request(req, db):
         "driver_id": req.driver_id,
         "notas_operador": req.notas_operador,
         "tracking_code": req.tracking_code,
+        "costo": req.costo,
         "lat_origen": req.lat_origen,
         "lon_origen": req.lon_origen,
         "lat_destino": req.lat_destino,
@@ -273,7 +274,11 @@ def actualizar_request(request_id: int, data: schemas.RequestOperadorUpdate, db:
             request.tracking_code = secrets.token_hex(4).upper()
             print(f"DEBUG: Generado código {request.tracking_code} para solicitud {request_id}")
 
-    # Actualizar coordenadas si vienen en la data (pueden venir del modal de mapa)
+    # Actualizar costo
+    if data.costo is not None:
+        request.costo = data.costo
+
+    # Actualizar coordenadas si vienen en la data
     if data.lat_origen is not None: request.lat_origen = data.lat_origen
     if data.lon_origen is not None: request.lon_origen = data.lon_origen
     if data.lat_destino is not None: request.lat_destino = data.lat_destino

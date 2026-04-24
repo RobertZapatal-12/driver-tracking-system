@@ -267,6 +267,7 @@ class RequestOperadorUpdate(BaseModel):
     vehicle_id: Optional[int] = None
     driver_id: Optional[int] = None
     notas_operador: Optional[str] = None
+    costo: Optional[float] = None          # ← campo que faltaba
     lat_origen: Optional[float] = None
     lon_origen: Optional[float] = None
     lat_destino: Optional[float] = None

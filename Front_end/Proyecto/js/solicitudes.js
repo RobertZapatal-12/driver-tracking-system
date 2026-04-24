@@ -203,7 +203,7 @@ function renderTablaSolicitudes(solicitudes) {
                 <span class="badge ${estadoBadgeClass} mb-1">${formatEstado(s.estado)}</span><br>
                 <span class="badge ${prioridadBadgeClass}">Relevancia: ${s.prioridad}</span>
             </td>
-            <td class="fw-bold text-success">$${(s.costo || 0).toLocaleString()}</td>
+            <td class="fw-bold text-success">$${s.costo || 0}</td>
             <td>${operadorHTML}</td>
             <td class="text-center">${accionesHTML}</td>
         `;
