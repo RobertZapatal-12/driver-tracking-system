@@ -44,6 +44,7 @@ function loadUserData() {
 function logoutUser() {
     localStorage.removeItem("authToken");
     localStorage.removeItem("user");
+    localStorage.removeItem("tf_ultima_pagina");
     window.location.href = "login.html";
 }
 
@@ -138,17 +139,20 @@ document.addEventListener("DOMContentLoaded", () => {
     // Cargar datos del usuario
     loadUserData();
 
+    // Restaurar la última página visitada (o dashboard por defecto)
+    const paginaGuardada = localStorage.getItem("tf_ultima_pagina") || "dashboard";
+
     fetch("components/sidebar.html")
         .then(res => res.text())
         .then(data => {
             document.getElementById("sidebar").innerHTML = data;
-            setActiveLink("dashboard");
+            setActiveLink(paginaGuardada);
         })
         .catch(error => {
             console.error("Error cargando sidebar:", error);
         });
 
-    cargarPagina("dashboard");
+    cargarPagina(paginaGuardada);
 
     // Inicializar Configuración del Dropdown
     setTimeout(initSettingsDropdown, 500);
@@ -248,6 +252,9 @@ function cargarPagina(pagina, opciones = {}) {
 
     // Establecer filtros si vienen en opciones
     filtroDriversActual = opciones.filter || null;
+
+    // Guardar la página actual para restaurarla al refrescar
+    localStorage.setItem("tf_ultima_pagina", pagina);
 
     fetch(`pages/${pagina}.html`)
         .then(res => res.text())

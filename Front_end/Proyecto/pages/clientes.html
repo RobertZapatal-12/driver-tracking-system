@@ -68,11 +68,11 @@
                 
                 <div class="col-md-6">
                     <label class="form-label small fw-bold">Cédula / RNC</label>
-                    <input type="text" id="cedulaCliente" class="form-control" placeholder="000-0000000-0" required>
+                    <input type="text" id="cedulaCliente" class="form-control" placeholder="00000000000" maxlength="11" pattern="[0-9]{11}" inputmode="numeric" title="Debe contener exactamente 11 dígitos numéricos" required>
                 </div>
                 <div class="col-md-6">
                     <label class="form-label small fw-bold">Teléfono de contacto</label>
-                    <input type="text" id="telefonoCliente" class="form-control" placeholder="809-000-0000" required>
+                    <input type="tel" id="telefonoCliente" class="form-control" placeholder="8090000000" maxlength="10" pattern="[0-9]{10}" title="Debe contener exactamente 10 dígitos" required>
                 </div>
 
                 <div class="col-md-12">
