@@ -123,7 +123,7 @@ function mostrarMenuAlertas() {
     };
 
     dialog.querySelector("#alert-cancel").onclick = () => overlay.remove();
-    overlay.onclick = (e) => { if(e.target === overlay) overlay.remove(); };
+    overlay.onclick = (e) => { if (e.target === overlay) overlay.remove(); };
 }
 
 /* =========================================================
@@ -137,7 +137,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Cargar datos del usuario
     loadUserData();
-    
+
     fetch("components/sidebar.html")
         .then(res => res.text())
         .then(data => {
@@ -149,7 +149,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
 
     cargarPagina("dashboard");
-    
+
     // Inicializar Configuración del Dropdown
     setTimeout(initSettingsDropdown, 500);
 });
@@ -163,7 +163,7 @@ function initSettingsDropdown() {
     if (toggleDarkMode) {
         toggleDarkMode.checked = localStorage.getItem("tf_dark_mode") === "true";
         if (toggleDarkMode.checked) document.body.classList.add("dark-mode");
-        
+
         toggleDarkMode.addEventListener("change", (e) => {
             const isDark = e.target.checked;
             localStorage.setItem("tf_dark_mode", isDark);
@@ -184,7 +184,7 @@ function initSettingsDropdown() {
     if (mapStyleSelector) {
         const savedStyle = localStorage.getItem("tf_map_style") || "voyager";
         mapStyleSelector.value = savedStyle;
-        
+
         mapStyleSelector.addEventListener("change", (e) => {
             const style = e.target.value;
             localStorage.setItem("tf_map_style", style);
@@ -198,7 +198,7 @@ function initSettingsDropdown() {
         toggleAutoRefresh.checked = localStorage.getItem("tf_auto_refresh") !== "false"; // Default true
         toggleAutoRefresh.addEventListener("change", (e) => {
             localStorage.setItem("tf_auto_refresh", e.target.checked);
-            if(e.target.checked && window.location.hash === "#mapa" || document.getElementById("map")) {
+            if (e.target.checked && window.location.hash === "#mapa" || document.getElementById("map")) {
                 iniciarPollingMapa();
             } else {
                 detenerPollingMapa();
@@ -230,7 +230,7 @@ function playNotificationSound() {
             gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
             oscillator.start();
             oscillator.stop(audioCtx.currentTime + 0.1);
-        } catch(e) { console.log("Sound disabled or not supported", e); }
+        } catch (e) { console.log("Sound disabled or not supported", e); }
     }
 }
 
@@ -256,14 +256,14 @@ function cargarPagina(pagina, opciones = {}) {
             contenedor.classList.remove("page-enter");
             // Force reflow
             void contenedor.offsetWidth;
-            
+
             contenedor.innerHTML = data;
-            
+
             const pTitle = pagina.charAt(0).toUpperCase() + pagina.slice(1);
-            if(titulo) titulo.innerText = pTitle;
+            if (titulo) titulo.innerText = pTitle;
 
             const breadcrumbCurrent = document.getElementById("breadcrumb-current");
-            if(breadcrumbCurrent) breadcrumbCurrent.innerText = pTitle;
+            if (breadcrumbCurrent) breadcrumbCurrent.innerText = pTitle;
 
             // Add animation class
             contenedor.classList.add("page-enter");
@@ -334,7 +334,7 @@ function cargarPagina(pagina, opciones = {}) {
                     document.head.appendChild(script);
                 }
             }
-            
+
             if (pagina === "rutas" && typeof cargarRutas === "function") {
                 cargarRutas();
             }
@@ -380,52 +380,52 @@ function initModals() {
     const inputFoto = document.getElementById("fotoC");
 
     if (openBtn && modal) {
-    openBtn.onclick = () => {
-        modal.style.display = "flex";
-        resetDriverForm();
-        limpiarModoEdicionDriver();
+        openBtn.onclick = () => {
+            modal.style.display = "flex";
+            resetDriverForm();
+            limpiarModoEdicionDriver();
 
-        const tituloModal = document.getElementById("tituloModalConductor");
-        if (tituloModal) {
-            tituloModal.textContent = "Nuevo Perfil de Conductor";
-        }
+            const tituloModal = document.getElementById("tituloModalConductor");
+            if (tituloModal) {
+                tituloModal.textContent = "Nuevo Perfil de Conductor";
+            }
 
-        const btnGuardar = document.getElementById("btnGuardarConductor");
-        if (btnGuardar) {
-            btnGuardar.textContent = "Guardar";
-        }
+            const btnGuardar = document.getElementById("btnGuardarConductor");
+            if (btnGuardar) {
+                btnGuardar.textContent = "Guardar";
+            }
 
-        const modalCard = document.querySelector(".modal-card");
-        if (modalCard) {
-            modalCard.classList.remove("modo-edicion");
-            modalCard.classList.add("modo-crear");
-        }
-    };
-}
+            const modalCard = document.querySelector(".modal-card");
+            if (modalCard) {
+                modalCard.classList.remove("modo-edicion");
+                modalCard.classList.add("modo-crear");
+            }
+        };
+    }
 
     if (closeBtn && modal) {
-    closeBtn.onclick = () => {
-        modal.style.display = "none";
-        resetDriverForm();
-        limpiarModoEdicionDriver();
+        closeBtn.onclick = () => {
+            modal.style.display = "none";
+            resetDriverForm();
+            limpiarModoEdicionDriver();
 
-        const tituloModal = document.getElementById("tituloModalConductor");
-        if (tituloModal) {
-            tituloModal.textContent = "Nuevo Perfil de Conductor";
-        }
+            const tituloModal = document.getElementById("tituloModalConductor");
+            if (tituloModal) {
+                tituloModal.textContent = "Nuevo Perfil de Conductor";
+            }
 
-        const btnGuardar = document.getElementById("btnGuardarConductor");
-        if (btnGuardar) {
-            btnGuardar.textContent = "Guardar";
-        }
+            const btnGuardar = document.getElementById("btnGuardarConductor");
+            if (btnGuardar) {
+                btnGuardar.textContent = "Guardar";
+            }
 
-        const modalCard = document.querySelector(".modal-card");
-        if (modalCard) {
-            modalCard.classList.remove("modo-edicion");
-            modalCard.classList.add("modo-crear");
-        }
-    };
-}
+            const modalCard = document.querySelector(".modal-card");
+            if (modalCard) {
+                modalCard.classList.remove("modo-edicion");
+                modalCard.classList.add("modo-crear");
+            }
+        };
+    }
 
     if (inputFoto) {
         inputFoto.onchange = (e) => {
@@ -499,7 +499,7 @@ function initModals() {
             e.preventDefault();
 
             const nombre = document.getElementById("nombreC").value;
-            const emailVal    = document.getElementById("emailC")?.value.trim() || "";
+            const emailVal = document.getElementById("emailC")?.value.trim() || "";
             const passwordVal = document.getElementById("passwordC")?.value.trim() || "";
 
             const data = {
@@ -515,7 +515,7 @@ function initModals() {
                     window.driverAppData.foto ||
                     `https://ui-avatars.com/api/?name=${encodeURIComponent(nombre)}&background=random&shape=square`,
                 // Credenciales de acceso a la app móvil (solo admin)
-                email:    emailVal    || null,
+                email: emailVal || null,
                 password: passwordVal || null,
             };
 
@@ -566,7 +566,11 @@ function renderDriverCard(d) {
         }
     };
 
-    const statusClass = d.estado === "Activo" ? "bg-status-activo" : "bg-status-inactivo";
+    const statusClass = d.estado === "Activo"
+        ? "bg-status-activo"
+        : d.estado === "Desconectado"
+            ? "bg-status-desconectado"
+            : "bg-status-inactivo";
 
     // Badge de acceso a la app móvil
     const tieneAcceso = d.email_usuario;
@@ -613,23 +617,23 @@ function renderDriverCard(d) {
                     <span class="label">Vencimientos</span>
                     <span class="value">
                         ${(() => {
-                            const hoy = new Date();
-                            hoy.setHours(0,0,0,0);
-                            let html = "";
-                            
-                            // Licencia
-                            if (d.vencimiento_licencia) {
-                                const f = new Date(d.vencimiento_licencia + "T00:00:00");
-                                const diff = Math.ceil((f - hoy) / (1000 * 60 * 60 * 24));
-                                let badge = "";
-                                if (diff < 0) badge = `<span class="badge bg-danger ms-1">VENCIDA hace ${Math.abs(diff)}d</span>`;
-                                else if (diff <= 30) badge = `<span class="badge bg-warning text-dark ms-1">VENCE EN ${diff}d</span>`;
-                                
-                                html += `<div><small class="text-muted">Lic:</small> ${d.vencimiento_licencia} ${badge}</div>`;
-                            }
+            const hoy = new Date();
+            hoy.setHours(0, 0, 0, 0);
+            let html = "";
 
-                            return html || '<span class="text-muted small">Sin fechas registradas</span>';
-                        })()}
+            // Licencia
+            if (d.vencimiento_licencia) {
+                const f = new Date(d.vencimiento_licencia + "T00:00:00");
+                const diff = Math.ceil((f - hoy) / (1000 * 60 * 60 * 24));
+                let badge = "";
+                if (diff < 0) badge = `<span class="badge bg-danger ms-1">VENCIDA hace ${Math.abs(diff)}d</span>`;
+                else if (diff <= 30) badge = `<span class="badge bg-warning text-dark ms-1">VENCE EN ${diff}d</span>`;
+
+                html += `<div><small class="text-muted">Lic:</small> ${d.vencimiento_licencia} ${badge}</div>`;
+            }
+
+            return html || '<span class="text-muted small">Sin fechas registradas</span>';
+        })()}
                     </span>
                 </div>
             </div>
@@ -697,9 +701,9 @@ function resetDriverForm() {
     }
 
     // Limpiar campos de acceso app
-    const emailEl    = document.getElementById("emailC");
+    const emailEl = document.getElementById("emailC");
     const passwordEl = document.getElementById("passwordC");
-    if (emailEl)    emailEl.value    = "";
+    if (emailEl) emailEl.value = "";
     if (passwordEl) passwordEl.value = "";
 
     // Limpiar campos de vencimientos
@@ -711,10 +715,10 @@ function resetDriverForm() {
     const chevron = document.getElementById("chevronVencimientos");
     const badgesBtn = document.getElementById("vencimientoBadges");
     const badgeLic = document.getElementById("badgeLicencia");
-    if (panel)  { panel.style.display = "none"; }
-    if (chevron){ chevron.style.transform = "rotate(0deg)"; }
+    if (panel) { panel.style.display = "none"; }
+    if (chevron) { chevron.style.transform = "rotate(0deg)"; }
     if (badgesBtn) badgesBtn.innerHTML = "";
-    if (badgeLic)  badgeLic.innerHTML  = "";
+    if (badgeLic) badgeLic.innerHTML = "";
 
     // Ocultar badges de acceso
     document.getElementById("driver-access-status")?.classList.add("d-none");
@@ -774,9 +778,9 @@ function initMapa() {
 
     let layerUrl = "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png";
     const mapStyle = localStorage.getItem("tf_map_style");
-    if(mapStyle === "dark") {
+    if (mapStyle === "dark") {
         layerUrl = "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png";
-    } else if(mapStyle === "satellite") {
+    } else if (mapStyle === "satellite") {
         layerUrl = "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}";
     }
 
@@ -790,7 +794,7 @@ function initMapa() {
 
 function actualizarEstiloMapaGeneral(style) {
     if (!mapaGlobal) return;
-    
+
     // Remove all tile layers
     mapaGlobal.eachLayer((layer) => {
         if (layer instanceof L.TileLayer) {
@@ -799,9 +803,9 @@ function actualizarEstiloMapaGeneral(style) {
     });
 
     let layerUrl = "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png";
-    if(style === "dark") {
+    if (style === "dark") {
         layerUrl = "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png";
-    } else if(style === "satellite") {
+    } else if (style === "satellite") {
         layerUrl = "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}";
     }
 
@@ -826,9 +830,19 @@ function iniciarPollingMapa() {
 
         const valor = input ? input.value.trim() : "";
 
-        if (valor !== "" && !isNaN(valor)) {
+        if (valor !== "") {
+            // Código ingresado: solo mostrar el conductor de ese servicio
             actualizarChoferSeleccionado();
         } else {
+            // Campo vacío: limpiar modo servicio y volver a vista general
+            if (driverIdSeleccionado !== null) {
+                driverIdSeleccionado = null;
+                _isFirstLoad = true;
+                limpiarCapasRuta();
+                if (marcadorChofer) { mapaGlobal.removeLayer(marcadorChofer); marcadorChofer = null; }
+                const infoPanel = document.getElementById("map-info-panel");
+                if (infoPanel) infoPanel.style.display = "none";
+            }
             cargarTodosLosConductores();
         }
     }, 3000);
@@ -845,6 +859,8 @@ function detenerPollingMapa() {
    CARGAR TODOS LOS CONDUCTORES EN EL MAPA
    ========================================================= */
 async function cargarTodosLosConductores() {
+    // Asegurar que los marcadores ocultos vuelvan a ser visibles
+    _mostrarTodosLosConductores();
     try {
         const response = await CONFIG.fetchAuth("/locations/latest");
 
@@ -861,26 +877,21 @@ async function cargarTodosLosConductores() {
         data.forEach(d => {
             const lat = d.latitud;
             const lng = d.longitud;
+            const driverIcon = _getDriverIcon(d);
+            const popupHtml = `
+                <div style="font-family:'Inter',sans-serif;padding:4px;min-width:160px;">
+                    <b style="color:#3b82f6;font-size:1rem;">&#128663; ${d.nombre}</b><br>
+                    <small style="color:#64748b;">ID: ${d.driver_id} &middot; ${d.velocidad} km/h</small>
+                </div>`;
 
             if (marcadoresConductores[d.driver_id]) {
                 marcadoresConductores[d.driver_id].setLatLng([lat, lng]);
-                marcadoresConductores[d.driver_id].setPopupContent(`
-                    <b>${d.nombre}</b><br>
-                    Driver ID: ${d.driver_id}<br>
-                    Latitud: ${lat}<br>
-                    Longitud: ${lng}<br>
-                    Velocidad: ${d.velocidad}
-                `);
+                marcadoresConductores[d.driver_id].setIcon(driverIcon);
+                marcadoresConductores[d.driver_id].setPopupContent(popupHtml);
             } else {
-                const marker = L.marker([lat, lng], { icon: carIcon }).addTo(mapaGlobal)
-                    .bindPopup(`
-                        <b>${d.nombre}</b><br>
-                        Driver ID: ${d.driver_id}<br>
-                        Latitud: ${lat}<br>
-                        Longitud: ${lng}<br>
-                        Velocidad: ${d.velocidad}
-                    `);
-
+                const marker = L.marker([lat, lng], { icon: driverIcon })
+                    .addTo(mapaGlobal)
+                    .bindPopup(popupHtml);
                 marcadoresConductores[d.driver_id] = marker;
             }
         });
@@ -893,16 +904,36 @@ async function cargarTodosLosConductores() {
    BUSCAR UBICACIÓN REAL DESDE EL BACKEND
    ========================================================= */
 let driverIdSeleccionado = null;
+let _cachedStaticRoute = null; // { requestId, greenPts: LatLng[] } — caché de la ruta verde
+let _bluePolylines = [];   // sólo las líneas azules (se reemplazan en cada poll)
+let _isFirstLoad = true; // para hacer fitBounds solo la primera vez
+
+/** Oculta del mapa todos los marcadores del modo "vista general" */
+function _ocultarTodosLosConductores() {
+    Object.values(marcadoresConductores).forEach(m => {
+        try { m.setOpacity(0); m.off('click'); } catch(e){}
+    });
+}
+
+/** Vuelve a mostrar los marcadores del modo "vista general" */
+function _mostrarTodosLosConductores() {
+    Object.values(marcadoresConductores).forEach(m => {
+        try { m.setOpacity(1); } catch(e){}
+    });
+}
 
 async function buscarUbicacion() {
     try {
         const codigo = document.getElementById("codigoViaje").value.trim();
-
         if (codigo === "") {
             Toast.warning("Introduce un ID de conductor o Código de servicio.");
             return;
         }
-
+        // Ocultar todos los demás conductores del mapa
+        _ocultarTodosLosConductores();
+        // Reiniciar caché cuando se busca un nuevo código
+        _cachedStaticRoute = null;
+        _isFirstLoad = true;
         driverIdSeleccionado = codigo;
         await actualizarChoferSeleccionado();
     } catch (error) {
@@ -913,157 +944,292 @@ async function buscarUbicacion() {
 
 async function actualizarChoferSeleccionado() {
     if (!driverIdSeleccionado) return;
-
     try {
-        // Usamos el endpoint inteligente que soporta ID numérico y Hexagonal
         const response = await CONFIG.fetchAuth(`/locations/track/${driverIdSeleccionado}?isAdmin=true`);
-
-        if (!response.ok) {
-            throw new Error(`Error HTTP ${response.status}`);
-        }
-
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const data = await response.json();
+        if (data.error) { Toast.warning(data.error); return; }
 
-        if (data.error) {
-            Toast.warning(data.error);
-            return;
+        if (_isFirstLoad) {
+            // Primera vez: dibujar todo y hacer fitBounds
+            await mostrarChofer(data);
+            _isFirstLoad = false;
+        } else {
+            // Actualizaciones siguientes: solo mover el marcador y la ruta azul
+            await _actualizarSoloDriver(data);
         }
-
-        mostrarChofer(data);
     } catch (error) {
-        console.error("Error actualizando chofer seleccionado:", error);
+        console.error("Error actualizando chofer:", error);
     }
+}
+
+/**
+ * Actualiza solo el marcador del conductor y la ruta azul (conductor→origen).
+ * NO redibuja ni markers de origen/destino ni la ruta verde.
+ * Intercambio atómico: añade nuevo antes de quitar el viejo para evitar flash.
+ */
+async function _actualizarSoloDriver(data) {
+    if (!mapaGlobal) return;
+
+    const c = data.conductor || data;
+    const driverLat = c ? (c.lat ?? c.latitud ?? null) : null;
+    const driverLng = c ? (c.lng ?? c.longitud ?? null) : null;
+    const driverNombre = c ? (c.nombre || 'Conductor') : 'Conductor';
+    const tieneOrigen = data.origen && data.origen.lat != null && data.origen.lng != null;
+
+    // 1. Nuevo marcador del conductor (añadir antes de quitar el viejo)
+    let nuevoMarcador = null;
+    if (driverLat != null && driverLng != null) {
+        const driverIcon = _getDriverIcon(c);
+        nuevoMarcador = L.marker([driverLat, driverLng], { icon: driverIcon })
+            .bindPopup(`<div style="font-family:'Inter',sans-serif;padding:4px;min-width:160px;">
+                <b style="color:#3b82f6;font-size:1rem;">&#128663; ${driverNombre}</b><br>
+                <small style="color:#64748b;">Ubicación actual · ${c?.velocidad ?? 0} km/h</small>
+            </div>`);
+        nuevoMarcador.addTo(mapaGlobal);
+    }
+
+    // 2. Nueva ruta azul (conductor → origen) — calcular y dibujar
+    let nuevasAzules = [];
+    if (driverLat != null && driverLng != null && tieneOrigen) {
+        const pts = await _fetchOSRMRoute(driverLat, driverLng, data.origen.lat, data.origen.lng);
+        const linePts = pts || [L.latLng(driverLat, driverLng), L.latLng(data.origen.lat, data.origen.lng)];
+        const shadow = L.polyline(linePts, { color: '#ffffff', weight: 11, opacity: 0.45 }).addTo(mapaGlobal);
+        const line = L.polyline(linePts, { color: '#3b82f6', weight: 7, opacity: 0.92, dashArray: pts ? null : '12, 8' }).addTo(mapaGlobal);
+        nuevasAzules = [shadow, line];
+    }
+
+    // 3. Intercambio atómico: quitar viejos en un solo frame de requestAnimationFrame
+    requestAnimationFrame(() => {
+        // Quitar marcador anterior
+        if (marcadorChofer) { mapaGlobal.removeLayer(marcadorChofer); }
+        marcadorChofer = nuevoMarcador;
+
+        // Quitar líneas azules anteriores
+        _bluePolylines.forEach(p => { try { mapaGlobal.removeLayer(p); } catch (e) { } });
+        _bluePolylines = nuevasAzules;
+
+        // Actualizar meta del panel (velocidad)
+        const dmEl = document.getElementById("map-driver-meta");
+        if (dmEl) dmEl.textContent = `Código: ${data.codigo || data.tracking_code || '—'} · ${c?.velocidad ?? 0} km/h`;
+    });
 }
 
 /* =========================================================
    MOSTRAR CHOFER EN EL MAPA
    ========================================================= */
-/* =========================================================
-   MOSTRAR CHOFER EN EL MAPA
-   ========================================================= */
 let originMarkerGlobal = null;
 let destinationMarkerGlobal = null;
-let routingControlGlobal = null;
+let routePolylines = []; // Todas las polylines (azul + verde)
 
-function mostrarChofer(data) {
-    if (!mapaGlobal) {
-        console.error("Mapa no inicializado.");
-        return;
-    }
-
-    // Limpiar capas previas de ruteo
-    if (routingControlGlobal) {
-        try { mapaGlobal.removeControl(routingControlGlobal); } catch(e){}
-        routingControlGlobal = null;
-    }
+function limpiarCapasRuta() {
     if (originMarkerGlobal) { mapaGlobal.removeLayer(originMarkerGlobal); originMarkerGlobal = null; }
     if (destinationMarkerGlobal) { mapaGlobal.removeLayer(destinationMarkerGlobal); destinationMarkerGlobal = null; }
+    // Limpiar todas las polylines (azules + verdes)
+    routePolylines.forEach(p => { try { mapaGlobal.removeLayer(p); } catch (e) { } });
+    routePolylines = [];
+    _bluePolylines.forEach(p => { try { mapaGlobal.removeLayer(p); } catch (e) { } });
+    _bluePolylines = [];
+}
 
-    // El backend puede devolver {conductor: {...}} o el objeto directo
+/**
+ * Llama a OSRM directamente y devuelve un array de LatLng.
+ * NO usa L.Routing.control, por lo que no hay zooms automáticos.
+ */
+async function _fetchOSRMRoute(fromLat, fromLng, toLat, toLng) {
+    const url = `https://router.project-osrm.org/route/v1/driving/` +
+        `${fromLng},${fromLat};${toLng},${toLat}?overview=full&geometries=geojson`;
+    try {
+        const res = await fetch(url);
+        const json = await res.json();
+        if (json.code !== 'Ok' || !json.routes || !json.routes.length) return null;
+        return json.routes[0].geometry.coordinates.map(c => L.latLng(c[1], c[0]));
+    } catch (e) {
+        console.warn('[TransFleet] OSRM fetch error:', e);
+        return null;
+    }
+}
+
+function _drawPolyline(points, color, fallbackA, fallbackB, isBlue) {
+    const pts = points || [L.latLng(fallbackA[0], fallbackA[1]), L.latLng(fallbackB[0], fallbackB[1])];
+    const dash = points ? null : '12, 8';
+    const shadow = L.polyline(pts, { color: '#ffffff', weight: 11, opacity: 0.45 }).addTo(mapaGlobal);
+    const line = L.polyline(pts, { color, weight: 7, opacity: 0.92, dashArray: dash }).addTo(mapaGlobal);
+    if (isBlue) {
+        // Azul: se registra en _bluePolylines para reemplazo rápido en cada poll
+        _bluePolylines.push(shadow, line);
+    } else {
+        // Verde: estática, solo se limpia al buscar nuevo código
+        routePolylines.push(shadow, line);
+    }
+}
+
+/**
+ * Devuelve un L.divIcon que muestra la foto de perfil del conductor
+ * en un círculo con borde azul y sombra. Si no tiene imagen, usa UI-Avatars.
+ */
+function _getDriverIcon(driver) {
+    const name    = encodeURIComponent(driver?.nombre || 'Conductor');
+    const imgUrl  = (driver && driver.imagen)
+        ? driver.imagen
+        : `https://ui-avatars.com/api/?name=${name}&background=3b82f6&color=fff&bold=true&size=64`;
+    const html = `
+        <div style="
+            width:50px;height:50px;
+            border-radius:50%;
+            border:3px solid #3b82f6;
+            box-shadow:0 4px 14px rgba(59,130,246,.55);
+            overflow:hidden;
+            background:#1e3a5f;
+        ">
+            <img src="${imgUrl}" style="width:100%;height:100%;object-fit:cover;display:block;" onerror="this.src='https://ui-avatars.com/api/?name=${name}&background=3b82f6&color=fff&bold=true&size=64'">
+        </div>`;
+    return L.divIcon({ html, className: '', iconSize: [50, 50], iconAnchor: [25, 50], popupAnchor: [0, -54] });
+}
+
+
+function mostrarChofer(data) {
+    if (!mapaGlobal) { console.error("Mapa no inicializado."); return; }
+
+    limpiarCapasRuta();
+
+    // ── Extraer datos ─────────────────────────────────────────────
     const c = data.conductor || data;
-    const lat = c.lat || c.latitud;
-    const lng = c.lng || c.longitud;
+    const driverLat = c ? (c.lat ?? c.latitud ?? null) : null;
+    const driverLng = c ? (c.lng ?? c.longitud ?? null) : null;
+    const driverNombre = c ? (c.nombre || 'Conductor') : 'Conductor';
 
-    if (!lat || !lng) {
-        Toast.warning("Este conductor no tiene GPS activo.");
-        return;
+    const tieneOrigen = data.origen && data.origen.lat != null && data.origen.lng != null;
+    const tieneDestino = data.destino && data.destino.lat != null && data.destino.lng != null;
+    const tieneConductorGPS = driverLat != null && driverLng != null;
+
+    // ── 1. Marcador del conductor ───────────────────────────────────────
+    if (marcadorChofer) { mapaGlobal.removeLayer(marcadorChofer); marcadorChofer = null; }
+    if (tieneConductorGPS) {
+        const driverIcon = _getDriverIcon(c);
+        marcadorChofer = L.marker([driverLat, driverLng], { icon: driverIcon }).addTo(mapaGlobal)
+            .bindPopup(`
+                <div style="font-family:'Inter',sans-serif;padding:4px;min-width:160px;">
+                    <b style="color:#3b82f6;font-size:1rem;">&#128663; ${driverNombre}</b><br>
+                    <small style="color:#64748b;">Ubicación actual · ${c?.velocidad ?? 0} km/h</small>
+                </div>
+            `).openPopup();
     }
 
-    if (marcadorChofer) {
-        mapaGlobal.removeLayer(marcadorChofer);
-    }
-
-    mapaGlobal.flyTo([lat, lng], 15);
-
-    marcadorChofer = L.marker([lat, lng], { icon: carIcon }).addTo(mapaGlobal)
-        .bindPopup(`
-            <div style="font-family: 'Inter', sans-serif;">
-                <b style="color: var(--accent-primary);">${c.nombre}</b><br>
-                <small class="text-muted">Estado: ${data.estado || 'Activo'}</small>
+    // ── 2. Marcador A — Origen (azul) ───────────────────────────────────
+    if (tieneOrigen) {
+        originMarkerGlobal = L.marker([data.origen.lat, data.origen.lng], {
+            icon: L.divIcon({
+                className: '',
+                html: `<div style="background:#3b82f6;width:36px;height:36px;border-radius:50%;border:3px solid white;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(59,130,246,.5);font-size:1rem;color:white;font-weight:800;">A</div>`,
+                iconSize: [36, 36], iconAnchor: [18, 18]
+            })
+        }).addTo(mapaGlobal)
+            .bindPopup(`
+            <div style="font-family:'Inter',sans-serif;padding:4px;min-width:160px;">
+                <b style="color:#3b82f6;">&#128205; Punto de Origen</b><br>
+                <span style="font-size:.88rem;color:#1e293b;">${data.origen.nombre || 'Origen del viaje'}</span><br>
+                <small style="color:#64748b;">Primera parada del conductor</small>
             </div>
-        `)
-        .openPopup();
-
-    // Trazar ruta dinámica según fase del servicio
-    if (data.origen && data.origen.lat && data.destino && data.destino.lat) {
-        
-        let targetPoint = null;
-        let routeColor = '#3b82f6'; // Azul por defecto
-
-        if (data.sub_estado === "buscando_cliente") {
-            // Fase 1: Ir a buscar al cliente
-            targetPoint = L.latLng(data.origen.lat, data.origen.lng);
-            routeColor = '#3b82f6'; 
-
-            // Marcador Origen (Punto Azul)
-            originMarkerGlobal = L.circleMarker([data.origen.lat, data.origen.lng], {
-                radius: 10, color: '#3b82f6', fillColor: '#3b82f6', fillOpacity: 0.9, weight: 3
-            }).addTo(mapaGlobal).bindPopup(`<b>Origen:</b> ${data.origen.nombre}<br><span class="badge bg-primary">Recogida Pendiente</span>`);
-            
-            // Destino se muestra tenue
-            destinationMarkerGlobal = L.circleMarker([data.destino.lat, data.destino.lng], {
-                radius: 8, color: '#ef4444', fillColor: '#ef4444', fillOpacity: 0.3
-            }).addTo(mapaGlobal).bindPopup(`<b>Destino Final:</b> ${data.destino.nombre}`);
-
-        } else if (data.sub_estado === "con_cliente") {
-            // Fase 2: Ya tiene al cliente, ir al destino
-            targetPoint = L.latLng(data.destino.lat, data.destino.lng);
-            routeColor = '#10b981'; // Verde (Con cliente)
-
-            // Marcador Destino (Punto Rojo)
-            destinationMarkerGlobal = L.circleMarker([data.destino.lat, data.destino.lng], {
-                radius: 10, color: '#ef4444', fillColor: '#ef4444', fillOpacity: 0.9, weight: 3
-            }).addTo(mapaGlobal).bindPopup(`<b>Destino:</b> ${data.destino.nombre}<br><span class="badge bg-success">En camino</span>`);
-        }
-
-        if (targetPoint) {
-            console.log("Trazando ruta a:", targetPoint);
-            routingControlGlobal = L.Routing.control({
-                waypoints: [
-                    L.latLng(lat, lng),
-                    targetPoint
-                ],
-                router: L.Routing.osrmv1({
-                    serviceUrl: `https://router.project-osrm.org/route/v1`
-                }),
-                lineOptions: { 
-                    styles: [{ color: routeColor, opacity: 0.8, weight: 8 }],
-                    extendToWaypoints: true,
-                    missingRouteTolerance: 10
-                },
-                show: false,
-                addWaypoints: false,
-                draggableWaypoints: false,
-                createMarker: () => null
-            }).on('routingerror', function(e) {
-                console.error("Error de ruteo:", e);
-                // Fallback: Línea recta si falla OSRM
-                L.polyline([L.latLng(lat, lng), targetPoint], {color: routeColor, weight: 5, dashArray: '10, 10'}).addTo(mapaGlobal);
-            }).addTo(mapaGlobal);
-        }
+          `);
     }
 
-    // Actualizar Panel de Información Flotante
+    // ── 3. Marcador B — Destino (rojo) ────────────────────────────────
+    if (tieneDestino) {
+        destinationMarkerGlobal = L.marker([data.destino.lat, data.destino.lng], {
+            icon: L.divIcon({
+                className: '',
+                html: `<div style="background:#ef4444;width:36px;height:36px;border-radius:50%;border:3px solid white;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(239,68,68,.5);font-size:1rem;color:white;font-weight:800;">B</div>`,
+                iconSize: [36, 36], iconAnchor: [18, 18]
+            })
+        }).addTo(mapaGlobal)
+            .bindPopup(`
+            <div style="font-family:'Inter',sans-serif;padding:4px;min-width:160px;">
+                <b style="color:#ef4444;">&#127937; Destino Final</b><br>
+                <span style="font-size:.88rem;color:#1e293b;">${data.destino.nombre || 'Destino del viaje'}</span><br>
+                <small style="color:#64748b;">Última parada del servicio</small>
+            </div>
+          `);
+    }
+
+    // ── 4+5. Rutas AZUL y VERDE en paralelo, ambas en la primera carga ─────
+    (async () => {
+        const promises = [];
+
+        // Ruta AZUL: Conductor → Origen (se guardará en _bluePolylines)
+        if (tieneConductorGPS && tieneOrigen) {
+            promises.push(
+                _fetchOSRMRoute(driverLat, driverLng, data.origen.lat, data.origen.lng)
+                    .then(pts => _drawPolyline(pts, '#3b82f6', [driverLat, driverLng], [data.origen.lat, data.origen.lng], true))
+            );
+        }
+
+        // Ruta VERDE: Origen → Destino (estática, en routePolylines)
+        if (tieneOrigen && tieneDestino) {
+            promises.push(
+                _fetchOSRMRoute(data.origen.lat, data.origen.lng, data.destino.lat, data.destino.lng)
+                    .then(pts => _drawPolyline(pts, '#10b981', [data.origen.lat, data.origen.lng], [data.destino.lat, data.destino.lng], false))
+            );
+        }
+
+        // Fallback: conductor → destino directo si no hay origen
+        if (tieneConductorGPS && !tieneOrigen && tieneDestino) {
+            promises.push(
+                _fetchOSRMRoute(driverLat, driverLng, data.destino.lat, data.destino.lng)
+                    .then(pts => _drawPolyline(pts, '#3b82f6', [driverLat, driverLng], [data.destino.lat, data.destino.lng], true))
+            );
+        }
+
+        // Esperar ambas y hacer UN SOLO fitBounds sin animación
+        await Promise.all(promises);
+
+        const allPts = [];
+        if (tieneConductorGPS) allPts.push([driverLat, driverLng]);
+        if (tieneOrigen) allPts.push([data.origen.lat, data.origen.lng]);
+        if (tieneDestino) allPts.push([data.destino.lat, data.destino.lng]);
+        if (allPts.length > 0) {
+            mapaGlobal.fitBounds(L.latLngBounds(allPts), { padding: [80, 80], animate: false });
+        } else if (tieneConductorGPS) {
+            mapaGlobal.setView([driverLat, driverLng], 14, { animate: false });
+        }
+    })();
+
+
+    // ── 7. Poblar panel inferior ─────────────────────────────────────────
     const infoPanel = document.getElementById("map-info-panel");
-    const driverName = document.getElementById("map-driver-name");
-    const driverMeta = document.getElementById("map-driver-meta");
-    const driverImg = document.getElementById("map-driver-img");
-    const driverStatus = document.getElementById("map-driver-status");
+    if (infoPanel) {
+        infoPanel.style.display = "block";
 
-    if (infoPanel && driverName) {
-        infoPanel.style.display = "flex";
-        driverName.textContent = c.nombre;
-        driverMeta.textContent = `Código: ${data.codigo || '—'} • Velocidad: ${c.velocidad || '0'} km/h`;
-        
-        if (driverImg) {
-            driverImg.src = c.imagen || `https://ui-avatars.com/api/?name=${encodeURIComponent(c.nombre)}&background=3b82f6&color=fff&bold=true`;
+        // Conductor
+        const dnEl = document.getElementById("map-driver-name");
+        const dmEl = document.getElementById("map-driver-meta");
+        const diEl = document.getElementById("map-driver-img");
+        const dsEl = document.getElementById("map-driver-status");
+        if (dnEl) dnEl.textContent = driverNombre;
+        if (dmEl) dmEl.textContent = `Código: ${data.codigo || data.tracking_code || '—'} · ${c?.velocidad ?? 0} km/h`;
+        if (diEl) diEl.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(driverNombre)}&background=3b82f6&color=fff&bold=true`;
+        if (dsEl) {
+            const sub = data.sub_estado || data.estado || '';
+            if (sub === 'con_cliente') { dsEl.textContent = 'Con Cliente'; dsEl.style.background = '#dcfce7'; dsEl.style.color = '#15803d'; }
+            else if (sub === 'completada') { dsEl.textContent = 'Completado'; dsEl.style.background = '#f1f5f9'; dsEl.style.color = '#64748b'; }
+            else { dsEl.textContent = 'En Ruta'; dsEl.style.background = '#e0f2fe'; dsEl.style.color = '#0369a1'; }
         }
 
-        if (driverStatus) {
-            driverStatus.textContent = data.estado === "completada" ? "Completado" : "En Ruta";
-            driverStatus.style.background = data.estado === "completada" ? "#dcfce7" : "#e0f2fe";
-            driverStatus.style.color = data.estado === "completada" ? "#15803d" : "#0369a1";
-        }
+        // Origen
+        const onEl = document.getElementById("map-origin-name");
+        const ocEl = document.getElementById("map-origin-coords");
+        if (onEl) onEl.textContent = data.origen?.nombre || '—';
+        if (ocEl) ocEl.textContent = tieneOrigen ? `${data.origen.lat.toFixed(5)}, ${data.origen.lng.toFixed(5)}` : 'Sin coordenadas';
+
+        // Destino
+        const dnmEl = document.getElementById("map-dest-name");
+        const dcEl = document.getElementById("map-dest-coords");
+        if (dnmEl) dnmEl.textContent = data.destino?.nombre || '—';
+        if (dcEl) dcEl.textContent = tieneDestino ? `${data.destino.lat.toFixed(5)}, ${data.destino.lng.toFixed(5)}` : 'Sin coordenadas';
+    }
+
+    if (!tieneConductorGPS) {
+        Toast.warning(`Servicio encontrado. El conductor aún no tiene GPS activo. Mostrando ruta planificada.`);
     }
 }
 
@@ -1100,8 +1266,8 @@ async function actualizarDashboardServicios() {
         const resStats = await CONFIG.fetchAuth("/request/stats/hoy");
         if (resStats.ok) {
             const stats = await resStats.json();
-            const kpiEl  = document.getElementById("kpi-servicios-hoy");
-            const subEl  = document.getElementById("kpi-servicios-hoy-sub");
+            const kpiEl = document.getElementById("kpi-servicios-hoy");
+            const subEl = document.getElementById("kpi-servicios-hoy-sub");
 
             if (kpiEl) kpiEl.textContent = stats.hoy;
 
@@ -1110,7 +1276,7 @@ async function actualizarDashboardServicios() {
                     subEl.innerHTML = `<span class="text-muted"><i class="bi bi-dash"></i> Sin datos de ayer</span>`;
                 } else {
                     const diff = stats.hoy - stats.ayer;
-                    const pct  = Math.round((diff / stats.ayer) * 100);
+                    const pct = Math.round((diff / stats.ayer) * 100);
                     if (diff > 0) {
                         subEl.innerHTML = `<span class="text-success"><i class="bi bi-arrow-up"></i> +${pct}% vs ayer</span>`;
                     } else if (diff < 0) {
@@ -1131,7 +1297,7 @@ async function actualizarDashboardServicios() {
         const resReq = await CONFIG.fetchAuth("/request/");
         if (resReq.ok) {
             const solicitudes = await resReq.json();
-            
+
             // Filtrar solo las completadas del mes actual
             const ahora = new Date();
             const mesActual = ahora.getMonth();
@@ -1140,7 +1306,7 @@ async function actualizarDashboardServicios() {
             const completadas = solicitudes.filter(s => {
                 const esCompletada = (s.estado || "").toLowerCase() === "completada";
                 if (!esCompletada) return false;
-                
+
                 // Si el backend envía registrado_en, filtrar por mes (opcional pero recomendado)
                 if (s.registrado_en) {
                     const fechaReg = new Date(s.registrado_en);
@@ -1150,7 +1316,7 @@ async function actualizarDashboardServicios() {
             });
 
             const totalIngresos = completadas.reduce((acc, s) => acc + (parseFloat(s.costo) || 0), 0);
-            
+
             const kpiEl = document.getElementById("kpi-ingresos-mes");
             const subEl = document.getElementById("kpi-ingresos-mes-sub");
 
@@ -1172,9 +1338,9 @@ async function actualizarDashboardServicios() {
     try {
         const resChoferes = await CONFIG.fetchAuth("/drivers/stats/activos");
         if (resChoferes.ok) {
-            const data   = await resChoferes.json();
-            const kpiEl  = document.getElementById("kpi-choferes-activos");
-            const subEl  = document.getElementById("kpi-choferes-activos-sub");
+            const data = await resChoferes.json();
+            const kpiEl = document.getElementById("kpi-choferes-activos");
+            const subEl = document.getElementById("kpi-choferes-activos-sub");
 
             if (kpiEl) kpiEl.textContent = data.activos;
             if (subEl) subEl.textContent = `Total plantilla: ${data.total}`;
@@ -1195,7 +1361,7 @@ async function actualizarDashboardServicios() {
             const drivers = await resDrivers.json();
             const vehicles = await resVehicles.json();
             const hoy = new Date();
-            hoy.setHours(0,0,0,0);
+            hoy.setHours(0, 0, 0, 0);
 
             let vencidos = 0;
             let proximos = 0;
@@ -1255,7 +1421,7 @@ async function actualizarDashboardServicios() {
         let requests = await res.json();
 
         // Ordenar más recientes primero
-        requests.sort((a,b) => b.request_id - a.request_id);
+        requests.sort((a, b) => b.request_id - a.request_id);
 
         // Seleccionar los últimos 5
         requests = requests.slice(0, 5);
@@ -1318,7 +1484,7 @@ async function actualizarDashboardServicios() {
 /* =========================================================
    VISOR DE IMÁGENES (FULLSCREEN)
    ========================================================= */
-window.verImagenConductor = function(src) {
+window.verImagenConductor = function (src) {
     let viewer = document.getElementById("imageViewer");
     if (!viewer) {
         viewer = document.createElement("div");
@@ -1328,7 +1494,7 @@ window.verImagenConductor = function(src) {
         viewer.innerHTML = `<img src="" class="image-viewer-content" id="imageViewerImg">`;
         document.body.appendChild(viewer);
     }
-    
+
     document.getElementById("imageViewerImg").src = src;
     viewer.classList.add("active");
 };

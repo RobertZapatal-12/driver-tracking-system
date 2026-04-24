@@ -321,7 +321,7 @@ async function cargarConductoresSelect() {
             const drivers = await response.json();
             select.innerHTML = '<option value="">Sin asignar</option>';
             drivers.forEach(d => {
-                if ((d.estado || "").toLowerCase() === 'inactivo') return;
+                if ((d.estado || "").toLowerCase() === 'desconectado') return;
                 const opt = document.createElement("option");
                 opt.value = d.driver_id;
                 opt.textContent = `${d.nombre} - ${d.numero_licencia} (${d.estado})`;
@@ -652,13 +652,41 @@ window.abrirModalEditarSolicitud = function (id) {
         }
         document.getElementById("solicitud-origen").value = s.origen;
         document.getElementById("solicitud-destino").value = s.destino;
-        document.getElementById("solicitud-descripcion").value = s.descripcion;
+        document.getElementById("solicitud-descripcion").value = s.descripcion || "";
         document.getElementById("solicitud-tipo-vehiculo").value = s.tipo_vehiculo;
         document.getElementById("solicitud-prioridad").value = s.prioridad;
         document.getElementById("solicitud-costo").value = s.costo || 0;
+
+        // ✅ Restaurar coordenadas guardadas en la BD
+        originCoords      = (s.lat_origen  != null && s.lon_origen  != null) ? { lat: s.lat_origen,  lng: s.lon_origen  } : null;
+        destinationCoords = (s.lat_destino != null && s.lon_destino != null) ? { lat: s.lat_destino, lng: s.lon_destino } : null;
     }
 
     modal.style.display = "flex";
+
+    // Inicializar mapa y poner marcadores con las coordenadas existentes
+    setTimeout(() => {
+        initModalMap();
+        // Limpiar primero (el mapa acaba de reiniciarse)
+        originMarker = null;
+        destinationMarker = null;
+        routingControl = null;
+
+        if (originCoords) {
+            updateOriginMarker(originCoords);
+        }
+        if (destinationCoords) {
+            updateDestinationMarker(destinationCoords);
+        }
+        if (originCoords && destinationCoords) {
+            calculateOptimalRoute();
+            fitMapToRoute();
+        } else if (originCoords) {
+            modalMap.setView(originCoords, 14);
+        } else {
+            modalMap.setView([18.4861, -69.9312], 12);
+        }
+    }, 300);
 };
 
 window.eliminarSolicitud = async function (id) {
@@ -700,8 +728,18 @@ async function submitSolicitud(e) {
         descripcion: document.getElementById('solicitud-descripcion').value,
         tipo_vehiculo: document.getElementById('solicitud-tipo-vehiculo').value,
         prioridad: document.getElementById('solicitud-prioridad').value,
-        costo: parseFloat(document.getElementById('solicitud-costo').value || 0)
+        costo: parseFloat(document.getElementById('solicitud-costo').value || 0),
+        // ✅ COORDENADAS: capturadas desde el mapa o el autocomplete
+        lat_origen:   originCoords      ? originCoords.lat      : null,
+        lon_origen:   originCoords      ? originCoords.lng      : null,
+        lat_destino:  destinationCoords ? destinationCoords.lat : null,
+        lon_destino:  destinationCoords ? destinationCoords.lng : null
     };
+
+    // Advertir si no hay coordenadas (no bloquear, solo avisar)
+    if (!originCoords || !destinationCoords) {
+        console.warn('[Solicitud] Guardando sin coordenadas completas. El rastreo en mapa no estará disponible.');
+    }
 
     try {
         let method = 'POST';
@@ -719,9 +757,11 @@ async function submitSolicitud(e) {
         });
 
         if (response.ok) {
-            Toast.success("Solicitud guardada");
+            Toast.success("Solicitud guardada correctamente");
             document.getElementById("modalSolicitud").style.display = "none";
             document.getElementById('form-solicitud').reset();
+            originCoords = null;
+            destinationCoords = null;
             cargarSolicitudes();
         } else {
             const err = await response.json();

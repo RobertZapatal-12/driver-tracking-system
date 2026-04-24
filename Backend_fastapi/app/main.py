@@ -75,23 +75,39 @@ def create_access_token(data: dict, expires_delta: timedelta = None):
 # Endpoint de login en la raíz /api/login (para conexión con frontend y app móvil)
 @app.post("/api/login", response_model=schemas.LoginResponse)
 def api_login(login_data: schemas.UserLogin, db: Session = Depends(get_db)):
-    """Endpoint de login que autentica usuarios"""
+    """Endpoint de login que autentica usuarios de web o app móvil"""
 
-    user = db.query(models.User).filter(models.User.email == login_data.email).first()
+    if login_data.is_mobile:
+        # LOGIN APP MÓVIL: Solo buscar en users_app (donde están los drivers)
+        user = db.query(models.UserApp).filter(models.UserApp.email == login_data.email).first()
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Acceso denegado: Usuario no encontrado en el sistema móvil"
+            )
+    else:
+        # LOGIN WEB: Solo buscar en users (donde están Admin, Manager, Operador)
+        user = db.query(models.User).filter(models.User.email == login_data.email).first()
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Acceso denegado: Usuario no autorizado para el panel web"
+            )
 
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Email o contraseña incorrectos"
-        )
-
+    # Verificar contraseña
     if user.contrasena != login_data.password:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Email o contraseña incorrectos"
         )
 
-    driver = db.query(models.Driver).filter(models.Driver.user_id == user.user_id).first()
+    # Buscar conductor vinculado si existe
+    driver = None
+    if login_data.is_mobile:
+        driver = db.query(models.Driver).filter(models.Driver.user_id == user.user_id).first()
+    else:
+        # Para web, a veces necesitamos el driver_id si el admin está rastreando, pero usualmente es None
+        driver = db.query(models.Driver).filter(models.Driver.user_id == user.user_id).first()
 
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     token = create_access_token(

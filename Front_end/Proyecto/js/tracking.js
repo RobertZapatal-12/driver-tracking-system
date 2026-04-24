@@ -212,89 +212,137 @@ async function rastrearServicio() {
     }
 }
 
-let originMarker = null;
+let originMarker      = null;
 let destinationMarker = null;
-let routingControl = null;
+let routingControl    = null;
+let routeFallbackLines = [];
+
+// ── Iconos reutilizables ────────────────────────────────────────────
+function makeLetterIcon(letter, color) {
+    return L.divIcon({
+        className: '',
+        html: `<div style="
+            background:${color}; width:36px; height:36px;
+            border-radius:50%; border:3px solid white;
+            display:flex; align-items:center; justify-content:center;
+            box-shadow:0 4px 14px ${color}66;
+            font-size:1rem; color:white; font-weight:800;">${letter}</div>`,
+        iconSize: [36, 36],
+        iconAnchor: [18, 18],
+        popupAnchor: [0, -20]
+    });
+}
 
 function placeTrackingMarkers(data) {
     if (!trackingMap) return;
 
-    // Limpiar anteriores
-    if (originMarker) trackingMap.removeLayer(originMarker);
-    if (destinationMarker) trackingMap.removeLayer(destinationMarker);
-    if (trackingMarker) trackingMap.removeLayer(trackingMarker);
-    if (routingControl) {
-        try { trackingMap.removeControl(routingControl); } catch(e){}
-    }
+    // ── Limpiar capas previas ────────────────────────────────────
+    if (originMarker)      { trackingMap.removeLayer(originMarker);      originMarker = null; }
+    if (destinationMarker) { trackingMap.removeLayer(destinationMarker); destinationMarker = null; }
+    if (trackingMarker)    { trackingMap.removeLayer(trackingMarker);    trackingMarker = null; }
+    if (routingControl)    { try { trackingMap.removeControl(routingControl); } catch(e){} routingControl = null; }
+    routeFallbackLines.forEach(l => { try { trackingMap.removeLayer(l); } catch(e){} });
+    routeFallbackLines = [];
 
-    const bounds = L.latLngBounds();
+    const tieneOrigen  = data.origen  && data.origen.lat  != null && data.origen.lng  != null;
+    const tieneDestino = data.destino && data.destino.lat != null && data.destino.lng != null;
+    const tieneConductor = data.conductor && data.conductor.lat != null && data.conductor.lng != null;
 
-    // 1. Origen
-    if (data.origen && data.origen.lat) {
-        originMarker = L.marker([data.origen.lat, data.origen.lng], {
-            icon: L.divIcon({ 
-                className: 'custom-div-icon', 
-                html: '<div style="background:#3b82f6; width:12px; height:12px; border-radius:50%; border:2px solid white;"></div>', 
-                iconSize: [12,12],
-                iconAnchor: [6,6]
-            })
-        }).addTo(trackingMap).bindPopup(`<b>Origen:</b> ${data.origen.nombre}`);
-        bounds.extend([data.origen.lat, data.origen.lng]);
-    }
-
-    // 2. Destino
-    if (data.destino && data.destino.lat) {
-        destinationMarker = L.marker([data.destino.lat, data.destino.lng], {
-            icon: L.divIcon({ 
-                className: 'custom-div-icon', 
-                html: '<div style="background:#ef4444; width:12px; height:12px; border-radius:50%; border:2px solid white;"></div>', 
-                iconSize: [12,12],
-                iconAnchor: [6,6]
-            })
-        }).addTo(trackingMap).bindPopup(`<b>Destino:</b> ${data.destino.nombre}`);
-        bounds.extend([data.destino.lat, data.destino.lng]);
-    }
-
-    // 3. Conductor (Ubicación real)
-    if (data.conductor && data.conductor.lat) {
+    // ── 1. Marcador del Conductor ─────────────────────────────────
+    if (tieneConductor) {
         trackingMarker = L.marker([data.conductor.lat, data.conductor.lng], { icon: trackCarIcon })
             .addTo(trackingMap)
-            .bindPopup(`<b>${data.conductor.nombre}</b><br>${data.conductor.velocidad} km/h`);
-        bounds.extend([data.conductor.lat, data.conductor.lng]);
-
-        // 4. Ruteo dinámico según estado
-        let targetPoint = null;
-        let routeColor = '#3b82f6';
-
-        if (data.sub_estado === "con_cliente") {
-            // Fase 2: Al destino
-            targetPoint = L.latLng(data.destino.lat, data.destino.lng);
-            routeColor = '#10b981'; // Verde
-        } else {
-            // Fase 1: Al origen (buscando cliente)
-            targetPoint = L.latLng(data.origen.lat, data.origen.lng);
-            routeColor = '#3b82f6'; // Azul
-        }
-
-        if (targetPoint) {
-            routingControl = L.Routing.control({
-                waypoints: [
-                    L.latLng(data.conductor.lat, data.conductor.lng),
-                    targetPoint
-                ],
-                show: false,
-                addWaypoints: false,
-                draggableWaypoints: false,
-                createMarker: () => null,
-                lineOptions: { styles: [{ color: routeColor, opacity: 0.7, weight: 8 }] }
-            }).addTo(trackingMap);
-        }
+            .bindPopup(`
+                <div style="font-family:'Inter',sans-serif;padding:4px;min-width:160px;">
+                    <b style="color:#3b82f6;font-size:1rem;">🚗 ${data.conductor.nombre || 'Conductor'}</b><br>
+                    <small style="color:#64748b;">Ubicación actual · ${data.conductor.velocidad || 0} km/h</small>
+                </div>
+            `).openPopup();
     }
 
-    if (!bounds.isValid()) {
-        trackingMap.setView([18.4861, -69.9312], 12);
-    } else {
+    // ── 2. Marcador de Origen (A — Azul) ──────────────────────────
+    if (tieneOrigen) {
+        originMarker = L.marker([data.origen.lat, data.origen.lng], {
+            icon: makeLetterIcon('A', '#3b82f6')
+        }).addTo(trackingMap)
+          .bindPopup(`
+            <div style="font-family:'Inter',sans-serif;padding:4px;min-width:160px;">
+                <b style="color:#3b82f6;">📍 Punto de Origen</b><br>
+                <span style="font-size:0.88rem;color:#1e293b;">${data.origen.nombre || 'Origen del viaje'}</span><br>
+                <small style="color:#64748b;">Primera parada del conductor</small>
+            </div>
+          `);
+    }
+
+    // ── 3. Marcador de Destino (B — Rojo) ─────────────────────────
+    if (tieneDestino) {
+        destinationMarker = L.marker([data.destino.lat, data.destino.lng], {
+            icon: makeLetterIcon('B', '#ef4444')
+        }).addTo(trackingMap)
+          .bindPopup(`
+            <div style="font-family:'Inter',sans-serif;padding:4px;min-width:160px;">
+                <b style="color:#ef4444;">🏁 Destino Final</b><br>
+                <span style="font-size:0.88rem;color:#1e293b;">${data.destino.nombre || 'Destino del viaje'}</span><br>
+                <small style="color:#64748b;">Última parada del servicio</small>
+            </div>
+          `);
+    }
+
+    // ── 4. Ruta completa: Conductor → Origen → Destino ─────────────
+    const waypoints = [];
+    if (tieneConductor) waypoints.push(L.latLng(data.conductor.lat, data.conductor.lng));
+    if (tieneOrigen)    waypoints.push(L.latLng(data.origen.lat, data.origen.lng));
+    if (tieneDestino)   waypoints.push(L.latLng(data.destino.lat, data.destino.lng));
+
+    if (waypoints.length >= 2) {
+        routingControl = L.Routing.control({
+            waypoints: waypoints,
+            router: L.Routing.osrmv1({
+                serviceUrl: 'https://router.project-osrm.org/route/v1'
+            }),
+            lineOptions: {
+                styles: [
+                    { color: '#3b82f6', opacity: 0.9, weight: 7 },
+                    { color: '#ffffff', opacity: 0.4, weight: 3 }
+                ],
+                extendToWaypoints: true,
+                missingRouteTolerance: 15
+            },
+            show: false,
+            addWaypoints: false,
+            draggableWaypoints: false,
+            createMarker: () => null
+        }).on('routingerror', function() {
+            // Fallback: línea punteada directa entre los puntos
+            const poly = L.polyline(waypoints, {
+                color: '#3b82f6', weight: 5, dashArray: '12, 8', opacity: 0.85
+            }).addTo(trackingMap);
+            routeFallbackLines.push(poly);
+        }).addTo(trackingMap);
+    }
+
+    // ── 5. Ajustar bounds para mostrar todo ───────────────────────
+    const allPoints = [];
+    if (tieneConductor) allPoints.push([data.conductor.lat, data.conductor.lng]);
+    if (tieneOrigen)    allPoints.push([data.origen.lat, data.origen.lng]);
+    if (tieneDestino)   allPoints.push([data.destino.lat, data.destino.lng]);
+
+    if (allPoints.length > 0) {
+        const bounds = L.latLngBounds(allPoints);
         trackingMap.fitBounds(bounds, { padding: [80, 80] });
+    } else {
+        trackingMap.setView([18.4861, -69.9312], 12);
+    }
+
+    // ── 6. Actualizar panel de info del conductor ─────────────────
+    const statusBannerMap = document.getElementById("map-status-banner");
+    if (statusBannerMap) {
+        if (!tieneConductor) {
+            statusBannerMap.className = "tf-status-banner show warning";
+            statusBannerMap.innerHTML = `<i class="bi bi-exclamation-circle fs-5"></i><span>El conductor aún no tiene GPS activo. Se muestra la ruta planificada.</span>`;
+        } else {
+            statusBannerMap.className = "tf-status-banner";
+        }
     }
 }
 

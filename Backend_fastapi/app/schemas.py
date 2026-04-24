@@ -29,6 +29,7 @@ class UserResponse(UserBase):
 class UserLogin(BaseModel):
     email: str
     password: str
+    is_mobile: Optional[bool] = False
 
 
 class LoginUserResponse(BaseModel):
@@ -229,6 +230,11 @@ class RequestCreate(BaseModel):
     tipo_vehiculo: str
     prioridad: str
     costo: float = 0.0
+    # Coordenadas de los puntos de origen y destino (capturadas desde el mapa)
+    lat_origen:  Optional[float] = None
+    lon_origen:  Optional[float] = None
+    lat_destino: Optional[float] = None
+    lon_destino: Optional[float] = None
 
 
 class RequestResponse(RequestBase):

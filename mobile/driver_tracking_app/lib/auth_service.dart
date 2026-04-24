@@ -23,6 +23,7 @@ class AuthService {
         body: jsonEncode({
           'email': email,
           'password': password,
+          'is_mobile': true,
         }),
       );
 

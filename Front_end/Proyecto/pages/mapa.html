@@ -4,30 +4,67 @@
     <div id="map" style="flex: 1; width: 100%; z-index: 1;"></div>
 
     <!-- Barra de Búsqueda Flotante -->
-    <div class="map-floating-search" style="position: absolute; top: 20px; left: 20px; z-index: 1000; width: 350px;">
+    <div class="map-floating-search" style="position: absolute; top: 20px; left: 20px; z-index: 1000; width: 360px;">
         <div class="glass-panel text-dark mode-fluid" style="padding: 10px; background: var(--bg-surface); opacity: 0.95; backdrop-filter: blur(10px); border-radius: 16px; border: 1px solid var(--border-color); box-shadow: 0 10px 25px rgba(0,0,0,0.1);">
             <div class="input-group">
                 <span class="input-group-text bg-transparent border-0"><i class="bi bi-search text-primary"></i></span>
-                <input type="text" id="codigoViaje" class="form-control border-0 bg-transparent" placeholder="ID del Conductor (Ej: 6)" style="box-shadow: none; color: var(--text-primary);">
+                <input type="text" id="codigoViaje" class="form-control border-0 bg-transparent" placeholder="Código de servicio (Ej: 022D6D80)" style="box-shadow: none; color: var(--text-primary);" onkeydown="if(event.key==='Enter') buscarUbicacion()">
                 <button class="btn btn-primary" onclick="buscarUbicacion()" style="border-radius: 12px;">Rastrear</button>
             </div>
         </div>
     </div>
 
-    <!-- Panel de Estado (Aparece cuando hay selección) -->
-    <div id="map-info-panel" class="map-floating-info" style="position: absolute; bottom: 20px; left: 20px; right: 20px; z-index: 1000; display: none;">
-        <div class="glass-panel w-100" style="padding: 20px; background: var(--bg-surface); opacity: 0.95; backdrop-filter: blur(10px); border-radius: 20px; border: 1px solid var(--border-color); box-shadow: 0 10px 40px rgba(0,0,0,0.15); display: flex; align-items: center; justify-content: space-between;">
-            <div class="d-flex align-items-center gap-3">
-                <div id="map-driver-img-container" style="width: 60px; height: 60px; border-radius: 15px; overflow: hidden; background: var(--border-color);">
-                    <img id="map-driver-img" src="" style="width: 100%; height: 100%; object-fit: cover;">
+    <!-- Panel de Estado Enriquecido (Aparece cuando hay selección) -->
+    <div id="map-info-panel" style="position: absolute; bottom: 20px; left: 20px; right: 20px; z-index: 1000; display: none;">
+        <div style="padding: 16px 20px; background: var(--bg-surface); opacity: 0.97; backdrop-filter: blur(12px); border-radius: 20px; border: 1px solid var(--border-color); box-shadow: 0 10px 40px rgba(0,0,0,0.18);">
+            <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+
+                <!-- Conductor -->
+                <div style="display: flex; align-items: center; gap: 12px; min-width: 200px;">
+                    <div style="width: 50px; height: 50px; border-radius: 12px; overflow: hidden; background: var(--border-color); flex-shrink: 0;">
+                        <img id="map-driver-img" src="" style="width: 100%; height: 100%; object-fit: cover;">
+                    </div>
+                    <div>
+                        <p style="margin:0; font-size:11px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:.5px;">🚗 Conductor</p>
+                        <h6 id="map-driver-name" style="margin:2px 0 0; font-weight:700; color: var(--text-primary);">—</h6>
+                        <p id="map-driver-meta" style="margin:0; font-size:12px; color:#64748b;">—</p>
+                    </div>
                 </div>
-                <div>
-                    <h5 id="map-driver-name" class="mb-0 fw-bold" style="color: var(--text-primary);">-</h5>
-                    <p id="map-driver-meta" class="mb-0 text-muted small">ID: - • Velocidad: 0 km/h</p>
+
+                <!-- Separador vertical -->
+                <div style="width:1px; height:50px; background: var(--border-color); flex-shrink:0;"></div>
+
+                <!-- Origen -->
+                <div style="min-width: 150px;">
+                    <p style="margin:0; font-size:11px; font-weight:700; color:#3b82f6; text-transform:uppercase; letter-spacing:.5px;">📍 Origen (A)</p>
+                    <p id="map-origin-name" style="margin:2px 0 0; font-size:14px; font-weight:600; color: var(--text-primary);">—</p>
+                    <p id="map-origin-coords" style="margin:0; font-size:11px; color:#94a3b8;">Sin coordenadas</p>
+                </div>
+
+                <!-- Flecha -->
+                <div style="font-size:22px; color:#94a3b8; flex-shrink:0;">→</div>
+
+                <!-- Destino -->
+                <div style="min-width: 150px;">
+                    <p style="margin:0; font-size:11px; font-weight:700; color:#ef4444; text-transform:uppercase; letter-spacing:.5px;">🏁 Destino (B)</p>
+                    <p id="map-dest-name" style="margin:2px 0 0; font-size:14px; font-weight:600; color: var(--text-primary);">—</p>
+                    <p id="map-dest-coords" style="margin:0; font-size:11px; color:#94a3b8;">Sin coordenadas</p>
+                </div>
+
+                <!-- Badge estado -->
+                <div id="map-driver-status" style="padding: 8px 18px; border-radius: 30px; font-weight: 700; font-size: 13px; background:#e0f2fe; color:#0369a1; flex-shrink:0;">
+                    En Ruta
                 </div>
             </div>
-            <div class="status-badge" id="map-driver-status" style="padding: 8px 16px; border-radius: 30px; font-weight: 600; font-size: 13px;">
-                En Ruta
+
+            <!-- Leyenda de rutas -->
+            <div id="map-route-legend" style="margin-top:12px; padding-top:10px; border-top:1px solid var(--border-color); display:flex; gap:20px; flex-wrap:wrap;">
+                <span style="font-size:12px; color:#64748b; display:flex; align-items:center; gap:6px;">
+                    <span style="display:inline-block;width:24px;height:4px;background:#3b82f6;border-radius:4px;"></span> Conductor → Origen
+                </span>
+                <span style="font-size:12px; color:#64748b; display:flex; align-items:center; gap:6px;">
+                    <span style="display:inline-block;width:24px;height:4px;background:#10b981;border-radius:4px;"></span> Origen → Destino
+                </span>
             </div>
         </div>
     </div>

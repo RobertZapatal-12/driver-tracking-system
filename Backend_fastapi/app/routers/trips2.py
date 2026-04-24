@@ -79,11 +79,17 @@ def create_request(request: schemas.RequestCreate, db: Session = Depends(get_db)
         descripcion=request.descripcion,
         tipo_vehiculo=request.tipo_vehiculo,
         prioridad=request.prioridad,
+        costo=request.costo,
         estado="pendiente",
         user_id=None,
         vehicle_id=None,
         driver_id=None,
-        notas_operador=None
+        notas_operador=None,
+        # ✅ Guardar coordenadas capturadas desde el mapa
+        lat_origen=request.lat_origen,
+        lon_origen=request.lon_origen,
+        lat_destino=request.lat_destino,
+        lon_destino=request.lon_destino,
     )
 
     db.add(new_request)
@@ -248,6 +254,13 @@ def actualizar_request(request_id: int, data: schemas.RequestOperadorUpdate, db:
         ).first()
         if not driver:
             raise HTTPException(status_code=404, detail="Conductor no encontrado")
+
+        # 2. Verificar si el conductor está 'Desconectado' (bloquea asignación)
+        if (driver.estado or "").lower() == "desconectado":
+            raise HTTPException(
+                status_code=400, 
+                detail=f"No se puede asignar a {driver.nombre} porque su estado es 'Desconectado'."
+            )
         
         request.driver_id = data.driver_id
         
@@ -304,13 +317,21 @@ def update_request(request_id: int, request: schemas.RequestCreate, db: Session 
     if not request_db:
         raise HTTPException(status_code=404, detail="Request no encontrado")
 
-    request_db.cliente = request.cliente
-    request_db.fecha = request.fecha
-    request_db.origen = request.origen
-    request_db.destino = request.destino
-    request_db.descripcion = request.descripcion
+    request_db.cliente       = request.cliente
+    request_db.fecha         = request.fecha
+    request_db.origen        = request.origen
+    request_db.destino       = request.destino
+    request_db.descripcion   = request.descripcion
     request_db.tipo_vehiculo = request.tipo_vehiculo
-    request_db.prioridad = request.prioridad
+    request_db.prioridad     = request.prioridad
+    if request.costo is not None:
+        request_db.costo = request.costo
+
+    # ✅ Actualizar coordenadas si vienen del formulario
+    if request.lat_origen  is not None: request_db.lat_origen  = request.lat_origen
+    if request.lon_origen  is not None: request_db.lon_origen  = request.lon_origen
+    if request.lat_destino is not None: request_db.lat_destino = request.lat_destino
+    if request.lon_destino is not None: request_db.lon_destino = request.lon_destino
 
     db.commit()
     db.refresh(request_db)

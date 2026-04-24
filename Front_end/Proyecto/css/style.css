@@ -388,6 +388,7 @@ a { text-decoration: none; color: inherit; }
 
 .bg-status-activo .status-value { background: rgba(16, 185, 129, 0.1); color: #10b981; }
 .bg-status-inactivo .status-value { background: rgba(245, 158, 11, 0.1); color: #f59e0b; }
+.bg-status-desconectado .status-value { background: rgba(100, 116, 139, 0.1); color: #64748b; }
 
 .driver-actions-container { position: absolute; right: 20px; top: 20px; z-index: 10; }
 .btn-tuerca { background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: 50%; width: 32px; height: 32px; display: flex; justify-content: center; align-items: center; cursor: pointer; transition: 0.2s; color: var(--text-secondary); }

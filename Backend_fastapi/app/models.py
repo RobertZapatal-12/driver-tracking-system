@@ -19,6 +19,21 @@ class User(Base):
     usertelefono = Column(String)
 
 # =========================
+# USERS APP (Mobile)
+# =========================
+
+class UserApp(Base):
+    __tablename__ = "users_app"
+
+    user_id = Column(Integer, primary_key=True, index=True)
+    nombre = Column(String)
+    email = Column(String, unique=True)
+    contrasena = Column(String)
+    role = Column(String)
+    idoperador = Column(String)
+    usertelefono = Column(String)
+
+# =========================
 # CLIENTS
 # =========================
 
@@ -42,7 +57,7 @@ class Driver(Base):
     __tablename__ = "drivers"
 
     driver_id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.user_id"), unique=True, nullable=True)
+    user_id = Column(Integer, ForeignKey("users_app.user_id"), unique=True, nullable=True)
 
     nombre = Column(String)
     telefono = Column(String)
@@ -54,7 +69,7 @@ class Driver(Base):
     imagen = Column(String)
     descripcion = Column(String)
 
-    user = relationship("User")    
+    user = relationship("UserApp")    
 
 # =========================
 # LOCATIONS

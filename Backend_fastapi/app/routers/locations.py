@@ -50,6 +50,7 @@ def track_service(code: str, isAdmin: bool = False, db: Session = Depends(get_db
                     "is_only_driver": True,
                     "conductor": {
                         "nombre": driver.nombre,
+                        "imagen": driver.imagen,
                         "lat": latest_loc.latitud if latest_loc else None,
                         "lng": latest_loc.longitud if latest_loc else None,
                         "velocidad": latest_loc.velocidad if latest_loc else 0
@@ -103,6 +104,7 @@ def track_service(code: str, isAdmin: bool = False, db: Session = Depends(get_db
         if driver:
             tracking_data["conductor"] = {
                 "nombre": driver.nombre,
+                "imagen": driver.imagen,
                 "lat": latest_loc.latitud if latest_loc else None,
                 "lng": latest_loc.longitud if latest_loc else None,
                 "velocidad": latest_loc.velocidad if latest_loc else 0
@@ -133,6 +135,7 @@ def get_latest_locations(db: Session = Depends(get_db)):
         data.append({
             "driver_id": driver.driver_id,
             "nombre": driver.nombre,
+            "imagen": driver.imagen,
             "latitud": location.latitud,
             "longitud": location.longitud,
             "velocidad": location.velocidad,

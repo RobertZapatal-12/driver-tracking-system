@@ -29,7 +29,7 @@ def _enrich_driver(driver: models.Driver, db: Session) -> dict:
         "email_usuario":        None,
     }
     if driver.user_id:
-        user = db.query(models.User).filter(models.User.user_id == driver.user_id).first()
+        user = db.query(models.UserApp).filter(models.UserApp.user_id == driver.user_id).first()
         if user:
             data["email_usuario"] = user.email
     return data
@@ -89,15 +89,15 @@ def create_driver(driver: schemas.DriverCreate, db: Session = Depends(get_db)):
 
     # Si se proveen credenciales, crear usuario de acceso para la app
     if email and password:
-        # Verificar que el email no esté ya en uso
-        existing_user = db.query(models.User).filter(models.User.email == email).first()
+        # Verificar que el email no esté ya en uso (en users_app)
+        existing_user = db.query(models.UserApp).filter(models.UserApp.email == email).first()
         if existing_user:
             raise HTTPException(
                 status_code=400,
-                detail=f"El correo '{email}' ya está registrado en el sistema"
+                detail=f"El correo '{email}' ya está registrado en el sistema de la app"
             )
 
-        new_user = models.User(
+        new_user = models.UserApp(
             nombre      = driver_data["nombre"],
             email       = email,
             contrasena  = password,
@@ -139,17 +139,17 @@ def update_driver(driver_id: int, driver: schemas.DriverCreate, db: Session = De
     if email:
         if db_driver.user_id:
             # Ya tiene usuario — actualizarlo
-            linked_user = db.query(models.User).filter(models.User.user_id == db_driver.user_id).first()
+            linked_user = db.query(models.UserApp).filter(models.UserApp.user_id == db_driver.user_id).first()
             if linked_user:
                 # Verificar email único (ignorar si es el mismo usuario)
-                conflict = db.query(models.User).filter(
-                    models.User.email == email,
-                    models.User.user_id != db_driver.user_id
+                conflict = db.query(models.UserApp).filter(
+                    models.UserApp.email == email,
+                    models.UserApp.user_id != db_driver.user_id
                 ).first()
                 if conflict:
                     raise HTTPException(
                         status_code=400,
-                        detail=f"El correo '{email}' ya está en uso por otro usuario"
+                        detail=f"El correo '{email}' ya está en uso por otro conductor"
                     )
                 linked_user.email  = email
                 linked_user.nombre = driver_data["nombre"]
@@ -157,14 +157,14 @@ def update_driver(driver_id: int, driver: schemas.DriverCreate, db: Session = De
                 if password:
                     linked_user.contrasena = password
         else:
-            # No tiene usuario — crear uno nuevo
-            existing_user = db.query(models.User).filter(models.User.email == email).first()
+            # No tiene usuario — crear uno nuevo en users_app
+            existing_user = db.query(models.UserApp).filter(models.UserApp.email == email).first()
             if existing_user:
                 raise HTTPException(
                     status_code=400,
-                    detail=f"El correo '{email}' ya está registrado en el sistema"
+                    detail=f"El correo '{email}' ya está registrado en el sistema de la app"
                 )
-            new_user = models.User(
+            new_user = models.UserApp(
                 nombre      = driver_data["nombre"],
                 email       = email,
                 contrasena  = password or "cambiar123",
@@ -210,9 +210,9 @@ def vincular_usuario(driver_id: int, body: dict, db: Session = Depends(get_db)):
     user_id = body.get("user_id")
     if not user_id:
         raise HTTPException(status_code=400, detail="Campo 'user_id' requerido")
-    user = db.query(models.User).filter(models.User.user_id == user_id).first()
+    user = db.query(models.UserApp).filter(models.UserApp.user_id == user_id).first()
     if not user:
-        raise HTTPException(status_code=404, detail="Usuario no encontrado")
+        raise HTTPException(status_code=404, detail="Usuario de app no encontrado")
     driver.user_id = user_id
     db.commit()
     db.refresh(driver)
