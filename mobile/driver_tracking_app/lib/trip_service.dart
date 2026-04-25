@@ -5,7 +5,7 @@ import 'package:latlong2/latlong.dart';
 
 /// Servicio para manejar rutas asignadas y navegación OSRM.
 class TripService {
-  static const String baseUrl = 'http://10.0.2.2:8000';
+  static const String baseUrl = 'http://10.0.2.2:5000';
 
   // ── Rutas asignadas al conductor ──────────────────────
   Future<List<Map<String, dynamic>>> getDriverRoutes(int driverId) async {
@@ -35,6 +35,21 @@ class TripService {
       return resp.statusCode == 200;
     } catch (e) {
       debugPrint('Error actualizando estado: $e');
+      return false;
+    }
+  }
+
+  // ── Notificar llegada al punto de recogida ────────────
+  /// Cambia el sub_estado de la solicitud a 'con_cliente' en la BD.
+  Future<bool> arrivedAtPickup(int tripId) async {
+    try {
+      final resp = await http.patch(
+        Uri.parse('$baseUrl/driver-trips/$tripId/arrived'),
+        headers: {'Content-Type': 'application/json'},
+      );
+      return resp.statusCode == 200;
+    } catch (e) {
+      debugPrint('Error notificando llegada a recogida: $e');
       return false;
     }
   }

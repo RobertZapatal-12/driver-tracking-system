@@ -53,7 +53,7 @@ class _HomeScreenState extends State<HomeScreen> {
   // ── Viaje activo para navegación ──────────────────────
   Map<String, dynamic>? _activeNavRoute;
 
-  static const String baseUrl = 'http://10.0.2.2:8000';
+  static const String baseUrl = 'http://10.0.2.2:5000';
 
   @override
   void initState() {
@@ -170,11 +170,13 @@ class _HomeScreenState extends State<HomeScreen> {
   // ────────────────────────────────────────────────────────
   // Diálogo de detalle de viaje (antes de aceptar)
   // ────────────────────────────────────────────────────────
-  void _showTripDetailDialog(Map<String, dynamic> route) {
+  void _showTripDetailDialog(Map<String, dynamic> route, {bool acceptMode = true}) {
     final routeId = route['route_id'];
     final origen  = route['origen']  ?? 'Sin especificar';
     final destino = route['destino'] ?? 'Sin especificar';
     final hasCoords = route['lat_destino'] != null && route['lon_destino'] != null;
+    final descripcion = (route['descripcion'] ?? '').toString().trim();
+    final notas = (route['notas_operador'] ?? '').toString().trim();
 
     String fechaStr = '';
     final fecha = route['fecha'] ?? '';
@@ -209,83 +211,131 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ],
         ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const SizedBox(height: 4),
-            // ID del viaje
-            _detailRow(Icons.tag_rounded, 'ID de Ruta', '#$routeId', const Color(0xFF64748B)),
-            const Divider(height: 16),
-            // Origen
-            _detailRow(Icons.circle, 'Origen', origen, const Color(0xFF16A34A)),
-            const SizedBox(height: 8),
-            // Destino
-            _detailRow(Icons.location_on_rounded, 'Destino', destino, const Color(0xFFDC2626)),
-            const Divider(height: 16),
-            // Fecha
-            if (fechaStr.isNotEmpty)
-              _detailRow(Icons.access_time_rounded, 'Asignado', fechaStr, const Color(0xFF7C3AED)),
-            // Navegación disponible
-            const SizedBox(height: 8),
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              decoration: BoxDecoration(
-                color: hasCoords
-                    ? const Color(0xFFDCFCE7)
-                    : const Color(0xFFFEF3C7),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Row(
-                children: [
-                  Icon(
-                    hasCoords ? Icons.map_rounded : Icons.map_outlined,
-                    color: hasCoords
-                        ? const Color(0xFF16A34A)
-                        : const Color(0xFFD97706),
-                    size: 16,
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: 4),
+              _detailRow(Icons.tag_rounded, 'ID de Ruta', '#$routeId', const Color(0xFF64748B)),
+              const Divider(height: 16),
+              _detailRow(Icons.circle, 'Origen', origen, const Color(0xFF16A34A)),
+              const SizedBox(height: 8),
+              _detailRow(Icons.location_on_rounded, 'Destino', destino, const Color(0xFFDC2626)),
+              const Divider(height: 16),
+              if (fechaStr.isNotEmpty)
+                _detailRow(Icons.access_time_rounded, 'Asignado', fechaStr, const Color(0xFF7C3AED)),
+              // Descripción del viaje
+              if (descripcion.isNotEmpty) ...[  
+                const SizedBox(height: 8),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFEFF6FF),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: const Color(0xFF1E3A8A).withValues(alpha: 0.2)),
                   ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      hasCoords
-                          ? 'Navegación GPS disponible 🗺️'
-                          : 'Sin coordenadas (solo texto)',
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: hasCoords
-                            ? const Color(0xFF16A34A)
-                            : const Color(0xFFD97706),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Row(
+                        children: [
+                          Icon(Icons.description_rounded, color: Color(0xFF1E3A8A), size: 14),
+                          SizedBox(width: 6),
+                          Text('Descripción del viaje',
+                              style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF1E3A8A))),
+                        ],
+                      ),
+                      const SizedBox(height: 6),
+                      Text(descripcion,
+                          style: const TextStyle(fontSize: 13, color: Color(0xFF0F172A))),
+                    ],
+                  ),
+                ),
+              ],
+              // Notas del operador
+              if (notas.isNotEmpty) ...[  
+                const SizedBox(height: 8),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFFBEB),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: const Color(0xFFD97706).withValues(alpha: 0.4)),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Row(
+                        children: [
+                          Icon(Icons.sticky_note_2_rounded, color: Color(0xFFD97706), size: 14),
+                          SizedBox(width: 6),
+                          Text('Notas del operador',
+                              style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFFD97706))),
+                        ],
+                      ),
+                      const SizedBox(height: 6),
+                      Text(notas,
+                          style: const TextStyle(fontSize: 13, color: Color(0xFF92400E))),
+                    ],
+                  ),
+                ),
+              ],
+              const SizedBox(height: 8),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                decoration: BoxDecoration(
+                  color: hasCoords ? const Color(0xFFDCFCE7) : const Color(0xFFFEF3C7),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      hasCoords ? Icons.map_rounded : Icons.map_outlined,
+                      color: hasCoords ? const Color(0xFF16A34A) : const Color(0xFFD97706),
+                      size: 16,
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        hasCoords ? 'Navegación GPS disponible 🗺️' : 'Sin coordenadas (solo texto)',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: hasCoords ? const Color(0xFF16A34A) : const Color(0xFFD97706),
+                        ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-            const SizedBox(height: 8),
-          ],
+              const SizedBox(height: 8),
+            ],
+          ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancelar',
-                style: TextStyle(color: Colors.grey)),
+            child: Text(acceptMode ? 'Cancelar' : 'Cerrar',
+                style: const TextStyle(color: Colors.grey)),
           ),
-          ElevatedButton.icon(
-            onPressed: () async {
-              Navigator.pop(context);
-              await _updateStatus(routeId, 'Aceptado');
-            },
-            icon: const Icon(Icons.check_rounded, size: 18),
-            label: const Text('Aceptar Viaje'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF1E3A8A),
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10)),
+          if (acceptMode)
+            ElevatedButton.icon(
+              onPressed: () async {
+                Navigator.pop(context);
+                await _updateStatus(routeId, 'Aceptado');
+              },
+              icon: const Icon(Icons.check_rounded, size: 18),
+              label: const Text('Aceptar Viaje'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF1E3A8A),
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              ),
             ),
-          ),
         ],
       ),
     );
@@ -704,258 +754,414 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   // ────────────────────────────────────────────────────────
-  // Pestaña 1: Inicio
+  // Pestaña 1: Inicio — Diseño premium celeste
   // ────────────────────────────────────────────────────────
   Widget _buildStatusBody() {
-    final statusColor =
-        isTracking ? const Color(0xFF16A34A) : Colors.redAccent;
+    final bool active = isTracking;
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.zero,
       child: Column(
         children: [
-          _card(
+          // ── Hero card con gradiente celeste ──────────────
+          Container(
+            width: double.infinity,
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Color(0xFF0EA5E9), Color(0xFF0369A1)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.only(
+                bottomLeft: Radius.circular(32),
+                bottomRight: Radius.circular(32),
+              ),
+            ),
+            padding: const EdgeInsets.fromLTRB(24, 28, 24, 32),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('Estado del conductor',
-                    style:
-                        TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                const SizedBox(height: 14),
                 Row(
                   children: [
                     Container(
-                      width: 12,
-                      height: 12,
+                      padding: const EdgeInsets.all(10),
                       decoration: BoxDecoration(
-                        color: statusColor,
+                        color: Colors.white.withValues(alpha: 0.18),
                         shape: BoxShape.circle,
                       ),
+                      child: Icon(
+                        active
+                            ? Icons.gps_fixed_rounded
+                            : Icons.gps_off_rounded,
+                        color: Colors.white,
+                        size: 24,
+                      ),
                     ),
-                    const SizedBox(width: 10),
-                    Text(status,
-                        style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                            color: statusColor)),
+                    const SizedBox(width: 14),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Estado de tracking',
+                          style: TextStyle(
+                            color: Colors.white70,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Row(
+                          children: [
+                            Container(
+                              width: 8,
+                              height: 8,
+                              decoration: BoxDecoration(
+                                color: active
+                                    ? const Color(0xFF86EFAC)
+                                    : const Color(0xFFFCA5A5),
+                                shape: BoxShape.circle,
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: active
+                                        ? const Color(0xFF86EFAC).withValues(alpha: 0.6)
+                                        : const Color(0xFFFCA5A5).withValues(alpha: 0.6),
+                                    blurRadius: 6,
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(width: 7),
+                            Text(
+                              status,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 17,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
                   ],
                 ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 16),
-          _card(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text('Ubicación actual',
-                    style:
-                        TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                const SizedBox(height: 16),
-                _infoRow('Latitud', latitude),
-                const SizedBox(height: 10),
-                _infoRow('Longitud', longitude),
-                const SizedBox(height: 10),
-                _infoRow('Última actualización', lastUpdate),
-              ],
-            ),
-          ),
-          const SizedBox(height: 24),
-          // Banner de advertencia si el GPS no está activo
-          if (!isTracking) ...[  
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-              decoration: BoxDecoration(
-                color: const Color(0xFFFEF3C7),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: const Color(0xFFD97706)),
-              ),
-              child: Row(
-                children: [
-                  const Icon(Icons.warning_amber_rounded,
-                      color: Color(0xFFD97706), size: 20),
-                  const SizedBox(width: 8),
-                  const Expanded(
-                    child: Text(
-                      'El tracking no está activo. Activa el GPS.',
-                      style: TextStyle(
-                          fontSize: 13, color: Color(0xFF92400E)),
-                    ),
+                const SizedBox(height: 24),
+                // Chips de coordenadas
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.13),
+                    borderRadius: BorderRadius.circular(16),
                   ),
-                  TextButton(
-                    onPressed: _autoStartTracking,
-                    style: TextButton.styleFrom(
-                      foregroundColor: const Color(0xFFD97706),
-                      padding: EdgeInsets.zero,
-                      minimumSize: const Size(60, 30),
-                    ),
-                    child: const Text('Reintentar',
-                        style: TextStyle(fontWeight: FontWeight.bold)),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 12),
-          ],
-          Row(
-            children: [
-              Expanded(
-                child: ElevatedButton.icon(
-                  onPressed: isTracking ? null : _autoStartTracking,
-                  icon: const Icon(Icons.play_arrow_rounded),
-                  label: const Text('Activar GPS'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF1E3A8A),
-                    foregroundColor: Colors.white,
-                    disabledBackgroundColor: Colors.grey.shade300,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14)),
+                  child: Column(
+                    children: [
+                      _gpsChip(Icons.arrow_upward_rounded, 'Latitud', latitude),
+                      const SizedBox(height: 10),
+                      _gpsChip(Icons.arrow_forward_rounded, 'Longitud', longitude),
+                      const SizedBox(height: 10),
+                      _gpsChip(Icons.update_rounded, 'Última actualización', lastUpdate),
+                    ],
                   ),
                 ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: OutlinedButton.icon(
-                  onPressed: isTracking ? stopTracking : null,
-                  icon: const Icon(Icons.stop_circle_outlined),
-                  label: const Text('Detener'),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: const Color(0xFF1E3A8A),
-                    side: const BorderSide(color: Color(0xFF1E3A8A)),
-                    disabledForegroundColor: Colors.grey,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14)),
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 18),
-          // ── Botón de prueba de notificación ──────────────
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(14),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(14),
-              border: Border.all(
-                color: Colors.purple.shade200,
-                style: BorderStyle.solid,
-              ),
-              color: Colors.purple.shade50,
-            ),
-            child: Column(
-              children: [
+                const SizedBox(height: 20),
+                // Botones de control
                 Row(
                   children: [
-                    Icon(Icons.science_rounded,
-                        color: Colors.purple.shade400, size: 18),
-                    const SizedBox(width: 8),
-                    Text(
-                      'Prueba de notificación',
-                      style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.purple.shade700,
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: active ? null : _autoStartTracking,
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 250),
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          decoration: BoxDecoration(
+                            color: active
+                                ? Colors.white.withValues(alpha: 0.12)
+                                : Colors.white,
+                            borderRadius: BorderRadius.circular(14),
+                            boxShadow: active
+                                ? []
+                                : [
+                                    BoxShadow(
+                                      color: Colors.black.withValues(alpha: 0.15),
+                                      blurRadius: 8,
+                                      offset: const Offset(0, 3),
+                                    ),
+                                  ],
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.play_circle_rounded,
+                                color: active
+                                    ? Colors.white38
+                                    : const Color(0xFF0369A1),
+                                size: 20,
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                'Activar GPS',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 14,
+                                  color: active
+                                      ? Colors.white38
+                                      : const Color(0xFF0369A1),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: active ? stopTracking : null,
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 250),
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          decoration: BoxDecoration(
+                            color: active
+                                ? Colors.white.withValues(alpha: 0.22)
+                                : Colors.white.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(14),
+                            border: Border.all(
+                              color: active
+                                  ? Colors.white54
+                                  : Colors.white24,
+                              width: 1.5,
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.stop_circle_outlined,
+                                color: active ? Colors.white : Colors.white38,
+                                size: 20,
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                'Detener',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 14,
+                                  color: active ? Colors.white : Colors.white38,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                       ),
                     ),
                   ],
-                ),
-                const SizedBox(height: 10),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton.icon(
-                    onPressed: () async {
-                      await NotificationService.instance.showNewTripNotification(
-                        origen: 'Aeropuerto Internacional',
-                        destino: 'Hotel Marriott Centro',
-                        id: 9999,
-                      );
-                      if (mounted) {
-                        _showSnack('✅ Notificación enviada', success: true);
-                      }
-                    },
-                    icon: const Icon(Icons.notifications_active_rounded,
-                        size: 18),
-                    label: const Text('Probar notificación'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.purple.shade600,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12)),
-                    ),
-                  ),
                 ),
               ],
             ),
           ),
-          const SizedBox(height: 18),
-          // Viaje activo banner
-          if (_activeNavRoute != null)
-            GestureDetector(
-              onTap: () => setState(() => _selectedIndex = 2),
-              child: Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(14),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFFEF3C7),
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: const Color(0xFFD97706)),
-                ),
-                child: Row(
-                  children: [
-                    const Icon(Icons.navigation_rounded,
-                        color: Color(0xFFD97706), size: 22),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Text(
-                        'Navegando a: ${_activeNavRoute!['destino']}',
-                        style: const TextStyle(
-                            fontSize: 14,
-                            color: Color(0xFF92400E),
-                            fontWeight: FontWeight.w600),
+
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 20, 16, 0),
+            child: Column(
+              children: [
+                // Banner advertencia GPS inactivo
+                if (!active) ...[
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFFF7ED),
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(color: const Color(0xFFFDBA74)),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.warning_amber_rounded,
+                            color: Color(0xFFF97316), size: 20),
+                        const SizedBox(width: 10),
+                        const Expanded(
+                          child: Text(
+                            'El tracking no está activo. Activa el GPS para comenzar.',
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: Color(0xFF9A3412),
+                            ),
+                          ),
+                        ),
+                        TextButton(
+                          onPressed: _autoStartTracking,
+                          style: TextButton.styleFrom(
+                            foregroundColor: const Color(0xFFF97316),
+                            padding: EdgeInsets.zero,
+                            minimumSize: const Size(70, 32),
+                          ),
+                          child: const Text('Reintentar',
+                              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                ],
+
+                // Banner viaje activo
+                if (_activeNavRoute != null)
+                  GestureDetector(
+                    onTap: () => setState(() => _selectedIndex = 2),
+                    child: Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFFFEF9C3), Color(0xFFFEF3C7)],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: const Color(0xFFFCD34D)),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFFFCD34D).withValues(alpha: 0.3),
+                            blurRadius: 8,
+                            offset: const Offset(0, 3),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFF59E0B).withValues(alpha: 0.15),
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(Icons.navigation_rounded,
+                                color: Color(0xFFD97706), size: 20),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text('Viaje en curso',
+                                    style: TextStyle(
+                                        fontSize: 11,
+                                        color: Color(0xFFB45309),
+                                        fontWeight: FontWeight.w600)),
+                                const SizedBox(height: 2),
+                                Text(
+                                  'Navegando a: ${_activeNavRoute!['destino']}',
+                                  style: const TextStyle(
+                                      fontSize: 13,
+                                      color: Color(0xFF92400E),
+                                      fontWeight: FontWeight.bold),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ],
+                            ),
+                          ),
+                          const Icon(Icons.chevron_right_rounded,
+                              color: Color(0xFFD97706)),
+                        ],
                       ),
                     ),
-                    const Icon(Icons.chevron_right_rounded,
-                        color: Color(0xFFD97706)),
-                  ],
-                ),
-              ),
-            ),
-          if (_activeNavRoute == null)
-            GestureDetector(
-              onTap: () => setState(() => _selectedIndex = 1),
-              child: Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(14),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFEFF6FF),
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(
-                      color: const Color(0xFF1E3A8A).withValues(alpha: 0.25)),
-                ),
-                child: const Row(
-                  children: [
-                    Icon(Icons.assignment_rounded,
-                        color: Color(0xFF1E3A8A), size: 20),
-                    SizedBox(width: 10),
-                    Expanded(
-                      child: Text(
-                        'Ver viajes asignados',
-                        style:
-                            TextStyle(fontSize: 14, color: Color(0xFF1E3A8A)),
+                  ),
+
+                // Banner ir a viajes
+                if (_activeNavRoute == null) ...[
+                  GestureDetector(
+                    onTap: () => setState(() => _selectedIndex = 1),
+                    child: Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFFE0F2FE), Color(0xFFBAE6FD)],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                            color: const Color(0xFF38BDF8).withValues(alpha: 0.5)),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFF38BDF8).withValues(alpha: 0.2),
+                            blurRadius: 8,
+                            offset: const Offset(0, 3),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF0EA5E9).withValues(alpha: 0.15),
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(Icons.assignment_rounded,
+                                color: Color(0xFF0369A1), size: 20),
+                          ),
+                          const SizedBox(width: 12),
+                          const Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text('Mis viajes',
+                                    style: TextStyle(
+                                        fontSize: 11,
+                                        color: Color(0xFF0369A1),
+                                        fontWeight: FontWeight.w600)),
+                                SizedBox(height: 2),
+                                Text(
+                                  'Ver viajes asignados',
+                                  style: TextStyle(
+                                      fontSize: 13,
+                                      color: Color(0xFF075985),
+                                      fontWeight: FontWeight.bold),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const Icon(Icons.chevron_right_rounded,
+                              color: Color(0xFF0369A1)),
+                        ],
                       ),
                     ),
-                    Icon(Icons.chevron_right_rounded, color: Color(0xFF1E3A8A)),
-                  ],
-                ),
-              ),
+                  ),
+                ],
+                const SizedBox(height: 20),
+              ],
             ),
+          ),
         ],
       ),
+    );
+  }
+
+  Widget _gpsChip(IconData icon, String label, String value) {
+    return Row(
+      children: [
+        Icon(icon, color: Colors.white60, size: 14),
+        const SizedBox(width: 8),
+        Text(
+          '$label: ',
+          style: const TextStyle(color: Colors.white60, fontSize: 12),
+        ),
+        Expanded(
+          child: Text(
+            value,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+            ),
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+      ],
     );
   }
 
@@ -1151,31 +1357,42 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ),
                 if (estado == 'Aceptado')
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton.icon(
-                      onPressed: hasCoords
-                          ? () async {
-                              await _updateStatus(routeId, 'En camino');
-                              _startNavigation(route);
-                            }
-                          : () async {
-                              await _updateStatus(routeId, 'En camino');
-                              _showSnack(
-                                  'Viaje iniciado (sin coordenadas de destino)');
-                            },
-                      icon: const Icon(Icons.navigation_rounded, size: 18),
-                      label: Text(hasCoords
-                          ? 'Iniciar Viaje  🗺️'
-                          : 'Iniciar Viaje'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF16A34A),
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12)),
+                  Row(
+                    children: [
+                      // Botón de info para ver detalles
+                      OutlinedButton(
+                        onPressed: () => _showTripDetailDialog(route, acceptMode: false),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: const Color(0xFF1E3A8A),
+                          side: const BorderSide(color: Color(0xFF1E3A8A)),
+                          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        ),
+                        child: const Icon(Icons.info_outline_rounded, size: 20),
                       ),
-                    ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: ElevatedButton.icon(
+                          onPressed: hasCoords
+                              ? () async {
+                                  await _updateStatus(routeId, 'En camino');
+                                  _startNavigation(route);
+                                }
+                              : () async {
+                                  await _updateStatus(routeId, 'En camino');
+                                  _showSnack('Viaje iniciado (sin coordenadas de destino)');
+                                },
+                          icon: const Icon(Icons.navigation_rounded, size: 18),
+                          label: Text(hasCoords ? 'Iniciar Viaje  🗺️' : 'Iniciar Viaje'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF16A34A),
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 if (estado == 'En camino')
                   Row(
@@ -1401,95 +1618,200 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildHistoryCard(Map<String, dynamic> route) {
+  void _showHistoryDetailDialog(Map<String, dynamic> route) {
     final origen = route['origen'] ?? '--';
     final destino = route['destino'] ?? '--';
+    final descripcion = (route['descripcion'] ?? '').toString().trim();
+    final notas = (route['notas_operador'] ?? '').toString().trim();
     String fechaStr = '--';
     try {
       final fecha = DateTime.parse(route['fecha'].toString());
       fechaStr = _formatDateTime(fecha);
     } catch (_) {}
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 3),
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        contentPadding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
+        title: const Row(
+          children: [
+            Icon(Icons.history_rounded, color: Color(0xFF16A34A), size: 24),
+            SizedBox(width: 10),
+            Expanded(
+              child: Text('Detalle del Viaje',
+                  style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold)),
+            ),
+          ],
+        ),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: 4),
+              _detailRow(Icons.circle, 'Origen', origen, const Color(0xFF16A34A)),
+              const SizedBox(height: 8),
+              _detailRow(Icons.location_on_rounded, 'Destino', destino, const Color(0xFFDC2626)),
+              const Divider(height: 16),
+              _detailRow(Icons.access_time_rounded, 'Fecha', fechaStr, const Color(0xFF7C3AED)),
+              if (descripcion.isNotEmpty) ...[  
+                const SizedBox(height: 10),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFEFF6FF),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: const Color(0xFF1E3A8A).withValues(alpha: 0.2)),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Row(
+                        children: [
+                          Icon(Icons.description_rounded, color: Color(0xFF1E3A8A), size: 14),
+                          SizedBox(width: 6),
+                          Text('Descripción',
+                              style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF1E3A8A))),
+                        ],
+                      ),
+                      const SizedBox(height: 6),
+                      Text(descripcion, style: const TextStyle(fontSize: 13, color: Color(0xFF0F172A))),
+                    ],
+                  ),
+                ),
+              ],
+              if (notas.isNotEmpty) ...[  
+                const SizedBox(height: 8),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFFBEB),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: const Color(0xFFD97706).withValues(alpha: 0.4)),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Row(
+                        children: [
+                          Icon(Icons.sticky_note_2_rounded, color: Color(0xFFD97706), size: 14),
+                          SizedBox(width: 6),
+                          Text('Notas del operador',
+                              style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFFD97706))),
+                        ],
+                      ),
+                      const SizedBox(height: 6),
+                      Text(notas, style: const TextStyle(fontSize: 13, color: Color(0xFF92400E))),
+                    ],
+                  ),
+                ),
+              ],
+              const SizedBox(height: 8),
+            ],
+          ),
+        ),
+        actions: [
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF16A34A),
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            ),
+            child: const Text('Cerrar'),
           ),
         ],
       ),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Línea de ruta
-            Column(
-              children: [
-                Container(
-                  width: 10,
-                  height: 10,
-                  decoration: const BoxDecoration(
-                    color: Color(0xFF16A34A),
-                    shape: BoxShape.circle,
-                  ),
-                ),
-                Container(
-                    width: 2, height: 28, color: Colors.grey.shade300),
-                const Icon(Icons.location_on_rounded,
-                    color: Color(0xFFDC2626), size: 14),
-              ],
-            ),
-            const SizedBox(width: 12),
-            // Origen / Destino / Fecha
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(origen,
-                      style: const TextStyle(
-                          fontSize: 14, fontWeight: FontWeight.w600)),
-                  const SizedBox(height: 12),
-                  Text(destino,
-                      style: const TextStyle(
-                          fontSize: 14, fontWeight: FontWeight.w600)),
-                  const SizedBox(height: 8),
-                  Row(
-                    children: [
-                      const Icon(Icons.calendar_today_rounded,
-                          size: 12, color: Color(0xFF64748B)),
-                      const SizedBox(width: 4),
-                      Text(fechaStr,
-                          style: const TextStyle(
-                              fontSize: 12, color: Color(0xFF64748B))),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            // Badge completado
-            Container(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-              decoration: BoxDecoration(
-                color: const Color(0xFF16A34A).withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: const Text(
-                '✓ Completado',
-                style: TextStyle(
-                  fontSize: 11,
-                  color: Color(0xFF16A34A),
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
+    );
+  }
+
+  Widget _buildHistoryCard(Map<String, dynamic> route) {
+    final origen = route['origen'] ?? '--';
+    final destino = route['destino'] ?? '--';
+    final descripcion = (route['descripcion'] ?? '').toString().trim();
+    final notas = (route['notas_operador'] ?? '').toString().trim();
+    final hasExtra = descripcion.isNotEmpty || notas.isNotEmpty;
+    String fechaStr = '--';
+    try {
+      final fecha = DateTime.parse(route['fecha'].toString());
+      fechaStr = _formatDateTime(fecha);
+    } catch (_) {}
+
+    return GestureDetector(
+      onTap: () => _showHistoryDetailDialog(route),
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.05),
+              blurRadius: 10,
+              offset: const Offset(0, 3),
             ),
           ],
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Column(
+                children: [
+                  Container(
+                    width: 10,
+                    height: 10,
+                    decoration: const BoxDecoration(
+                      color: Color(0xFF16A34A),
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                  Container(width: 2, height: 28, color: Colors.grey.shade300),
+                  const Icon(Icons.location_on_rounded, color: Color(0xFFDC2626), size: 14),
+                ],
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(origen, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+                    const SizedBox(height: 12),
+                    Text(destino, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        const Icon(Icons.calendar_today_rounded, size: 12, color: Color(0xFF64748B)),
+                        const SizedBox(width: 4),
+                        Text(fechaStr, style: const TextStyle(fontSize: 12, color: Color(0xFF64748B))),
+                        if (hasExtra) ...[  
+                          const SizedBox(width: 8),
+                          const Icon(Icons.info_outline_rounded, size: 12, color: Color(0xFF1E3A8A)),
+                          const SizedBox(width: 3),
+                          const Text('Ver detalles', style: TextStyle(fontSize: 11, color: Color(0xFF1E3A8A))),
+                        ],
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF16A34A).withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: const Text(
+                  '✓ Completado',
+                  style: TextStyle(fontSize: 11, color: Color(0xFF16A34A), fontWeight: FontWeight.bold),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

@@ -16,7 +16,7 @@ let originCoords = null;
 let destinationCoords = null;
 
 function getBaseUrl() {
-    return typeof CONFIG !== 'undefined' && CONFIG.API_URL ? CONFIG.API_URL : 'http://127.0.0.1:8000';
+    return typeof CONFIG !== 'undefined' && CONFIG.API_URL ? CONFIG.API_URL : 'http://localhost:5000';
 }
 
 function getHeaders() {
@@ -1025,3 +1025,99 @@ function initSolicitudes() {
     setupAutocompleteLocations("solicitud-origen", "results-origen");
     setupAutocompleteLocations("solicitud-destino", "results-destino");
 }
+
+/* =========================================================
+   EXPORTAR SOLICITUDES A EXCEL (SheetJS)
+   ========================================================= */
+
+/**
+ * Exporta solicitudes a un archivo .xlsx filtrado por período.
+ * @param {'dia'|'semana'|'mes'} periodo - Período de filtrado.
+ */
+window.exportarSolicitudes = function (periodo) {
+    if (!window.XLSX) {
+        Toast.error('La librería de Excel no está disponible. Recarga la página.');
+        return;
+    }
+
+    const ahora = new Date();
+    let fechaDesde;
+
+    switch (periodo) {
+        case 'dia':
+            fechaDesde = new Date(ahora.getFullYear(), ahora.getMonth(), ahora.getDate());
+            break;
+        case 'semana':
+            fechaDesde = new Date(ahora);
+            fechaDesde.setDate(ahora.getDate() - 7);
+            break;
+        case 'mes':
+            fechaDesde = new Date(ahora);
+            fechaDesde.setMonth(ahora.getMonth() - 1);
+            break;
+        default:
+            fechaDesde = null;
+    }
+
+    // Filtrar por período
+    let filtradas = todasLasSolicitudes;
+    if (fechaDesde) {
+        filtradas = todasLasSolicitudes.filter(s => {
+            if (!s.fecha) return false;
+            try {
+                const fechaSolicitud = new Date(s.fecha);
+                return fechaSolicitud >= fechaDesde;
+            } catch (_) {
+                return false;
+            }
+        });
+    }
+
+    if (filtradas.length === 0) {
+        Toast.warning(`No hay solicitudes para el período seleccionado.`);
+        return;
+    }
+
+    // Construir filas para la hoja de cálculo
+    const filas = filtradas.map(s => ({
+        'ID': `#${s.request_id}`,
+        'Código Rastreo': s.tracking_code || '—',
+        'Cliente': s.cliente || '—',
+        'Fecha': s.fecha || '—',
+        'Origen': s.origen || '—',
+        'Destino': s.destino || '—',
+        'Tipo Vehículo': s.tipo_vehiculo || '—',
+        'Vehículo Info': s.vehicle_info || '—',
+        'Conductor': s.driver_nombre || 'Sin asignar',
+        'Operador': s.operador_nombre || 'Sin asignar',
+        'Estado': formatEstado(s.estado),
+        'Sub-Estado': s.sub_estado || '—',
+        'Prioridad': s.prioridad || '—',
+        'Costo ($)': parseFloat(s.costo || 0).toFixed(2),
+        'Descripción': s.descripcion || '—',
+        'Notas Operador': s.notas_operador || '—',
+    }));
+
+    // Crear hoja de cálculo
+    const ws = XLSX.utils.json_to_sheet(filas);
+
+    // Ajustar anchos de columna automáticamente
+    const colWidths = Object.keys(filas[0] || {}).map(k => ({
+        wch: Math.max(k.length, ...filas.map(r => String(r[k] || '').length), 12)
+    }));
+    ws['!cols'] = colWidths;
+
+    // Crear workbook y agregar hoja
+    const wb = XLSX.utils.book_new();
+    const nombreHoja = periodo === 'dia' ? 'Hoy' : periodo === 'semana' ? 'Semana' : 'Mes';
+    XLSX.utils.book_append_sheet(wb, ws, `Solicitudes_${nombreHoja}`);
+
+    // Nombre del archivo
+    const fechaStr = ahora.toISOString().split('T')[0];
+    const nombreArchivo = `Solicitudes_${nombreHoja}_${fechaStr}.xlsx`;
+
+    // Descargar
+    XLSX.writeFile(wb, nombreArchivo);
+    Toast.success(`✅ Exportado: ${nombreArchivo} (${filtradas.length} registros)`);
+};
+

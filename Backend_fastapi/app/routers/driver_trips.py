@@ -63,11 +63,42 @@ def end_trip(
     trip.lon_fin = end_data.lon_fin
     trip.estado = "Completado"
 
-    # Sincronizar con la tabla Request
+    # Sincronizar con la tabla Request y anular tracking_code
     if trip.request_id:
         request = db.query(models.Request).filter(models.Request.request_id == trip.request_id).first()
         if request:
             request.estado = "completada"
+            request.sub_estado = "completada"
+            # ✅ Invalidar código de rastreo para que el tracking del cliente quede inactivo
+            request.tracking_code = None
+
+    db.commit()
+    db.refresh(trip)
+    return trip
+
+
+# ── Conductor llegó al punto de recogida ─────────────────────
+@router.patch("/{trip_id}/arrived", response_model=schemas.DriverTripResponse)
+def driver_arrived_at_pickup(
+    trip_id: int,
+    db: Session = Depends(get_db)
+):
+    """El conductor llegó al punto de recogida. Cambia sub_estado a 'con_cliente'."""
+    trip = db.query(models.DriverTrip).filter(
+        models.DriverTrip.trip_id == trip_id
+    ).first()
+    if not trip:
+        raise HTTPException(status_code=404, detail="Viaje no encontrado")
+    if trip.estado == "Completado":
+        raise HTTPException(status_code=400, detail="El viaje ya está completado")
+
+    # Actualizar sub_estado en la Request asociada
+    if trip.request_id:
+        request = db.query(models.Request).filter(
+            models.Request.request_id == trip.request_id
+        ).first()
+        if request:
+            request.sub_estado = "con_cliente"
 
     db.commit()
     db.refresh(trip)

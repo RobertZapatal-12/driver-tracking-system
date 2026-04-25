@@ -7,6 +7,15 @@ import 'package:latlong2/latlong.dart';
 
 import 'trip_service.dart';
 
+// ── Fases del viaje ────────────────────────────────────────────
+/// Controla en qué fase del viaje se encuentra el conductor.
+enum TripPhase {
+  /// Navegando hacia el punto de recogida del cliente (lat_origen).
+  pickingUpClient,
+  /// Recogió al cliente, navegando al destino final (lat_destino).
+  goingToDestination,
+}
+
 class MapScreen extends StatefulWidget {
   final int driverId;
   final String driverName;
@@ -32,7 +41,7 @@ class _MapScreenState extends State<MapScreen> {
   bool _isMapReady = false;
   bool _followMode = true;
 
-  // ── Navegación ──────────────────────────────────────────
+  // ── Navegación ────────────────────────────────────────────────
   List<LatLng> _navRoutePoints = [];
   LatLng? _destination;
   String? _destName;
@@ -41,6 +50,11 @@ class _MapScreenState extends State<MapScreen> {
   bool _isNavigating = false;
   bool _navLoading = false;
   int? _navRouteId;
+  int? _navTripId;          // trip_id del DriverTrip activo
+
+  // ── Fase del viaje ───────────────────────────────────────────
+  TripPhase _phase = TripPhase.pickingUpClient;
+  Map<String, dynamic>? _activeRouteData; // datos originales de la ruta
 
   // ── Recorrido real ─────────────────────────────────────
   List<LatLng> _trailPoints = [];
@@ -112,9 +126,10 @@ class _MapScreenState extends State<MapScreen> {
     }
 
     _positionSubscription = Geolocator.getPositionStream(
-      locationSettings: const LocationSettings(
+      locationSettings: AndroidSettings(
         accuracy: LocationAccuracy.high,
-        distanceFilter: 3,
+        intervalDuration: const Duration(milliseconds: 1500),
+        distanceFilter: 0, // Sin filtro de distancia: actualiza por tiempo
       ),
     ).listen(_onPositionUpdate);
 
@@ -169,6 +184,13 @@ class _MapScreenState extends State<MapScreen> {
     if (_isNavigating) {
       _tripService.sendLocation(
           widget.driverId, pos.latitude, pos.longitude, pos.speed);
+
+      // ── Auto-llegada al punto de encuentro (Fase 1 < 30 m) ──
+      if (_phase == TripPhase.pickingUpClient &&
+          _navDistance < 30 &&
+          !_navLoading) {
+        _completePickup();
+      }
     }
 
     if (_followMode) {
@@ -181,41 +203,18 @@ class _MapScreenState extends State<MapScreen> {
   // ────────────────────────────────────────────────────────
   // Navegación
   // ────────────────────────────────────────────────────────
-  Future<void> _startNavigationFromRoute(Map<String, dynamic> route) async {
-    final latDest = route['lat_destino'];
-    final lonDest = route['lon_destino'];
-    if (latDest == null || lonDest == null || _currentPosition == null) return;
+  // Navega hacia [dest] trazando ruta OSRM y actualizando estado.
+  Future<void> _navigateTo(LatLng dest, String destLabel) async {
+    if (_currentPosition == null) return;
+    setState(() => _navLoading = true);
 
-    setState(() {
-      _navLoading = true;
-      _navRouteId = route['route_id'];
-      _destName = route['destino'] ?? 'Destino';
-    });
-
-    final dest = LatLng(
-      (latDest as num).toDouble(),
-      (lonDest as num).toDouble(),
-    );
-
-    final result = await _tripService.getNavigationRoute(
-      _currentPosition!,
-      dest,
-    );
-
+    final result = await _tripService.getNavigationRoute(_currentPosition!, dest);
     if (!mounted) return;
 
     if (result != null) {
-      _tripStartTime = DateTime.now();
-      _tripTimer = Timer.periodic(const Duration(seconds: 1), (_) {
-        if (_tripStartTime != null && mounted) {
-          setState(() {
-            _tripDuration = DateTime.now().difference(_tripStartTime!);
-          });
-        }
-      });
-
       setState(() {
         _destination = dest;
+        _destName = destLabel;
         _navRoutePoints = result['points'] as List<LatLng>;
         _navDistance = result['distance'] as double;
         _navDuration = result['duration'] as double;
@@ -224,8 +223,6 @@ class _MapScreenState extends State<MapScreen> {
         _navLoading = false;
         _followMode = true;
       });
-
-      // Ajustar vista para ver toda la ruta
       try {
         _mapController.fitCamera(
           CameraFit.bounds(
@@ -240,12 +237,87 @@ class _MapScreenState extends State<MapScreen> {
     }
   }
 
+  Future<void> _startNavigationFromRoute(Map<String, dynamic> route) async {
+    final latOrigen = route['lat_origen'];
+    final lonOrigen = route['lon_origen'];
+    final latDest   = route['lat_destino'];
+    final lonDest   = route['lon_destino'];
+
+    // Necesitamos al menos el destino final
+    if (latDest == null || lonDest == null || _currentPosition == null) return;
+
+    _activeRouteData = route;
+    _navRouteId = route['route_id'];
+    _navTripId = route['trip_id'];
+    // Iniciar timer
+    _tripStartTime = DateTime.now();
+    _tripTimer?.cancel();
+    _tripTimer = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (_tripStartTime != null && mounted) {
+        setState(() => _tripDuration = DateTime.now().difference(_tripStartTime!));
+      }
+    });
+
+    // ─ FASE 1: Si hay punto de recogida, navegar allí primero ─
+    if (latOrigen != null && lonOrigen != null) {
+      setState(() => _phase = TripPhase.pickingUpClient);
+      final pickupDest = LatLng(
+        (latOrigen as num).toDouble(),
+        (lonOrigen as num).toDouble(),
+      );
+      await _navigateTo(
+        pickupDest,
+        '📎 Punto de recogida: ${route['origen'] ?? 'Origen'}',
+      );
+    } else {
+      // Sin lat_origen: saltar directo a fase 2
+      setState(() => _phase = TripPhase.goingToDestination);
+      final finalDest = LatLng(
+        (latDest as num).toDouble(),
+        (lonDest as num).toDouble(),
+      );
+      await _navigateTo(finalDest, route['destino'] ?? 'Destino');
+    }
+  }
+
+  // ── Fase 1 → 2: conductor llegó al punto de recogida ─────────────
+  Future<void> _completePickup() async {
+    if (_activeRouteData == null) return;
+    setState(() => _navLoading = true);
+
+    // Notificar al backend (sub_estado = 'con_cliente')
+    if (_navTripId != null) {
+      await _tripService.arrivedAtPickup(_navTripId!);
+    }
+
+    final route = _activeRouteData!;
+    final latDest = route['lat_destino'];
+    final lonDest = route['lon_destino'];
+
+    if (latDest == null || lonDest == null) {
+      setState(() => _navLoading = false);
+      _showSnack('El destino final no tiene coordenadas');
+      return;
+    }
+
+    final finalDest = LatLng(
+      (latDest as num).toDouble(),
+      (lonDest as num).toDouble(),
+    );
+
+    setState(() {
+      _phase = TripPhase.goingToDestination;
+      _navRoutePoints = [];
+    });
+
+    await _navigateTo(finalDest, route['destino'] ?? 'Destino');
+  }
+
   Future<void> _completeTrip() async {
     if (_navRouteId == null) return;
     setState(() => _navLoading = true);
 
-    final ok =
-        await _tripService.updateRouteStatus(_navRouteId!, 'Completado');
+    final ok = await _tripService.updateRouteStatus(_navRouteId!, 'Completado');
     if (ok) {
       _tripTimer?.cancel();
       _tripTimer = null;
@@ -261,6 +333,9 @@ class _MapScreenState extends State<MapScreen> {
         _navDistance = 0;
         _navDuration = 0;
         _navRouteId = null;
+        _navTripId = null;
+        _activeRouteData = null;
+        _phase = TripPhase.pickingUpClient;
         _tripDuration = Duration.zero;
         _tripStartTime = null;
         _navLoading = false;
@@ -520,9 +595,7 @@ class _MapScreenState extends State<MapScreen> {
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    _isNavigating
-                        ? '📍 $_destName'
-                        : widget.driverName,
+                    _destName ?? 'En camino',
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 17,
@@ -563,7 +636,7 @@ class _MapScreenState extends State<MapScreen> {
 
         // ── Botón centrar ────────────────────────────────
         Positioned(
-          bottom: _isNavigating ? 240 : 220,
+          bottom: _isNavigating ? 310 : 220,
           right: 16,
           child: FloatingActionButton.small(
             heroTag: 'centerMe',
@@ -696,6 +769,8 @@ class _MapScreenState extends State<MapScreen> {
   // ── Panel de navegación activa ─────────────────────────
   Widget _buildNavPanel() {
     final bottomPad = MediaQuery.of(context).padding.bottom;
+    final isPickup = _phase == TripPhase.pickingUpClient;
+
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -722,11 +797,46 @@ class _MapScreenState extends State<MapScreen> {
               borderRadius: BorderRadius.circular(2),
             ),
           ),
-          // Destino
+
+          // ─ Indicador de fase ─
+          Container(
+            margin: const EdgeInsets.only(bottom: 10),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            decoration: BoxDecoration(
+              color: isPickup
+                  ? const Color(0xFFFEF3C7)
+                  : const Color(0xFFDCFCE7),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  isPickup ? Icons.person_pin_circle_rounded : Icons.flag_rounded,
+                  size: 16,
+                  color: isPickup ? const Color(0xFFD97706) : const Color(0xFF16A34A),
+                ),
+                const SizedBox(width: 6),
+                Text(
+                  isPickup ? 'Fase 1 — Recogida del cliente' : 'Fase 2 — Hacia el destino',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: isPickup ? const Color(0xFFD97706) : const Color(0xFF16A34A),
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          // Destino actual
           Row(
             children: [
-              const Icon(Icons.flag_rounded,
-                  color: Color(0xFFDC2626), size: 22),
+              Icon(
+                isPickup ? Icons.person_pin_circle_rounded : Icons.flag_rounded,
+                color: isPickup ? const Color(0xFFF59E0B) : const Color(0xFFDC2626),
+                size: 22,
+              ),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
@@ -765,18 +875,29 @@ class _MapScreenState extends State<MapScreen> {
             ],
           ),
           const SizedBox(height: 14),
-          // Botón completar
+          // Botón de acción según la fase
           SizedBox(
             width: double.infinity,
             height: 54,
             child: ElevatedButton.icon(
-              onPressed: _navLoading ? null : _completeTrip,
-              icon: const Icon(Icons.flag_rounded, size: 20),
-              label: const Text('Completar Viaje',
-                  style: TextStyle(
-                      fontSize: 16, fontWeight: FontWeight.bold)),
+              onPressed: _navLoading
+                  ? null
+                  : (isPickup ? _completePickup : _completeTrip),
+              icon: Icon(
+                isPickup
+                    ? Icons.person_pin_circle_rounded
+                    : Icons.flag_rounded,
+                size: 20,
+              ),
+              label: Text(
+                isPickup ? 'En el punto de encuentro' : 'Terminar Viaje',
+                style: const TextStyle(
+                    fontSize: 16, fontWeight: FontWeight.bold),
+              ),
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFDC2626),
+                backgroundColor: isPickup
+                    ? const Color(0xFFD97706)   // ámbar para recogida
+                    : const Color(0xFFDC2626),  // rojo para finalizar
                 foregroundColor: Colors.white,
                 elevation: 0,
                 shape: RoundedRectangleBorder(

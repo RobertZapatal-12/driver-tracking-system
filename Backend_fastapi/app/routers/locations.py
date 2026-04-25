@@ -10,12 +10,36 @@ router = APIRouter(
     tags=["Locations"]
 )
 
+MAX_LOCATIONS_PER_DRIVER = 50  # Máximo de ubicaciones guardadas por conductor
+
 @router.post("/")
 def create_location(location: schemas.LocationCreate, db: Session = Depends(get_db)):
     new_location = models.Location(**location.dict())
     db.add(new_location)
     db.commit()
     db.refresh(new_location)
+
+    # ── Limpieza automática: mantener solo las últimas MAX_LOCATIONS_PER_DRIVER ──
+    total = db.query(models.Location).filter(
+        models.Location.driver_id == location.driver_id
+    ).count()
+
+    if total > MAX_LOCATIONS_PER_DRIVER:
+        # IDs de los más recientes que queremos conservar
+        keep_ids = (
+            db.query(models.Location.location_id)
+            .filter(models.Location.driver_id == location.driver_id)
+            .order_by(models.Location.location_id.desc())
+            .limit(MAX_LOCATIONS_PER_DRIVER)
+            .subquery()
+        )
+        # Borrar todo lo que NO esté en esos IDs
+        db.query(models.Location).filter(
+            models.Location.driver_id == location.driver_id,
+            ~models.Location.location_id.in_(keep_ids)
+        ).delete(synchronize_session=False)
+        db.commit()
+
     return new_location
 
 @router.get("/driver/{driver_id}")

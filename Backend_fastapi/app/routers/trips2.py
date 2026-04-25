@@ -305,6 +305,9 @@ def completar_request(request_id: int, data: schemas.RequestCompletar, db: Sessi
         raise HTTPException(status_code=403, detail="Solo el operador asignado puede completar esta solicitud")
 
     request.estado = "completada"
+    request.sub_estado = "completada"
+    # ✅ Invalidar código de rastreo para que el tracking del cliente quede inactivo
+    request.tracking_code = None
 
     db.commit()
     db.refresh(request)

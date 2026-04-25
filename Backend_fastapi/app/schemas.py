@@ -190,6 +190,8 @@ class RouteResponse(RouteBase):
     fecha: datetime
     estado: str | None = None
     driver_nombre: str | None = None
+    descripcion: str | None = None
+    notas_operador: str | None = None
 
     class Config:
         from_attributes = True

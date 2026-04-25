@@ -3,7 +3,7 @@
    ========================================================= */
 
 const CONFIG = {
-    API_BASE: "http://127.0.0.1:8000",
+    API_BASE: "http://localhost:5000",
 
     /**
      * Retorna los headers estándar con token de autenticación
