@@ -549,3 +549,50 @@ body.dark-mode .btn-clear-field:hover { background: rgba(255,255,255,0.05); }
 .btn-tomar-premium i {
     font-size: 1.1rem;
 }
+
+/* =========================================================
+   MARKERS PREMIUM (MAPA)
+   ========================================================= */
+.driver-marker-container {
+    position: relative;
+    width: 48px;
+    height: 48px;
+}
+
+.driver-marker-photo {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    border: 3px solid #3b82f6;
+    background: white;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.25);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.3s ease;
+}
+
+.driver-marker-photo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.driver-marker-arrow {
+    position: absolute;
+    bottom: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 8px solid transparent;
+    border-right: 8px solid transparent;
+    border-top: 10px solid #3b82f6;
+    filter: drop-shadow(0 2px 2px rgba(0,0,0,0.2));
+}
+
+.custom-driver-icon {
+    background: none !important;
+    border: none !important;
+}

@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import func
 from app.database import get_db
 from app import models, schemas
-from datetime import datetime
+from datetime import datetime, timedelta
 
 router = APIRouter(
     prefix="/locations",
@@ -63,9 +63,10 @@ def track_service(code: str, isAdmin: bool = False, db: Session = Depends(get_db
         try:
             # Formato esperado: "YYYY-MM-DD HH:MM"
             scheduled_time = datetime.strptime(request.fecha, "%Y-%m-%d %H:%M")
-            if datetime.now() < scheduled_time:
+            # Permitir rastreo hasta 1 hora antes de la hora pautada
+            if datetime.now() < (scheduled_time - timedelta(hours=1)):
                 return {
-                    "error": "Servicio no iniciado, por favor intentar en horario correspondiente",
+                    "error": f"El seguimiento estará disponible a partir de las {(scheduled_time - timedelta(hours=1)).strftime('%H:%M')}. Por favor, intente más tarde.",
                     "status": "programado",
                     "fecha_inicio": request.fecha
                 }

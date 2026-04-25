@@ -19,6 +19,7 @@ console.log('[TransFleet] API base:', TRACK_API_BASE || '(mismo origen)');
 let trackingMap    = null;
 let trackingMarker = null;
 let trackCarIcon   = null;
+let pollingInterval = null; // Para actualizaciones automáticas
 
 /* =========================================================
    INICIALIZAR EL MAPA (Estilo Centro de Control)
@@ -26,12 +27,7 @@ let trackCarIcon   = null;
 function initTrackingMap() {
     if (trackingMap) return;
 
-    trackCarIcon = L.icon({
-        iconUrl:    "https://cdn-icons-png.flaticon.com/512/743/743922.png",
-        iconSize:   [44, 44],
-        iconAnchor: [22, 44],
-        popupAnchor:[0, -40]
-    });
+    trackCarIcon = null;
 
     const boundsDR = L.latLngBounds(
         L.latLng(17.47, -72.0), // Suroeste
@@ -52,6 +48,28 @@ function initTrackingMap() {
         attribution: "© OpenStreetMap contributors",
         maxZoom:     19
     }).addTo(trackingMap);
+}
+
+/**
+ * Genera un icono circular con la foto del conductor (estilo Centro de Control)
+ */
+function _getDriverIcon(fotoUrl, nombre) {
+    const url = fotoUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(nombre)}&background=3b82f6&color=fff&bold=true`;
+    
+    return L.divIcon({
+        className: 'custom-driver-icon',
+        html: `
+            <div class="driver-marker-container">
+                <div class="driver-marker-photo">
+                    <img src="${url}" onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(nombre)}&background=3b82f6&color=fff'">
+                </div>
+                <div class="driver-marker-arrow"></div>
+            </div>
+        `,
+        iconSize: [48, 48],
+        iconAnchor: [24, 48],
+        popupAnchor: [0, -45]
+    });
 }
 
 /* =========================================================
@@ -85,6 +103,12 @@ function showMapMode(codigo) {
    VOLVER A BUSCAR (Restaura el Hero)
    ========================================================= */
 function volverABuscar() {
+    // 0. Detener el polling si existe
+    if (pollingInterval) {
+        clearInterval(pollingInterval);
+        pollingInterval = null;
+    }
+
     // 1. Mostrar el Hero
     const hero = document.getElementById("tf-hero");
     if (hero) hero.style.display = "flex";
@@ -126,7 +150,9 @@ function updateDriverOverlay(data) {
     const meta  = document.getElementById("track-driver-meta");
 
     const nombre = data.nombre || "Conductor asignado";
-    if (img)   img.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(nombre)}&background=3b82f6&color=fff&bold=true&size=128`;
+    const foto   = data.imagen || `https://ui-avatars.com/api/?name=${encodeURIComponent(nombre)}&background=3b82f6&color=fff&bold=true&size=128`;
+    
+    if (img)   img.src = foto;
     if (name)  name.textContent = nombre;
     if (meta)  meta.textContent = `ID: ${data.driver_id} · ${data.velocidad || 0} km/h`;
 }
@@ -171,7 +197,6 @@ async function rastrearServicio() {
     setStatus("info", "bi-arrow-repeat", "Consultando tu servicio…");
 
     try {
-        // Nueva lógica: Buscar por código hexadecimal
         const url = `${TRACK_API_BASE}/locations/track/${codigo}`;
         const response = await fetch(url, {
             credentials: "omit",
@@ -197,12 +222,38 @@ async function rastrearServicio() {
         if (data.conductor) {
             updateDriverOverlay({
                 nombre: data.conductor.nombre,
-                driver_id: data.request_id, // Usamos request_id como ID visual
+                imagen: data.conductor.imagen,
+                driver_id: data.request_id,
                 velocidad: data.conductor.velocidad
             });
         }
         
-        setTimeout(() => placeTrackingMarkers(data), 400);
+        // Dibujar primera vez
+        placeTrackingMarkers(data);
+
+        // Iniciar POLLING para seguimiento en tiempo real
+        if (!pollingInterval) {
+            pollingInterval = setInterval(async () => {
+                try {
+                    const res = await fetch(url, { credentials: "omit" });
+                    const newData = await res.json();
+                    if (!newData.error) {
+                        // Actualizar solo lo necesario
+                        placeTrackingMarkers(newData);
+                        if (newData.conductor) {
+                            updateDriverOverlay({
+                                nombre: newData.conductor.nombre,
+                                imagen: newData.conductor.imagen,
+                                driver_id: newData.request_id,
+                                velocidad: newData.conductor.velocidad
+                            });
+                        }
+                    }
+                } catch (e) {
+                    console.warn("Error en polling:", e);
+                }
+            }, 3000);
+        }
 
     } catch (err) {
         console.error("[TransFleet] Error:", err);
@@ -212,129 +263,102 @@ async function rastrearServicio() {
     }
 }
 
-let originMarker      = null;
-let destinationMarker = null;
-let routingControl    = null;
-let routeFallbackLines = [];
+let originMarker       = null;
+let destinationMarker  = null;
+let driverMarker       = null;
+let staticPolyline     = null; // Origen -> Destino (Verde)
+let dynamicPolyline    = null; // Conductor -> Origen (Azul)
 
 // ── Iconos reutilizables ────────────────────────────────────────────
 function makeLetterIcon(letter, color) {
     return L.divIcon({
         className: '',
         html: `<div style="
-            background:${color}; width:36px; height:36px;
+            background:${color}; width:32px; height:32px;
             border-radius:50%; border:3px solid white;
             display:flex; align-items:center; justify-content:center;
             box-shadow:0 4px 14px ${color}66;
-            font-size:1rem; color:white; font-weight:800;">${letter}</div>`,
-        iconSize: [36, 36],
-        iconAnchor: [18, 18],
-        popupAnchor: [0, -20]
+            font-size:0.9rem; color:white; font-weight:800;">${letter}</div>`,
+        iconSize: [32, 32],
+        iconAnchor: [16, 16],
+        popupAnchor: [0, -15]
     });
 }
 
-function placeTrackingMarkers(data) {
+/**
+ * Dibuja los marcadores y rutas de forma atómica
+ */
+async function placeTrackingMarkers(data) {
     if (!trackingMap) return;
 
-    // ── Limpiar capas previas ────────────────────────────────────
-    if (originMarker)      { trackingMap.removeLayer(originMarker);      originMarker = null; }
-    if (destinationMarker) { trackingMap.removeLayer(destinationMarker); destinationMarker = null; }
-    if (trackingMarker)    { trackingMap.removeLayer(trackingMarker);    trackingMarker = null; }
-    if (routingControl)    { try { trackingMap.removeControl(routingControl); } catch(e){} routingControl = null; }
-    routeFallbackLines.forEach(l => { try { trackingMap.removeLayer(l); } catch(e){} });
-    routeFallbackLines = [];
-
-    const tieneOrigen  = data.origen  && data.origen.lat  != null && data.origen.lng  != null;
-    const tieneDestino = data.destino && data.destino.lat != null && data.destino.lng != null;
+    const tieneOrigen    = data.origen  && data.origen.lat  != null && data.origen.lng  != null;
+    const tieneDestino   = data.destino && data.destino.lat != null && data.destino.lng != null;
     const tieneConductor = data.conductor && data.conductor.lat != null && data.conductor.lng != null;
 
-    // ── 1. Marcador del Conductor ─────────────────────────────────
-    if (tieneConductor) {
-        trackingMarker = L.marker([data.conductor.lat, data.conductor.lng], { icon: trackCarIcon })
-            .addTo(trackingMap)
-            .bindPopup(`
-                <div style="font-family:'Inter',sans-serif;padding:4px;min-width:160px;">
-                    <b style="color:#3b82f6;font-size:1rem;">🚗 ${data.conductor.nombre || 'Conductor'}</b><br>
-                    <small style="color:#64748b;">Ubicación actual · ${data.conductor.velocidad || 0} km/h</small>
-                </div>
-            `).openPopup();
-    }
-
-    // ── 2. Marcador de Origen (A — Azul) ──────────────────────────
-    if (tieneOrigen) {
+    // ── 1. Marcadores Estáticos (Solo se crean una vez) ───────────
+    if (tieneOrigen && !originMarker) {
         originMarker = L.marker([data.origen.lat, data.origen.lng], {
             icon: makeLetterIcon('A', '#3b82f6')
-        }).addTo(trackingMap)
-          .bindPopup(`
-            <div style="font-family:'Inter',sans-serif;padding:4px;min-width:160px;">
-                <b style="color:#3b82f6;">📍 Punto de Origen</b><br>
-                <span style="font-size:0.88rem;color:#1e293b;">${data.origen.nombre || 'Origen del viaje'}</span><br>
-                <small style="color:#64748b;">Primera parada del conductor</small>
-            </div>
-          `);
+        }).addTo(trackingMap).bindPopup(`<b>Origen:</b> ${data.origen.nombre}`);
     }
-
-    // ── 3. Marcador de Destino (B — Rojo) ─────────────────────────
-    if (tieneDestino) {
+    if (tieneDestino && !destinationMarker) {
         destinationMarker = L.marker([data.destino.lat, data.destino.lng], {
-            icon: makeLetterIcon('B', '#ef4444')
-        }).addTo(trackingMap)
-          .bindPopup(`
-            <div style="font-family:'Inter',sans-serif;padding:4px;min-width:160px;">
-                <b style="color:#ef4444;">🏁 Destino Final</b><br>
-                <span style="font-size:0.88rem;color:#1e293b;">${data.destino.nombre || 'Destino del viaje'}</span><br>
-                <small style="color:#64748b;">Última parada del servicio</small>
-            </div>
-          `);
+            icon: makeLetterIcon('B', '#10b981')
+        }).addTo(trackingMap).bindPopup(`<b>Destino:</b> ${data.destino.nombre}`);
     }
 
-    // ── 4. Ruta completa: Conductor → Origen → Destino ─────────────
-    const waypoints = [];
-    if (tieneConductor) waypoints.push(L.latLng(data.conductor.lat, data.conductor.lng));
-    if (tieneOrigen)    waypoints.push(L.latLng(data.origen.lat, data.origen.lng));
-    if (tieneDestino)   waypoints.push(L.latLng(data.destino.lat, data.destino.lng));
-
-    if (waypoints.length >= 2) {
-        routingControl = L.Routing.control({
-            waypoints: waypoints,
-            router: L.Routing.osrmv1({
-                serviceUrl: 'https://router.project-osrm.org/route/v1'
-            }),
-            lineOptions: {
-                styles: [
-                    { color: '#3b82f6', opacity: 0.9, weight: 7 },
-                    { color: '#ffffff', opacity: 0.4, weight: 3 }
-                ],
-                extendToWaypoints: true,
-                missingRouteTolerance: 15
-            },
-            show: false,
-            addWaypoints: false,
-            draggableWaypoints: false,
-            createMarker: () => null
-        }).on('routingerror', function() {
-            // Fallback: línea punteada directa entre los puntos
-            const poly = L.polyline(waypoints, {
-                color: '#3b82f6', weight: 5, dashArray: '12, 8', opacity: 0.85
+    // ── 2. Marcador del Conductor (Atómico) ────────────────────────
+    if (tieneConductor) {
+        const pos = [data.conductor.lat, data.conductor.lng];
+        if (!driverMarker) {
+            driverMarker = L.marker(pos, { 
+                icon: _getDriverIcon(data.conductor.imagen, data.conductor.nombre) 
             }).addTo(trackingMap);
-            routeFallbackLines.push(poly);
-        }).addTo(trackingMap);
+            
+            // Primera vez: Centrar mapa
+            trackingMap.setView(pos, 15);
+        } else {
+            // Mover suavemente
+            driverMarker.setLatLng(pos);
+            // Actualizar icono por si cambió la imagen
+            driverMarker.setIcon(_getDriverIcon(data.conductor.imagen, data.conductor.nombre));
+        }
     }
 
-    // ── 5. Ajustar bounds para mostrar todo ───────────────────────
-    const allPoints = [];
-    if (tieneConductor) allPoints.push([data.conductor.lat, data.conductor.lng]);
-    if (tieneOrigen)    allPoints.push([data.origen.lat, data.origen.lng]);
-    if (tieneDestino)   allPoints.push([data.destino.lat, data.destino.lng]);
-
-    if (allPoints.length > 0) {
-        const bounds = L.latLngBounds(allPoints);
-        trackingMap.fitBounds(bounds, { padding: [80, 80] });
-    } else {
-        trackingMap.setView([18.4861, -69.9312], 12);
+    // ── 3. Rutas ───────────────────────────────────────────────────
+    
+    // RUTA B: Origen -> Destino (Estática, se dibuja una vez)
+    if (tieneOrigen && tieneDestino && !staticPolyline) {
+        try {
+            const url = `https://router.project-osrm.org/route/v1/driving/${data.origen.lng},${data.origen.lat};${data.destino.lng},${data.destino.lat}?overview=full&geometries=geojson`;
+            const res = await fetch(url);
+            const routeData = await res.json();
+            if (routeData.routes && routeData.routes.length > 0) {
+                staticPolyline = L.geoJSON(routeData.routes[0].geometry, {
+                    style: { color: '#10b981', weight: 5, opacity: 0.7, dashArray: '10, 10' }
+                }).addTo(trackingMap);
+            }
+        } catch (e) { console.error("Error ruta estática:", e); }
     }
 
-    // ── 6. Actualizar panel de info del conductor ─────────────────
+    // RUTA A: Conductor -> Origen (Dinámica)
+    if (tieneConductor && tieneOrigen) {
+        try {
+            const url = `https://router.project-osrm.org/route/v1/driving/${data.conductor.lng},${data.conductor.lat};${data.origen.lng},${data.origen.lat}?overview=full&geometries=geojson`;
+            const res = await fetch(url);
+            const routeData = await res.json();
+            
+            if (dynamicPolyline) trackingMap.removeLayer(dynamicPolyline);
+            
+            if (routeData.routes && routeData.routes.length > 0) {
+                dynamicPolyline = L.geoJSON(routeData.routes[0].geometry, {
+                    style: { color: '#3b82f6', weight: 6, opacity: 0.8 }
+                }).addTo(trackingMap);
+            }
+        } catch (e) { console.error("Error ruta dinámica:", e); }
+    }
+
+    // ── 4. Estado visual del GPS ──────────────────────────────────
     const statusBannerMap = document.getElementById("map-status-banner");
     if (statusBannerMap) {
         if (!tieneConductor) {

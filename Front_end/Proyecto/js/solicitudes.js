@@ -138,39 +138,36 @@ function renderTablaSolicitudes(solicitudes) {
         const estado = (s.estado || "").toLowerCase();
 
         // Determinar acciones disponibles
-        let accionesHTML = "";
+        let accionesHTML = `<div class="d-flex align-items-center justify-content-center gap-2">`;
 
-        // Botón TOMAR: visible si el usuario es admin/operador y la solicitud está pendiente
+        // Botón principal (Tomar o Gestionar)
         if (canTake && estado === "pendiente") {
             accionesHTML += `
-                <button class="btn btn-sm btn-tomar-premium shadow-sm me-1" onclick='tomarSolicitud(${s.request_id})' title="Convertirme en responsable">
+                <button class="btn btn-sm btn-tomar-premium shadow-sm" onclick='tomarSolicitud(${s.request_id})' title="Convertirme en responsable">
                     <i class="bi bi-hand-index-thumb-fill me-1"></i> Tomar Servicio
                 </button>
             `;
-        }
-
-        // Botón GESTIONAR: visible para el operador asignado cuando está en proceso
-        if (estado === "en_proceso" && esOperadorAsignado(s)) {
+        } else if (estado === "en_proceso" && esOperadorAsignado(s)) {
             accionesHTML += `
-                <button class="btn btn-sm btn-gestionar-premium shadow-sm me-1" onclick='abrirPanelTrabajo(${s.request_id})' title="Abrir panel de gestión">
+                <button class="btn btn-sm btn-gestionar-premium shadow-sm" onclick='abrirPanelTrabajo(${s.request_id})' title="Abrir panel de gestión">
                     <i class="bi bi-rocket-takeoff-fill me-1"></i> GESTIONAR
                 </button>
             `;
         }
 
-        // Botón EDITAR: visible siempre (o según rol, aquí siempre por facilidad)
+        // Columna de botones secundarios (Editar y Eliminar)
         accionesHTML += `
-            <button class="btn btn-sm btn-light border me-1" onclick="abrirModalEditarSolicitud(${s.request_id})" title="Editar">
-                <i class="bi bi-pencil pe-none"></i>
-            </button>
+            <div class="d-flex flex-column gap-1">
+                <button class="btn btn-sm btn-light border py-1 px-2" onclick="abrirModalEditarSolicitud(${s.request_id})" title="Editar">
+                    <i class="bi bi-pencil pe-none small"></i>
+                </button>
+                <button class="btn btn-sm btn-light border text-danger py-1 px-2" onclick="eliminarSolicitud(${s.request_id})" title="Eliminar">
+                    <i class="bi bi-trash pe-none small"></i>
+                </button>
+            </div>
         `;
 
-        // Botón ELIMINAR: visible siempre
-        accionesHTML += `
-            <button class="btn btn-sm btn-light border text-danger" onclick="eliminarSolicitud(${s.request_id})" title="Eliminar">
-                <i class="bi bi-trash pe-none"></i>
-            </button>
-        `;
+        accionesHTML += `</div>`;
 
         // Operador asignado
         let operadorHTML = "";
@@ -352,7 +349,7 @@ async function cargarConductoresSelect() {
             drivers.forEach(d => {
                 const estadoLower = (d.estado || "").toLowerCase();
                 // Excluir: Inactivos, Desconectados, o asignados a otra solicitud activa
-                if (estadoLower === 'inactivo' || estadoLower === 'desconectado') return;
+                if (estadoLower === 'desconectado') return;
                 if (conductoresOcupados.has(d.driver_id)) return;
                 const opt = document.createElement("option");
                 opt.value = d.driver_id;
@@ -526,71 +523,6 @@ async function guardarTrabajoOperador(e) {
     }
 }
 
-/**
- * Completar solicitud desde el panel de trabajo
- */
-async function completarDesdePanel() {
-    if (!solicitudEnTrabajo) {
-        Toast.error("No hay solicitud seleccionada");
-        return;
-    }
-
-    const user = getCurrentUser();
-    if (!user) {
-        Toast.error("No se pudo identificar al usuario");
-        return;
-    }
-
-    if (!confirm("¿Marcar esta solicitud como completada? Esta acción no se puede deshacer.")) return;
-
-    // Primero guardamos los datos actuales para asegurar que no se pierda el conductor/vehículo asignado
-    const dataActualizar = {
-        user_id: user.id,
-        origen: document.getElementById("op-origen").value,
-        destino: document.getElementById("op-destino").value,
-        descripcion: document.getElementById("op-descripcion").value,
-        prioridad: document.getElementById("op-prioridad").value,
-        tipo_vehiculo: document.getElementById("op-tipo-vehiculo").value,
-        notas_operador: document.getElementById("op-notas").value
-    };
-
-    const vehicleVal = document.getElementById("op-vehicle-id").value;
-    if (vehicleVal) dataActualizar.vehicle_id = parseInt(vehicleVal);
-
-    const driverVal = document.getElementById("op-driver-id").value;
-    if (driverVal) dataActualizar.driver_id = parseInt(driverVal);
-
-    dataActualizar.costo = parseFloat(document.getElementById("op-costo").value || 0);
-
-    try {
-        // Enviar PATCH para actualizar info
-        await fetch(`${getBaseUrl()}/request/${solicitudEnTrabajo.request_id}/actualizar`, {
-            method: 'PATCH',
-            headers: getHeaders(),
-            body: JSON.stringify(dataActualizar)
-        });
-
-        // Luego marcar como completada
-        const response = await fetch(`${getBaseUrl()}/request/${solicitudEnTrabajo.request_id}/completar`, {
-            method: 'PATCH',
-            headers: getHeaders(),
-            body: JSON.stringify({ user_id: user.id })
-        });
-
-        if (response.ok) {
-            Toast.success("¡Solicitud completada exitosamente!");
-            document.getElementById("modalTrabajoOperador").style.display = "none";
-            solicitudEnTrabajo = null;
-            cargarSolicitudes();
-        } else {
-            const err = await response.json();
-            Toast.error(err.detail || "Error al completar");
-        }
-    } catch (e) {
-        console.error("Error de red:", e);
-        Toast.error("Error de conexión");
-    }
-}
 
 /* =========================================================
    MODALES: Crear / Editar Solicitud
@@ -633,7 +565,6 @@ function initSolicitudModals() {
     const btnCerrar1 = document.getElementById("btnCerrarTrabajoOp");
     const btnCerrar2 = document.getElementById("btnCerrarTrabajoOp2");
     const formTrabajo = document.getElementById("form-trabajo-operador");
-    const btnCompletar = document.getElementById("btnCompletarDesdePanel");
 
     if (btnCerrar1) {
         btnCerrar1.addEventListener("click", () => {
@@ -651,10 +582,6 @@ function initSolicitudModals() {
 
     if (formTrabajo) {
         formTrabajo.onsubmit = guardarTrabajoOperador;
-    }
-
-    if (btnCompletar) {
-        btnCompletar.addEventListener("click", completarDesdePanel);
     }
 }
 
