@@ -61,7 +61,7 @@ async function verificarLicenciasVencidas(conductores) {
     hoy.setHours(0, 0, 0, 0);
 
     const vencidos = conductores.filter(d => {
-        if (d.estado === "Inactivo") return false;       // ya está inactivo, ignorar
+        if (d.estado === "Desconectado") return false;    // ya está desconectado, ignorar
         if (!d.vencimiento_licencia) return false;       // sin fecha registrada, no aplica
         const fechaVenc = new Date(d.vencimiento_licencia + "T00:00:00");
         return fechaVenc < hoy;                          // vencido (estrictamente antes de hoy)
@@ -75,22 +75,22 @@ async function verificarLicenciasVencidas(conductores) {
         try {
             const res = await CONFIG.fetchAuth(`${DRIVERS_ENDPOINT}/${d.driver_id}/estado`, {
                 method: "PATCH",
-                body: JSON.stringify({ estado: "Inactivo" })
+                body: JSON.stringify({ estado: "Desconectado" })
             });
 
             if (res.ok) {
                 // Actualizar en memoria para que el render refleje el cambio
-                d.estado = "Inactivo";
+                d.estado = "Desconectado";
                 actualizados++;
             }
         } catch (err) {
-            console.error(`Error actualizando conductor ${d.driver_id} a Inactivo:`, err);
+            console.error(`Error actualizando conductor ${d.driver_id} a Desconectado:`, err);
         }
     }
 
     if (actualizados > 0 && typeof Toast !== "undefined") {
         Toast.warning(
-            `⚠️ ${actualizados} conductor${actualizados > 1 ? "es" : ""} ${actualizados > 1 ? "fueron marcados" : "fue marcado"} como <strong>Inactivo</strong> por licencia vencida.`
+            `⚠️ ${actualizados} conductor${actualizados > 1 ? "es" : ""} ${actualizados > 1 ? "fueron marcados" : "fue marcado"} como <strong>Desconectado</strong> por licencia vencida.`
         );
     }
 }
@@ -506,3 +506,75 @@ function limpiarModoEdicion() {
 function limpiarModoEdicionDriver() {
     limpiarModoEdicion();
 }
+
+/* =========================================================
+   HISTORIAL DEL CONDUCTOR
+   ========================================================= */
+window.cargarHistorialPreview = async function(driverId) {
+    const container = document.getElementById(`history-preview-${driverId}`);
+    if (!container) return;
+
+    try {
+        const res = await CONFIG.fetchAuth(`/route/driver/${driverId}/history`);
+        if (!res.ok) throw new Error("Error fetching history");
+        const history = await res.json();
+        
+        const last3 = history.slice(0, 3);
+        
+        let html = `
+            <div class="history-preview-title">
+                <span>Últimos Viajes</span>
+                <span class="badge bg-success" style="font-size: 9px;">${history.length} Total</span>
+            </div>
+            <div class="history-preview-list">
+        `;
+        
+        if (last3.length === 0) {
+            html += `<div class="text-muted" style="font-size: 11px; text-align: center; margin-top: 10px;">Sin viajes completados</div>`;
+        } else {
+            last3.forEach(h => {
+                let fechaStr = "N/A";
+                if (h.fecha && h.fecha !== "None") {
+                    const f = new Date(h.fecha.replace(" ", "T"));
+                    if (!isNaN(f)) {
+                        fechaStr = `${f.getDate().toString().padStart(2, '0')}/${(f.getMonth()+1).toString().padStart(2, '0')} ${f.getHours().toString().padStart(2, '0')}:${f.getMinutes().toString().padStart(2, '0')}`;
+                    }
+                }
+                
+                html += `
+                    <div class="history-preview-item">
+                        <span class="route" title="${h.origen} → ${h.destino}">📍 ${h.destino}</span>
+                        <span class="date">${fechaStr}</span>
+                    </div>
+                `;
+            });
+        }
+        
+        html += `
+            </div>
+            <button class="btn-historial-full" onclick="event.stopPropagation(); abrirModalHistorial(${driverId})">
+                <i class="bi bi-clock-history me-1"></i> Historial Completo
+            </button>
+        `;
+        
+        container.innerHTML = html;
+        
+    } catch (e) {
+        console.error("Error loading history preview:", e);
+        container.innerHTML = `<div class="text-danger" style="font-size: 11px; text-align: center; margin-top: 20px;">Error al cargar el historial</div>`;
+    }
+};
+
+window.abrirModalHistorial = function(driverId) {
+    // Redirigir a la pestaña Historial pasando el driverId como filtro
+    if (typeof cargarPagina === 'function') {
+        cargarPagina('historial', { filter: { filterDriver: driverId } });
+    }
+};
+
+window.cerrarModalHistorial = function() {
+    const modal = document.getElementById("modalHistorialOverlay");
+    if (modal) {
+        modal.style.display = "none";
+    }
+};

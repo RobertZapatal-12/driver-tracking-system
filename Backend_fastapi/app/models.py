@@ -189,3 +189,5 @@ class DriverTrip(Base):
     lon_fin = Column(Float, nullable=True)
 
     driver = relationship("Driver")
+    request = relationship("Request")
+

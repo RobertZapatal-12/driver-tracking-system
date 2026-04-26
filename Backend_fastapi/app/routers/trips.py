@@ -17,17 +17,11 @@ def get_routes(db: Session = Depends(get_db)):
         models.Request.cliente == "Asignación Directa"
     ).all()
 
+    driver_ids = {r.driver_id for r in requests if r.driver_id}
+    drivers = {d.driver_id: d.nombre for d in db.query(models.Driver).filter(models.Driver.driver_id.in_(driver_ids)).all()} if driver_ids else {}
+
     response = []
     for r in requests:
-        driver_nombre = None
-
-        if r.driver_id:
-            driver = db.query(models.Driver).filter(
-                models.Driver.driver_id == r.driver_id
-            ).first()
-            if driver:
-                driver_nombre = driver.nombre
-
         response.append({
             "route_id": r.request_id,
             "user_id": r.user_id,
@@ -41,7 +35,7 @@ def get_routes(db: Session = Depends(get_db)):
             "lon_destino": r.lon_destino,
             "fecha": r.registrado_en,
             "estado": r.estado.capitalize() if r.estado else "Pendiente",
-            "driver_nombre": driver_nombre
+            "driver_nombre": drivers.get(r.driver_id)
         })
 
     return response
@@ -213,15 +207,14 @@ def get_routes_by_driver(driver_id: int, db: Session = Depends(get_db)):
         models.Request.estado != "completada"
     ).order_by(models.Request.fecha.desc()).all()
 
+    driver_nombre = None
+    if driver_id:
+        driver = db.query(models.Driver).filter(models.Driver.driver_id == driver_id).first()
+        if driver:
+            driver_nombre = driver.nombre
+
     response = []
     for r in requests:
-        driver_nombre = None
-        if r.driver_id:
-            driver = db.query(models.Driver).filter(
-                models.Driver.driver_id == r.driver_id
-            ).first()
-            if driver:
-                driver_nombre = driver.nombre
 
         mobile_estado = r.estado
         if r.estado == "en_proceso":

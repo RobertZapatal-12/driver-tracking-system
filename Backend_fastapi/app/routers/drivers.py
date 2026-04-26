@@ -41,7 +41,27 @@ def _enrich_driver(driver: models.Driver, db: Session) -> dict:
 @router.get("/")
 def get_drivers(db: Session = Depends(get_db)):
     drivers = db.query(models.Driver).all()
-    return [_enrich_driver(d, db) for d in drivers]
+    user_ids = {d.user_id for d in drivers if d.user_id}
+    users = {u.user_id: u.email for u in db.query(models.UserApp).filter(models.UserApp.user_id.in_(user_ids)).all()} if user_ids else {}
+    
+    result = []
+    for driver in drivers:
+        data = {
+            "driver_id":            driver.driver_id,
+            "user_id":              driver.user_id,
+            "nombre":               driver.nombre,
+            "telefono":             driver.telefono,
+            "numero_licencia":      driver.numero_licencia,
+            "cedula":               driver.cedula,
+            "tipo_licencia":        driver.tipo_licencia,
+            "vencimiento_licencia": driver.vencimiento_licencia,
+            "estado":               driver.estado,
+            "imagen":               driver.imagen,
+            "descripcion":          driver.descripcion,
+            "email_usuario":        users.get(driver.user_id) if driver.user_id else None,
+        }
+        result.append(data)
+    return result
 
 
 # ─────────────────────────────────────────────────────────────────────────────

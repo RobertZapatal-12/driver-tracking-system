@@ -303,6 +303,9 @@ class DriverTripResponse(BaseModel):
     lon_inicio: Optional[float] = None
     lat_fin: Optional[float] = None
     lon_fin: Optional[float] = None
+    # Campos extraidos de la relación con Request
+    origen: Optional[str] = None
+    destino: Optional[str] = None
 
     class Config:
         from_attributes = True

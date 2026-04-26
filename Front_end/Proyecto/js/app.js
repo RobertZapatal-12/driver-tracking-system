@@ -346,6 +346,10 @@ function cargarPagina(pagina, opciones = {}) {
                 cargarRutas();
             }
 
+            if (pagina === "historial" && typeof initHistorial === "function") {
+                initHistorial();
+            }
+
             if (pagina === "mapa") {
                 setTimeout(() => {
                     initMapa();
@@ -659,6 +663,13 @@ function renderDriverCard(d) {
                     </span>
                 </div>
             </div>
+
+            <div class="driver-history-preview" id="history-preview-${d.driver_id}">
+                <div class="text-center text-muted" style="font-size: 11px; margin-top: 20px;">
+                    <div class="spinner-border spinner-border-sm mb-1" role="status"></div><br>
+                    Cargando historial...
+                </div>
+            </div>
         </div>
 
         <div class="driver-details">
@@ -675,6 +686,10 @@ function renderDriverCard(d) {
     `;
 
     contenedor.prepend(card);
+
+    if (typeof cargarHistorialPreview === 'function') {
+        cargarHistorialPreview(d.driver_id);
+    }
 }
 
 /* =========================================================

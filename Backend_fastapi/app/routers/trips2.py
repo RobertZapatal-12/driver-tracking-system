@@ -100,11 +100,54 @@ def create_request(request: schemas.RequestCreate, db: Session = Depends(get_db)
     return _enrich_request(new_request, db)
 
 
+# Helper for bulk enrichment to avoid N+1 queries
+def _enrich_requests_bulk(requests, db):
+    if not requests:
+        return []
+        
+    user_ids = {r.user_id for r in requests if r.user_id}
+    driver_ids = {r.driver_id for r in requests if r.driver_id}
+    vehicle_ids = {r.vehicle_id for r in requests if r.vehicle_id}
+
+    users = {u.user_id: u.nombre for u in db.query(models.User).filter(models.User.user_id.in_(user_ids)).all()} if user_ids else {}
+    drivers = {d.driver_id: d.nombre for d in db.query(models.Driver).filter(models.Driver.driver_id.in_(driver_ids)).all()} if driver_ids else {}
+    vehicles = {v.vehicle_id: f"{v.marca} {v.modelo} - {v.plate_number}" for v in db.query(models.Vehicle).filter(models.Vehicle.vehicle_id.in_(vehicle_ids)).all()} if vehicle_ids else {}
+
+    result = []
+    for req in requests:
+        data = {
+            "request_id": req.request_id,
+            "cliente": req.cliente,
+            "fecha": req.fecha,
+            "origen": req.origen,
+            "destino": req.destino,
+            "descripcion": req.descripcion,
+            "tipo_vehiculo": req.tipo_vehiculo,
+            "estado": req.estado,
+            "sub_estado": req.sub_estado,
+            "prioridad": req.prioridad,
+            "user_id": req.user_id,
+            "vehicle_id": req.vehicle_id,
+            "driver_id": req.driver_id,
+            "notas_operador": req.notas_operador,
+            "tracking_code": req.tracking_code,
+            "costo": req.costo,
+            "lat_origen": req.lat_origen,
+            "lon_origen": req.lon_origen,
+            "lat_destino": req.lat_destino,
+            "lon_destino": req.lon_destino,
+            "operador_nombre": users.get(req.user_id) if req.user_id else None,
+            "driver_nombre": drivers.get(req.driver_id) if req.driver_id else None,
+            "vehicle_info": vehicles.get(req.vehicle_id) if req.vehicle_id else None,
+        }
+        result.append(data)
+    return result
+
 # Obtener todos
 @router.get("/", response_model=list[schemas.RequestResponse])
 def get_requests(db: Session = Depends(get_db)):
-    requests = db.query(models.Request).all()
-    return [_enrich_request(r, db) for r in requests]
+    requests = db.query(models.Request).order_by(models.Request.request_id.desc()).all()
+    return _enrich_requests_bulk(requests, db)
 
 
 # ─── Estadísticas del día: servicios de hoy vs ayer ────────────────────────────
@@ -148,7 +191,7 @@ def get_pending_requests(db: Session = Depends(get_db)):
     requests = db.query(models.Request).filter(
         models.Request.estado == "pendiente"
     ).all()
-    return [_enrich_request(r, db) for r in requests]
+    return _enrich_requests_bulk(requests, db)
 
 
 # Obtener por id
