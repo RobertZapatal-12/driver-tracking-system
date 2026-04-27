@@ -187,7 +187,24 @@ function renderTablaSolicitudes(solicitudes) {
         }
 
         const tr = document.createElement("tr");
-        const trackingCodeHTML = s.tracking_code ? `<code class="bg-light px-2 py-1 rounded text-primary fw-bold" style="font-size:0.8rem;">${s.tracking_code}</code>` : `<span class="text-muted small">Asignación pendiente</span>`;
+
+        // Construir el link de tracking para el cliente
+        let trackingCodeHTML;
+        if (s.tracking_code) {
+            const trackingUrl = `${window.location.origin}/tracking.html?code=${s.tracking_code}`;
+            trackingCodeHTML = `
+                <div class="d-flex flex-column gap-1">
+                    <code class="bg-light px-2 py-1 rounded text-primary fw-bold" style="font-size:0.8rem;">${s.tracking_code}</code>
+                    <button class="btn btn-outline-primary btn-sm px-2 py-0 d-flex align-items-center gap-1"
+                        style="font-size:0.72rem; width:fit-content;"
+                        onclick="copiarLinkTracking('${trackingUrl}')"
+                        title="Copiar link para el cliente">
+                        <i class="bi bi-link-45deg"></i> Copiar Link
+                    </button>
+                </div>`;
+        } else {
+            trackingCodeHTML = `<span class="text-muted small">Asignación pendiente</span>`;
+        }
         
         tr.innerHTML = `
             <td>#${s.request_id}</td>
@@ -216,6 +233,27 @@ function formatEstado(estado) {
         default: return estado || "—";
     }
 }
+
+window.copiarLinkTracking = function(url) {
+    navigator.clipboard.writeText(url).then(() => {
+        if (typeof Toast !== 'undefined') {
+            Toast.success(`✅ Link copiado al portapapeles.<br><small style="word-break:break-all;">${url}</small>`, 5000);
+        } else {
+            alert("Link copiado:\n" + url);
+        }
+    }).catch(() => {
+        // Fallback por si el navigator.clipboard no está disponible
+        const el = document.createElement("textarea");
+        el.value = url;
+        document.body.appendChild(el);
+        el.select();
+        document.execCommand("copy");
+        document.body.removeChild(el);
+        if (typeof Toast !== 'undefined') {
+            Toast.success("Link copiado al portapapeles.", 3000);
+        }
+    });
+};
 
 function getEstadoBadgeClass(estado) {
     switch ((estado || "").toLowerCase()) {

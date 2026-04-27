@@ -6,12 +6,13 @@
 // - file://       → URL absoluta al backend
 // - :8000         → mismo servidor FastAPI, URL relativa
 // - :5500 / otro  → Live Server u otro, URL absoluta al backend
+// Puerto centralizado — debe coincidir con el backend FastAPI
 const TRACK_API_BASE = (() => {
     const proto = window.location.protocol;
     const port  = window.location.port;
-    if (proto === 'file:')  return 'http://127.0.0.1:8000'; // archivo local
-    if (port  === '8000')   return '';                       // mismo servidor FastAPI
-    return 'http://127.0.0.1:8000';                         // Live Server u otro origen
+    if (proto === 'file:')  return 'http://127.0.0.1:5000';
+    if (port  === '5000')   return '';                        // mismo servidor FastAPI
+    return 'http://127.0.0.1:5000';                          // Live Server u otro origen
 })();
 
 console.log('[TransFleet] API base:', TRACK_API_BASE || '(mismo origen)');
@@ -384,4 +385,13 @@ document.addEventListener("DOMContentLoaded", () => {
     input.addEventListener("input", () => {
         if (!input.value.trim()) clearStatus();
     });
+
+    // ── Auto-rastrear si viene ?code=XXXX en la URL ──────────────
+    const params = new URLSearchParams(window.location.search);
+    const codeParam = params.get("code");
+    if (codeParam) {
+        input.value = codeParam.trim();
+        // Breve retraso para que el mapa inicialice correctamente
+        setTimeout(() => rastrearServicio(), 400);
+    }
 });

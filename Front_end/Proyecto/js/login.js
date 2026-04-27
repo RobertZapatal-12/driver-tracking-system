@@ -2,7 +2,7 @@
    CONFIGURACIÓN DE API
    ========================================================= */
 // Usa CONFIG si está disponible, sino fallback directo
-const LOGIN_API_BASE = (typeof CONFIG !== "undefined") ? CONFIG.API_BASE : "http://127.0.0.1:8000";
+const LOGIN_API_BASE = (typeof CONFIG !== "undefined") ? CONFIG.API_BASE : "http://127.0.0.1:5000";
 
 /* =========================================================
    VARIABLES GLOBALES
