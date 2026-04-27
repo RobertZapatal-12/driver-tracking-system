@@ -191,7 +191,9 @@ function renderTablaSolicitudes(solicitudes) {
         // Construir el link de tracking para el cliente
         let trackingCodeHTML;
         if (s.tracking_code) {
-            const trackingUrl = `${window.location.origin}/tracking.html?code=${s.tracking_code}`;
+            // Construir URL relativa desde la ubicación actual de la página
+            const basePath = window.location.href.split('?')[0].replace(/\/[^/]*$/, '');
+            const trackingUrl = `${basePath}/tracking.html?code=${s.tracking_code}`;
             trackingCodeHTML = `
                 <div class="d-flex flex-column gap-1">
                     <code class="bg-light px-2 py-1 rounded text-primary fw-bold" style="font-size:0.8rem;">${s.tracking_code}</code>
