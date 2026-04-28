@@ -2,8 +2,10 @@ import os
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
 
-DATABASE_URL = "mssql+pyodbc://wascar23_SQLLogin_1:jcsinnz5sy@transfleet.mssql.somee.com/transfleet?driver=ODBC+Driver+17+for+SQL+Server&TrustServerCertificate=yes"
+# Configuración para Supabase (Contraseña codificada para evitar errores con símbolos)
+DATABASE_URL = "postgresql://postgres.wcfgmzcyjzcxqbsiagok:Tr3pl3j01612%28%40%2913@aws-1-us-east-1.pooler.supabase.com:5432/postgres"
 
+# Para PostgreSQL no necesitamos el driver ODBC de SQL Server
 engine = create_engine(DATABASE_URL)
 
 SessionLocal = sessionmaker(
